@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS table_inc_id;
+CREATE TABLE table_inc_id
+(
+	id     BIGINT PRIMARY KEY AUTO_INCREMENT,
+	status VARCHAR(16)
+)
