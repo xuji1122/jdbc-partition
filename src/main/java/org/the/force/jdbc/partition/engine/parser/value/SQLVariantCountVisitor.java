@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.value;
 
-import org.druid.sql.ast.expr.SQLVariantRefExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 
 import java.util.ArrayList;

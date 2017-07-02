@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.resource.db;
 
-import net.sf.json.JSONObject;
-import org.the.force.jdbc.partition.exception.PartitionConfigException;
+import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.driver.SqlDialect;
+import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.resource.table.impl.LogicTableManagerImpl;
 import org.the.force.jdbc.partition.rule.PartitionComparator;
 import org.the.force.jdbc.partition.rule.config.DataNode;
@@ -49,8 +49,9 @@ public class LogicDbManager implements LogicDbConfig {
     private void init() throws PartitionConfigException {
         try {
             String json = logicDbNode.getData();
-            JSONObject logicDbConfigJsonObject = JSONObject.fromObject(json);
-            String actualDriverClassName = logicDbConfigJsonObject.getString("actualDriverClassName").trim();
+            JsonParser parser = new JsonParser(json);
+            Map<String, Object> map = parser.parse();
+            String actualDriverClassName = map.get("actualDriverClassName").toString().trim();
             Class.forName(actualDriverClassName);
             this.actualDriverClassName = actualDriverClassName;
             DataNode physicDbsNode = logicDbNode.children(PHYSIC_DBS_PATH);

@@ -3,12 +3,7 @@ package org.the.force.jdbc.partition.rule;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.the.force.jdbc.partition.rule.Partition;
-import org.the.force.jdbc.partition.rule.PartitionColumnValue;
-import org.the.force.jdbc.partition.rule.PartitionEvent;
-import org.the.force.jdbc.partition.rule.PartitionRule;
-import org.the.force.jdbc.partition.rule.PartitionColumnConfig;
+import org.the.force.jdbc.partition.common.tuple.Triple;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,7 +32,7 @@ public class DefaultPartitionRule implements PartitionRule {
         TreeSet<Partition> dbPartitions = new TreeSet<>();
         //======分库路由===
 
-        LinkedList<ImmutableTriple<PartitionColumnValue, PartitionColumnConfig, Long>> partitionRuleAndValues = new LinkedList<>();
+        LinkedList<Triple<PartitionColumnValue, PartitionColumnConfig, Long>> partitionRuleAndValues = new LinkedList<>();
         for (PartitionColumnValue partitionColumnValue : partitionColumnValueSet) {
             String columnName = partitionColumnValue.getColumnName();
             Object value = partitionColumnValue.getValue();
@@ -47,7 +42,7 @@ public class DefaultPartitionRule implements PartitionRule {
                 if (val == null) {
                     continue;
                 }
-                ImmutableTriple<PartitionColumnValue, PartitionColumnConfig, Long> triple = new ImmutableTriple(partitionColumnValue, partitionColumnConfig, val);
+                Triple<PartitionColumnValue, PartitionColumnConfig, Long> triple = new Triple(partitionColumnValue, partitionColumnConfig, val);
                 if (partitionColumnConfig.getPartitionRuleType() == RuleType.TABLE) {
                     //优先判断此类分库且分表的列
                     //一次性分库并分表 严格按照表格定义分区，物理库是关联属性
@@ -96,7 +91,7 @@ public class DefaultPartitionRule implements PartitionRule {
             }
             TreeSet<Partition> returnPartitions = new TreeSet<>();
             Map<String, List<Partition>> map = partitions.stream().collect(Collectors.groupingBy(Partition::getPhysicDbName, Collectors.toList()));
-            for (ImmutableTriple<PartitionColumnValue, PartitionColumnConfig, Long> partitionValue : partitionRuleAndValues) {
+            for (Triple<PartitionColumnValue, PartitionColumnConfig, Long> partitionValue : partitionRuleAndValues) {
                 if (partitionValue.getMiddle().getPartitionRuleType() == RuleType.TABLE_IN_DB) {
                     for (List<Partition> list : map.values()) {
                         TreeSet<Partition> set = new TreeSet<>();
@@ -110,7 +105,7 @@ public class DefaultPartitionRule implements PartitionRule {
             return returnPartitions;
         } else {
             //先分库 再分表
-            for (ImmutableTriple<PartitionColumnValue, PartitionColumnConfig, Long> shardingValue : partitionRuleAndValues) {
+            for (Triple<PartitionColumnValue, PartitionColumnConfig, Long> shardingValue : partitionRuleAndValues) {
                 if (shardingValue.getMiddle().getPartitionRuleType() == RuleType.TABLE_IN_DB) {
                     TreeSet<Partition> set = new TreeSet<>();
                     set.add(doOnePartitionSelect(shardingValue.getRight(), dbPartitions));

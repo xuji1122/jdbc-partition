@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.plan.ddl;
 
-import org.druid.sql.ast.SQLStatement;
-import org.druid.sql.ast.expr.SQLIdentifierExpr;
-import org.druid.sql.ast.expr.SQLPropertyExpr;
-import org.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;

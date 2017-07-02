@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.resource.statement;
 
-import org.the.force.jdbc.partition.common.CachedResource;
-import org.the.force.jdbc.partition.common.LRUCache;
+import org.the.force.jdbc.partition.common.cache.CachedResource;
+import org.the.force.jdbc.partition.common.cache.LRUCache;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

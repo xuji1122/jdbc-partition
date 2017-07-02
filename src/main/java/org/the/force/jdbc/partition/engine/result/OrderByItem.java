@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import org.druid.sql.ast.SQLOrderingSpecification;
+import org.the.force.thirdparty.druid.sql.ast.SQLOrderingSpecification;
 
 /**
  * Created by xuji on 2017/6/6.

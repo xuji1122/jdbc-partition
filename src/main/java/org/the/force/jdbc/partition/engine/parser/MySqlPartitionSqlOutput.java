@@ -1,16 +1,16 @@
 package org.the.force.jdbc.partition.engine.parser;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.expr.SQLCharExpr;
-import org.druid.sql.ast.expr.SQLInListExpr;
-import org.druid.sql.ast.expr.SQLVariantRefExpr;
-import org.druid.sql.ast.statement.SQLExprTableSource;
-import org.druid.sql.ast.statement.SQLInsertStatement;
-import org.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
-import org.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
-import org.druid.sql.visitor.ExportParameterVisitor;
-import org.druid.sql.visitor.ExportParameterVisitorUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLCharExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
+import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
+import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
+import org.the.force.thirdparty.druid.sql.visitor.ExportParameterVisitor;
+import org.the.force.thirdparty.druid.sql.visitor.ExportParameterVisitorUtils;
+import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;

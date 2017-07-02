@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition;
 
-import org.druid.util.JdbcUtils;
+import org.the.force.thirdparty.druid.util.JdbcUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
@@ -9,7 +9,6 @@ import org.the.force.jdbc.partition.driver.SqlDialect;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**

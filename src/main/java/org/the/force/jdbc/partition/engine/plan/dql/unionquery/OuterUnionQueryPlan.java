@@ -1,8 +1,7 @@
 package org.the.force.jdbc.partition.engine.plan.dql.unionquery;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.statement.SQLUnionQuery;
-import org.the.force.jdbc.partition.engine.plan.dql.BlockQueryPlan;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.jdbc.partition.engine.plan.dql.UnionQueryPlan;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 

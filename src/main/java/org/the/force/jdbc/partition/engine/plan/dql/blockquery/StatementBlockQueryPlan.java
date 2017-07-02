@@ -1,11 +1,11 @@
 package org.the.force.jdbc.partition.engine.plan.dql.blockquery;
 
-import org.druid.sql.ast.statement.SQLExprTableSource;
-import org.druid.sql.ast.statement.SQLJoinTableSource;
-import org.druid.sql.ast.statement.SQLSelectQueryBlock;
-import org.druid.sql.ast.statement.SQLSubqueryTableSource;
-import org.druid.sql.ast.statement.SQLTableSource;
-import org.druid.sql.ast.statement.SQLUnionQueryTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
 import org.the.force.jdbc.partition.engine.plan.dql.BlockQueryPlan;
 import org.the.force.jdbc.partition.engine.plan.dql.tablesource.JoinedTableSource;

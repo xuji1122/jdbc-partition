@@ -16,7 +16,13 @@ public class JdbcPartitionDriver implements Driver {
 
     private ConcurrentHashMap<JdbcPartitionUrl, DbDriverInstance> driverInstanceMap = new ConcurrentHashMap<>(32);
 
+    private static ClassLoader classLoader = null;
+
     static {
+        classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader == null) {
+            classLoader = JdbcPartitionDriver.class.getClassLoader();
+        }
         try {
             DriverManager.registerDriver(new JdbcPartitionDriver());
         } catch (SQLException var1) {

@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.driver;
 import org.the.force.jdbc.partition.engine.GeneralEngine;
 import org.the.force.jdbc.partition.engine.plan.PhysicSqlPlan;
 import org.the.force.jdbc.partition.engine.plan.QueryPlan;
+import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.connection.AbstractConnection;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.sql.SqlPlanManager;
@@ -11,6 +12,7 @@ import org.the.force.jdbc.partition.engine.QueryEngine;
 import org.the.force.jdbc.partition.engine.plan.SqlPlan;
 import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
 
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -135,5 +137,9 @@ public class JdbcPartitionConnection extends AbstractConnection {
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
+    }
+
+    public DatabaseMetaData getMetaData() throws SQLException {
+        throw new UnsupportedSqlOperatorException();
     }
 }

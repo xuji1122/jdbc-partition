@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import org.druid.sql.ast.SQLOrderingSpecification;
+import org.the.force.thirdparty.druid.sql.ast.SQLOrderingSpecification;
 
 import java.util.Comparator;
 import java.util.List;

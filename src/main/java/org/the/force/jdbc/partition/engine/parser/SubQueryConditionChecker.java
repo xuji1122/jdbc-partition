@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser;
 
-import org.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;

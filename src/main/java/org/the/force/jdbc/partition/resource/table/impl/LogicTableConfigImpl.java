@@ -1,19 +1,19 @@
 package org.the.force.jdbc.partition.resource.table.impl;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.the.force.jdbc.partition.exception.PartitionConfigException;
+import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.driver.SqlDialect;
+import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
+import org.the.force.jdbc.partition.rule.DefaultPartitionRule;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionColumnConfig;
 import org.the.force.jdbc.partition.rule.PartitionComparator;
 import org.the.force.jdbc.partition.rule.PartitionRule;
 import org.the.force.jdbc.partition.rule.config.DataNode;
-import org.the.force.jdbc.partition.rule.DefaultPartitionRule;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -44,10 +44,10 @@ public class LogicTableConfigImpl implements LogicTableConfig {
         this.sqlDialect = sqlDialect;
         this.logicTableName = logicTableName;
         String json = logicTableNode.getData();
-        JSONObject logicTableJsonObject = JSONObject.fromObject(json);
+        Map<String, Object> logicTableJsonObject = new JsonParser(json).parse();
         PartitionRule.RuleType partitionType = PartitionRule.RuleType.TABLE;
-        if (logicTableJsonObject.has("partitionRuleType")) {
-            PartitionRule.RuleType d = PartitionRule.RuleType.valueOfString(logicTableJsonObject.getString("partitionRuleType"));
+        if (logicTableJsonObject.containsKey("partitionRuleType")) {
+            PartitionRule.RuleType d = PartitionRule.RuleType.valueOfString(logicTableJsonObject.get("partitionRuleType").toString().trim());
             if (d == null) {
                 //TODO 异常处理
             }
@@ -55,8 +55,8 @@ public class LogicTableConfigImpl implements LogicTableConfig {
         }
         this.partitionType = partitionType;
         PartitionRule partitionRule = new DefaultPartitionRule();
-        if (logicTableJsonObject.has("partitionRuleClassName")) {
-            String partitionRuleClassName = logicTableJsonObject.getString("partitionRuleClassName");
+        if (logicTableJsonObject.containsKey("partitionRuleClassName")) {
+            String partitionRuleClassName = logicTableJsonObject.get("partitionRuleClassName").toString().trim();
             if (partitionRuleClassName != null && partitionRuleClassName.trim().length() > 0) {
                 Class clazz = Class.forName(partitionRuleClassName.trim());
                 Object obj = clazz.newInstance();
@@ -68,20 +68,20 @@ public class LogicTableConfigImpl implements LogicTableConfig {
         }
         this.partitionRule = partitionRule;
         long version = -1;
-        if (logicTableJsonObject.has("version")) {
-            version = Long.parseLong(logicTableJsonObject.getString("version").trim());
+        if (logicTableJsonObject.containsKey("version")) {
+            version = Long.parseLong(logicTableJsonObject.get("version").toString().trim());
         }
         this.version = version;
-        JSONArray jsonArray = logicTableJsonObject.getJSONArray("partitionColumnConfigs");//大小写不敏感
+        List<Map<String, Object>> jsonArray = (List<Map<String, Object>>) logicTableJsonObject.get("partitionColumnConfigs");//大小写不敏感
         for (int i = 0; i < jsonArray.size(); i++) {
-            JSONObject element = (JSONObject) jsonArray.get(i);
-            String partitionColumnName = element.getString("partitionColumnName");
-            JSONArray configs = element.getJSONArray("configs");
+            Map<String, Object> element = jsonArray.get(i);
+            String partitionColumnName = element.get("partitionColumnName").toString().trim();
+            List<Map<String, Object>> configs = (List<Map<String, Object>>) element.get("configs");
             Set<PartitionColumnConfig> partitionColumnConfigSet = new HashSet<>();
             for (int k = 0; k < configs.size(); k++) {
-                JSONObject config = (JSONObject) configs.get(k);
-                PartitionRule.RuleType partitionRuleType = PartitionRule.RuleType.valueOfString(config.getString("partitionRuleType"));
-                PartitionColumnConfig columnConfig = new PartitionColumnConfig(config.getInt("valueFromIndex"), config.getInt("valueToIndex"), partitionRuleType);
+                Map<String, Object> config =  configs.get(k);
+                PartitionRule.RuleType partitionRuleType = PartitionRule.RuleType.valueOfString(config.get("partitionRuleType").toString().trim());
+                PartitionColumnConfig columnConfig = new PartitionColumnConfig(Integer.parseInt(config.get("valueFromIndex").toString()), Integer.parseInt(config.get("valueToIndex").toString()), partitionRuleType);
                 partitionColumnConfigSet.add(columnConfig);
             }
             putPartitionColumnConfig(partitionColumnName, partitionColumnConfigSet);

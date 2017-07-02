@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.plan;
 
-import org.druid.sql.SQLUtils;
-import org.druid.sql.ast.SQLStatement;
-import org.druid.util.JdbcConstants;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.util.JdbcConstants;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;

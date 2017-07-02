@@ -1,12 +1,12 @@
 package org.the.force.jdbc.partition.rule;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.rule.hits.HitManager;
 import org.the.force.jdbc.partition.rule.hits.PartitionColumn;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,7 +19,7 @@ public class TestHitManager {
 
     @Test
     public void test1() {
-        HitManager.set(new HashedMap());
+        HitManager.set(new HashMap());
         Map<PartitionColumn, Object> map = HitManager.get();
         map.put(new PartitionColumn("t_order", "order_id"), 1);
         map.put(new PartitionColumn("t_order", "id"), 2);

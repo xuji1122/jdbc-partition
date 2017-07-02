@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.plan.model;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.statement.SQLJoinTableSource;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
 
 /**
  * Created by xuji on 2017/6/11.

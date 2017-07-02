@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.parser.copy;
 
-import org.druid.sql.SQLUtils;
-import org.druid.sql.ast.SQLStatement;
-import org.druid.util.JdbcConstants;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.util.JdbcConstants;
 import org.testng.annotations.Test;
 
 import java.util.List;

@@ -1,11 +1,11 @@
 package org.the.force.jdbc.partition.engine.plan.dql.tablesource;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLHint;
-import org.druid.sql.ast.statement.SQLTableSource;
-import org.druid.sql.ast.statement.SQLTableSourceImpl;
-import org.druid.sql.ast.statement.SQLUnionQueryTableSource;
-import org.druid.sql.visitor.SQLASTVisitor;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLHint;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSourceImpl;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.util.List;

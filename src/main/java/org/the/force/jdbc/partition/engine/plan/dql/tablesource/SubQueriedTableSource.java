@@ -1,15 +1,14 @@
 package org.the.force.jdbc.partition.engine.plan.dql.tablesource;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLHint;
-import org.druid.sql.ast.SQLObjectImpl;
-import org.druid.sql.ast.statement.SQLSelectQuery;
-import org.druid.sql.ast.statement.SQLSelectQueryBlock;
-import org.druid.sql.ast.statement.SQLSubqueryTableSource;
-import org.druid.sql.ast.statement.SQLTableSource;
-import org.druid.sql.ast.statement.SQLTableSourceImpl;
-import org.druid.sql.ast.statement.SQLUnionQuery;
-import org.druid.sql.visitor.SQLASTVisitor;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLHint;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSourceImpl;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 import org.the.force.jdbc.partition.engine.plan.QueryPlan;
 import org.the.force.jdbc.partition.engine.plan.dql.unionquery.StatementUnionQueryPlan;
 import org.the.force.jdbc.partition.engine.plan.dql.blockquery.StatementBlockQueryPlan;

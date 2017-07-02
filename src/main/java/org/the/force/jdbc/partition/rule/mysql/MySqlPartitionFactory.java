@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.rule.mysql;
 
-import net.sf.json.JSONObject;
+import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionFactory;
 import org.the.force.jdbc.partition.rule.PartitionRule;
@@ -26,10 +26,10 @@ public class MySqlPartitionFactory implements PartitionFactory {
 
     public Partition buildPartition(PartitionRule.RuleType partitionType, DataNode partitionNode) throws Exception {
         String json = partitionNode.getData();
-        JSONObject partitionJsonObject = JSONObject.fromObject(json);
+        Map<String, Object> partitionJsonObject = new JsonParser(json).parse();
         Class<? extends MySqlPartition> clazz = implClassMap.get(partitionType);
         Constructor<? extends MySqlPartition> c = clazz.getDeclaredConstructor(String.class, String.class);
-        Partition partition = c.newInstance(partitionJsonObject.get("physicTableName"), partitionJsonObject.getString("physicDbName"));
+        Partition partition = c.newInstance(partitionJsonObject.get("physicTableName").toString().trim(), partitionJsonObject.get("physicDbName").toString().trim());
         return partition;
     }
 }

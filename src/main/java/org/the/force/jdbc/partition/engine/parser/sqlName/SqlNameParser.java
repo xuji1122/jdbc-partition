@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.engine.parser.sqlName;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLName;
-import org.druid.sql.ast.expr.SQLIdentifierExpr;
-import org.druid.sql.ast.expr.SQLPropertyExpr;
-import org.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLName;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
 
 /**

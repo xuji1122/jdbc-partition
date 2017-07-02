@@ -31,7 +31,6 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
         logger.info("user={},password={}", user, password);
         logger.info("projectBasePath={}", projectBasePath);
 
-
         zkConnectStr = System.getProperty("zk.connect.str", "localhost:2181");
         zkRootPath = sqlDialectName + "db";
         logger.info("zkConnectStr={}", zkConnectStr);

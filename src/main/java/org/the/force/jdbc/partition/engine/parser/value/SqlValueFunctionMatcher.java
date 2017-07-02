@@ -1,16 +1,16 @@
 package org.the.force.jdbc.partition.engine.parser.value;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.expr.SQLBinaryOpExpr;
-import org.druid.sql.ast.expr.SQLBinaryOperator;
-import org.druid.sql.ast.expr.SQLBooleanExpr;
-import org.druid.sql.ast.expr.SQLDateExpr;
-import org.druid.sql.ast.expr.SQLNullExpr;
-import org.druid.sql.ast.expr.SQLNumericLiteralExpr;
-import org.druid.sql.ast.expr.SQLTextLiteralExpr;
-import org.druid.sql.ast.expr.SQLValuableExpr;
-import org.druid.sql.ast.expr.SQLVariantRefExpr;
-import org.druid.sql.visitor.SQLEvalVisitor;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBooleanExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLDateExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLNullExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLNumericLiteralExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLTextLiteralExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLValuableExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
+import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
 import org.the.force.jdbc.partition.engine.parser.SqlParserContext;
 
 import java.math.BigDecimal;

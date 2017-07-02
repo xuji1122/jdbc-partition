@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.plan.dql.blockquery;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.statement.SQLSelectQueryBlock;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.the.force.jdbc.partition.engine.plan.dql.BlockQueryPlan;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 

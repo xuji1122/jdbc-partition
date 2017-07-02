@@ -1,11 +1,10 @@
 package org.the.force.jdbc.partition.engine.plan.dml;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.expr.SQLInListExpr;
-import org.druid.sql.ast.statement.SQLExprTableSource;
-import org.druid.sql.ast.statement.SQLTableSource;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
@@ -151,7 +150,7 @@ public class UpdateDelParser {
                 for (Partition partition : partitions) {
                     Pair<SQLInListExpr, List<SQLExpr>> list = partitionInListMap.get(partition);
                     if (list == null) {
-                        list = new ImmutablePair<>(entry1.getValue(), new ArrayList<SQLExpr>());
+                        list = new Pair<>(entry1.getValue(), new ArrayList<SQLExpr>());
                         partitionInListMap.put(partition, list);
                     }
                     list.getRight().add(sqlExpr);

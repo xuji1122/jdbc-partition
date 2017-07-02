@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.parser;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.expr.SQLBinaryOpExpr;
-import org.druid.sql.ast.expr.SQLBinaryOperator;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 
 /**
  * Created by xuji on 2017/6/14.

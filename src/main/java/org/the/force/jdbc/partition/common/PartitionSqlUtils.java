@@ -1,13 +1,13 @@
 package org.the.force.jdbc.partition.common;
 
-import org.druid.sql.SQLUtils;
-import org.druid.sql.ast.SQLObject;
-import org.druid.sql.ast.SQLStatement;
-import org.druid.sql.dialect.db2.visitor.DB2OutputVisitor;
-import org.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
-import org.druid.sql.dialect.oracle.visitor.OracleParameterizedOutputVisitor;
-import org.druid.sql.visitor.SQLASTOutputVisitor;
-import org.druid.util.JdbcConstants;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLObject;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.sql.dialect.db2.visitor.DB2OutputVisitor;
+import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
+import org.the.force.thirdparty.druid.sql.dialect.oracle.visitor.OracleParameterizedOutputVisitor;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTOutputVisitor;
+import org.the.force.thirdparty.druid.util.JdbcConstants;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 
 import java.io.BufferedReader;
@@ -15,8 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.List;
 
 /**

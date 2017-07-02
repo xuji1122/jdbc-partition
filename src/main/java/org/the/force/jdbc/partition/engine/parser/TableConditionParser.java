@@ -1,22 +1,20 @@
 package org.the.force.jdbc.partition.engine.parser;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLName;
-import org.druid.sql.ast.SQLObject;
-import org.druid.sql.ast.expr.SQLBetweenExpr;
-import org.druid.sql.ast.expr.SQLBinaryOpExpr;
-import org.druid.sql.ast.expr.SQLBinaryOperator;
-import org.druid.sql.ast.expr.SQLIdentifierExpr;
-import org.druid.sql.ast.expr.SQLInListExpr;
-import org.druid.sql.ast.expr.SQLInSubQueryExpr;
-import org.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.druid.sql.ast.expr.SQLNotExpr;
-import org.druid.sql.ast.expr.SQLPropertyExpr;
-import org.druid.sql.ast.expr.SQLQueryExpr;
-import org.druid.sql.parser.ParserException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLName;
+import org.the.force.thirdparty.druid.sql.ast.SQLObject;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBetweenExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
+import org.the.force.thirdparty.druid.sql.parser.ParserException;
+import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlProperty;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
@@ -24,6 +22,7 @@ import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.ExitsSubQueried
 import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.plan.model.SqlColumn;
 import org.the.force.jdbc.partition.engine.plan.model.SqlTable;
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.util.HashMap;
@@ -322,7 +321,7 @@ public class TableConditionParser extends AbstractVisitor {
                 throw new ParserException("表格匹配重复");
             }
             boolean flag = index1 > index2;
-            conditionTableMap.put(x, new ImmutablePair<>(flag ? index2 : index1, flag ? index1 : index2));
+            conditionTableMap.put(x, new Pair<>(flag ? index2 : index1, flag ? index1 : index2));
             if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
                 this.newWhere = null;
             }

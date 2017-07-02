@@ -1,12 +1,12 @@
 package org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr;
 
-import org.druid.sql.SQLUtils;
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLExprImpl;
-import org.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.druid.sql.ast.expr.SQLNotExpr;
-import org.druid.sql.ast.expr.SQLQueryExpr;
-import org.druid.sql.visitor.SQLASTVisitor;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLExprImpl;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 

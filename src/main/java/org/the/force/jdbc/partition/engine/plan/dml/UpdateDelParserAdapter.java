@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.plan.dml;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLStatement;
-import org.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 
 /**

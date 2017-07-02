@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.visitor;
 
-import org.druid.sql.dialect.mysql.visitor.MySqlASTVisitor;
+import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlASTVisitor;
 import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
 

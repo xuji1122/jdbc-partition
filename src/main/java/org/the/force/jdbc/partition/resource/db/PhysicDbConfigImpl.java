@@ -1,7 +1,9 @@
 package org.the.force.jdbc.partition.resource.db;
 
-import net.sf.json.JSONObject;
+import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.rule.config.DataNode;
+
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/5/14.
@@ -10,11 +12,12 @@ public class PhysicDbConfigImpl implements PhysicDbConfig {
     private final String physicDbName;//原生的dbName
     private final String url;
 
-    public PhysicDbConfigImpl(DataNode physicDb,String physicDbName) throws Exception{
+    public PhysicDbConfigImpl(DataNode physicDb, String physicDbName) throws Exception {
         String json = physicDb.getData();
-        JSONObject physicDbJonObject = JSONObject.fromObject(json);
+        JsonParser jsonParser = new JsonParser(json);
+        Map<String, Object> physicDbJonObject = jsonParser.parse();
         this.physicDbName = physicDbName;
-        this.url = physicDbJonObject.getString("url");
+        this.url = physicDbJonObject.get("url").toString().trim();
     }
 
     public String getPhysicDbName() {

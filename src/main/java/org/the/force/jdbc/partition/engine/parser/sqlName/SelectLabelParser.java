@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.parser.sqlName;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLName;
-import org.druid.sql.ast.expr.SQLAllColumnExpr;
-import org.druid.sql.ast.statement.SQLSelectItem;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLName;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLAllColumnExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
 
 import java.util.LinkedHashSet;
 import java.util.List;

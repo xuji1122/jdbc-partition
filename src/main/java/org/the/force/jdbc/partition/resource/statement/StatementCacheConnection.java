@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.resource.statement;
 
-import org.the.force.jdbc.partition.common.LRUCache;
+import org.the.force.jdbc.partition.common.cache.LRUCache;
 import org.the.force.jdbc.partition.resource.connection.WrappedConnection;
 
 import java.sql.Connection;

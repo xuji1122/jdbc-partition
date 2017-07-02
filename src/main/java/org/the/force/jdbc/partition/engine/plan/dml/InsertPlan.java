@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.plan.dml;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.statement.SQLInsertStatement;
-import org.druid.sql.visitor.SQLEvalVisitor;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
+import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;

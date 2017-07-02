@@ -1,11 +1,11 @@
 package org.the.force.jdbc.partition.driver;
 
-import net.sf.json.JSONObject;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.the.force.jdbc.partition.common.BeanUtils;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.sql.SqlPlanManager;
@@ -84,9 +84,8 @@ public class DbDriverInstance {
             return t;
         });
         this.logicDdConfig = logicDbManager;
-        logger.info("获取到db配置信息:{}", JSONObject.fromObject(this.logicDdConfig).toString());
+        logger.info("获取到db配置信息:{}", BeanUtils.toJson(this.logicDdConfig));
     }
-
     public Connection newConnection() {
         return new JdbcPartitionConnection(logicDdConfig, sqlPlanManager, sqlExecutorPool);
     }

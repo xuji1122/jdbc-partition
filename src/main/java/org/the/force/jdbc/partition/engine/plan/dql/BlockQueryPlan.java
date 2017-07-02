@@ -1,9 +1,8 @@
 package org.the.force.jdbc.partition.engine.plan.dql;
 
-import org.druid.sql.ast.SQLHint;
-import org.druid.sql.ast.SQLObjectImpl;
-import org.druid.sql.ast.statement.SQLTableSourceImpl;
-import org.druid.sql.visitor.SQLASTVisitor;
+import org.the.force.thirdparty.druid.sql.ast.SQLHint;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSourceImpl;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 import org.the.force.jdbc.partition.engine.plan.QueryPlan;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 

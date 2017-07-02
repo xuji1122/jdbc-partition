@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.parser.value;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.expr.SQLBinaryOpExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.jdbc.partition.exception.UnsupportedExprException;
 import org.the.force.jdbc.partition.engine.parser.SqlParserContext;
 

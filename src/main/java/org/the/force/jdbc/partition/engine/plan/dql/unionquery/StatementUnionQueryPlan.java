@@ -1,14 +1,12 @@
 package org.the.force.jdbc.partition.engine.plan.dql.unionquery;
 
-import org.druid.sql.ast.SQLExpr;
-import org.druid.sql.ast.SQLHint;
-import org.druid.sql.ast.SQLLimit;
-import org.druid.sql.ast.SQLObject;
-import org.druid.sql.ast.SQLObjectImpl;
-import org.druid.sql.ast.SQLOrderBy;
-import org.druid.sql.ast.statement.SQLTableSourceImpl;
-import org.druid.sql.ast.statement.SQLUnionQuery;
-import org.druid.sql.visitor.SQLASTVisitor;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLHint;
+import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
+import org.the.force.thirdparty.druid.sql.ast.SQLOrderBy;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSourceImpl;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 import org.the.force.jdbc.partition.engine.plan.QueryPlan;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 

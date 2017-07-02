@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.resource.sql;
 
-import org.druid.sql.SQLUtils;
-import org.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.driver;
 
-import org.druid.util.JdbcConstants;
+import org.the.force.thirdparty.druid.util.JdbcConstants;
 import org.the.force.jdbc.partition.rule.PartitionFactory;
 import org.the.force.jdbc.partition.rule.mysql.MySqlPartitionFactory;
 
