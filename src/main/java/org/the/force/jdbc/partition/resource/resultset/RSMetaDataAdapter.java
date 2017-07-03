@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.result;
+package org.the.force.jdbc.partition.resource.resultset;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ public class RSMetaDataAdapter extends WrappedRSMetaData {
     }
 
     public String getSchemaName(int column) throws SQLException {
-        return logicDbName;
+        return null;
     }
 
     public String getTableName(int column) throws SQLException {
@@ -37,7 +37,7 @@ public class RSMetaDataAdapter extends WrappedRSMetaData {
     }
 
     public String getCatalogName(int column) throws SQLException {
-        return logicTableName;
+        return logicDbName;
     }
 
     public void setColumnCount(Integer columnCount) {

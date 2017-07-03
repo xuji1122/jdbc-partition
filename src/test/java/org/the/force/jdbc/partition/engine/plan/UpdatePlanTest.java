@@ -1,13 +1,8 @@
 package org.the.force.jdbc.partition.engine.plan;
 
-import org.the.force.thirdparty.druid.sql.SQLUtils;
-import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
-import org.the.force.thirdparty.druid.util.JdbcConstants;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.driver.SqlDialect;
@@ -18,6 +13,11 @@ import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
+import org.the.force.thirdparty.druid.util.JdbcConstants;
 
 import java.sql.Types;
 
@@ -26,7 +26,7 @@ import java.sql.Types;
  */
 @Test(priority = 300)
 public class UpdatePlanTest extends TestJdbcPartitionBase {
-    private static Logger logger = LoggerFactory.getLogger(UpdatePlanTest.class);
+    private static Log logger = LogFactory.getLog(UpdatePlanTest.class);
     CuratorFramework curatorFramework = null;
     DataNode zkDataNode = null;
     LogicDbConfig logicDbConfig = null;
@@ -57,7 +57,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((PhysicSqlPlan) visitor.getSqlPlan()).setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
-        logger.info("sql解析结果{}", dbExecutorRouter.toString());
+        logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((PhysicSqlPlan) visitor.getSqlPlan()).setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
-        logger.info("sql解析结果{}", dbExecutorRouter.toString());
+        logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((PhysicSqlPlan) visitor.getSqlPlan()).setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
-        logger.info("sql解析结果{}", dbExecutorRouter.toString());
+        logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
 
@@ -125,7 +125,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((PhysicSqlPlan) visitor.getSqlPlan()).setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
-        logger.info("sql解析结果{}", dbExecutorRouter.toString());
+        logger.info("sql解析结果" + dbExecutorRouter.toString());
 
     }
 
@@ -143,7 +143,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((PhysicSqlPlan) visitor.getSqlPlan()).setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
-        logger.info("sql解析结果{}", dbExecutorRouter.toString());
+        logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
     @Test
@@ -160,7 +160,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
 
         ((PhysicSqlPlan) visitor.getSqlPlan()).setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
-        logger.info("sql解析结果{}", dbExecutorRouter.toString());
+        logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
     @Test
@@ -183,8 +183,8 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
             logicLogicSqlParameterHolder.setParameter(2, new ObjectSqlParameter(1, Types.INTEGER));
             logicLogicSqlParameterHolder.setParameter(3, new ObjectSqlParameter(i, Types.INTEGER));
             logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter("ok", Types.VARCHAR));
-            physicSqlPlan.setParameters(dbExecutorRouter,logicLogicSqlParameterHolder);
+            physicSqlPlan.setParameters(dbExecutorRouter, logicLogicSqlParameterHolder);
         }
-        logger.info("解析结果：{}", dbExecutorRouter);
+        logger.info("解析结果:" + dbExecutorRouter);
     }
 }

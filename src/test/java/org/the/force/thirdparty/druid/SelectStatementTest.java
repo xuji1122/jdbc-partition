@@ -1,12 +1,12 @@
-package org.the.force.jdbc.partition.common.druid;
+package org.the.force.thirdparty.druid;
 
-import org.the.force.thirdparty.druid.sql.SQLUtils;
-import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
-import org.the.force.thirdparty.druid.util.JdbcConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.resource.sql.SqlKey;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
+import org.the.force.thirdparty.druid.util.JdbcConstants;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @Test
 public class SelectStatementTest {
 
-    private Logger logger = LoggerFactory.getLogger(UpdateStatementTest.class);
+    private Log logger = LogFactory.getLog(UpdateStatementTest.class);
 
     public void testSQLSelect() {
         //SQLSelect  不带from，区分于SQLSelectQuery
@@ -166,9 +166,9 @@ public class SelectStatementTest {
             SQLStatement sqlStatement = stmts.get(i);
             String fsql = SQLUtils.toSQLString(sqlStatement, JdbcConstants.MYSQL);
             SqlKey sqlKey2 = new SqlKey(fsql);
-            logger.info("sqlKey1:{}", sqlKey1);
-            logger.info("sqlKey2:{}", sqlKey2);
-            logger.info("equals:{}", sqlKey2.equals(sqlKey1));
+            logger.info("sqlKey1:"+ sqlKey1);
+            logger.info("sqlKey2:"+sqlKey2);
+            logger.info("equals:"+ sqlKey2.equals(sqlKey1));
         }
     }
 }

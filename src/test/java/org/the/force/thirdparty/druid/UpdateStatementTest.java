@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.common.druid;
+package org.the.force.thirdparty.druid;
 
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;

@@ -112,5 +112,8 @@ public class JdbcPartitionUrl {
         return paramStr;
     }
 
+    public String toString() {
+        return PREFIX + sqlDialect.name().toLowerCase() + "@" + connectString + "/" + namespace + "/" + logicDbName;
+    }
 
 }

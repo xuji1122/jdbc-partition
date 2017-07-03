@@ -3,20 +3,20 @@ package org.the.force.jdbc.partition.common;
 /**
  * Created by xuji on 2017/6/5.
  */
-public class ObjectedValue {
+public class ObjectedValue<T> {
 
-    private Object value;
+    private T value;
 
 
-    public ObjectedValue(Object value) {
+    public ObjectedValue(T value) {
         this.value = value;
     }
 
-    public Object getValue() {
+    public T getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(T value) {
         this.value = value;
     }
 

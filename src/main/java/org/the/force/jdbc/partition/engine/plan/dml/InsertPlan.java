@@ -1,32 +1,32 @@
 package org.the.force.jdbc.partition.engine.plan.dml;
 
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
-import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
+import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
+import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
 import org.the.force.jdbc.partition.engine.parser.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.parser.SqlParserContext;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
 import org.the.force.jdbc.partition.engine.parser.value.SqlValue;
+import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunction;
+import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
 import org.the.force.jdbc.partition.engine.plan.PhysicSqlPlan;
+import org.the.force.jdbc.partition.engine.plan.model.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
+import org.the.force.jdbc.partition.engine.plan.model.SqlTablePartition;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
-import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
-import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunction;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
-import org.the.force.jdbc.partition.engine.plan.model.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.plan.model.SqlTablePartition;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
+import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import java.util.TreeSet;
  */
 public class InsertPlan implements PhysicSqlPlan {
 
-    private static Logger logger = LoggerFactory.getLogger(InsertPlan.class);
+    private static Log logger = LogFactory.getLog(InsertPlan.class);
 
     private final LogicDbConfig logicDbConfig;
 

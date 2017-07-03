@@ -3,9 +3,9 @@ package org.the.force.jdbc.partition.driver;
 import org.the.force.jdbc.partition.engine.GeneralEngine;
 import org.the.force.jdbc.partition.engine.plan.PhysicSqlPlan;
 import org.the.force.jdbc.partition.engine.plan.QueryPlan;
-import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.connection.AbstractConnection;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.jdbc.partition.resource.db.mysql.MySqlDdMetaDataImpl;
 import org.the.force.jdbc.partition.resource.sql.SqlPlanManager;
 import org.the.force.jdbc.partition.engine.PhysicSqlEngine;
 import org.the.force.jdbc.partition.engine.QueryEngine;
@@ -140,6 +140,6 @@ public class JdbcPartitionConnection extends AbstractConnection {
     }
 
     public DatabaseMetaData getMetaData() throws SQLException {
-        throw new UnsupportedSqlOperatorException();
+        return new MySqlDdMetaDataImpl(logicDbConfig, this.connectionAdapter);
     }
 }

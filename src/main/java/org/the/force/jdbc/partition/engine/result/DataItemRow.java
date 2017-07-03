@@ -13,8 +13,6 @@ public class DataItemRow {
 
     public static final DataItemRow EMPTY_DATA_ROW = new DataItemRow();
 
-
-
     private DataItemRow() {
         cellValues = new Object[] {};
     }

@@ -3,17 +3,18 @@ package org.the.force.jdbc.partition.driver;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.common.BeanUtils;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.sql.SqlPlanManager;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DbDriverInstance {
 
-    private static Logger logger = LoggerFactory.getLogger(DbDriverInstance.class);
+    private static Log logger = LogFactory.getLog(DbDriverInstance.class);
 
     private final JdbcPartitionUrl jdbcPartitionUrl;
 
@@ -60,6 +61,7 @@ public class DbDriverInstance {
     }
 
     public void init() throws SQLException {
+        logger.info("初始化db驱动开始" + jdbcPartitionUrl.toString());
         JdbcPartitionUrl jdbcPartitionUrl = this.jdbcPartitionUrl;
         ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(500, 3);
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder().connectString(jdbcPartitionUrl.getConnectString());
@@ -83,9 +85,16 @@ public class DbDriverInstance {
             t.setName(jdbcPartitionUrl.getLogicDbName() + "-executor-" + threadId.addAndGet(1));
             return t;
         });
+        try {
+            logicDbManager.loadDbMetaData();
+        } catch (Exception e) {
+            logger.warn("初始化DbMetaData异常", e);
+        }
         this.logicDdConfig = logicDbManager;
-        logger.info("获取到db配置信息:{}", BeanUtils.toJson(this.logicDdConfig));
+        String configJson = BeanUtils.toJson(this.logicDdConfig);
+        logger.info(MessageFormat.format("获取到db配置信息:{0}", configJson));
     }
+
     public Connection newConnection() {
         return new JdbcPartitionConnection(logicDdConfig, sqlPlanManager, sqlExecutorPool);
     }

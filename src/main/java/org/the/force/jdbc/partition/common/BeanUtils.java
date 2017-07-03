@@ -82,6 +82,9 @@ public class BeanUtils {
             } else {
                 first = false;
             }
+            if(key.equalsIgnoreCase("")){
+
+            }
             sb.append("\"");
             sb.append(Character.toLowerCase(key.charAt(0)));
             if (key.length() > 1) {

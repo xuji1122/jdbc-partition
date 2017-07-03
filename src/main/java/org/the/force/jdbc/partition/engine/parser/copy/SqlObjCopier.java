@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.parser.copy;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class SqlObjCopier {
 
-    private static Logger logger = LoggerFactory.getLogger(SqlObjCopier.class);
+    private static Log logger = LogFactory.getLog(SqlObjCopier.class);
 
     private Set<String> parentFields = Sets.newHashSet("parent");
 

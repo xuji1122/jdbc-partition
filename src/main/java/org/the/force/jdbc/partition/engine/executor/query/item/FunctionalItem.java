@@ -39,21 +39,21 @@ public class FunctionalItem implements Item {
 
     public String getSchemaName() throws SQLException {
         if (tableColumns.size() == 1) {
-            return tableColumns.get(0).getLogicTable().getSchema();
+            return tableColumns.get(0).logicTable().getSchema();
         }
         return null;
     }
 
     public String getTableName() throws SQLException {
         if (tableColumns.size() == 1) {
-            return tableColumns.get(0).getLogicTable().getTableName();
+            return tableColumns.get(0).logicTable().getTableName();
         }
         return null;
     }
 
     public String getCatalogName() {
         if (tableColumns.size() == 1) {
-            return tableColumns.get(0).getLogicTable().getCatalog();
+            return tableColumns.get(0).logicTable().getCatalog();
         }
         return null;
     }

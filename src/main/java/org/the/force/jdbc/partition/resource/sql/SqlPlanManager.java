@@ -1,19 +1,20 @@
 package org.the.force.jdbc.partition.resource.sql;
 
-import org.the.force.thirdparty.druid.sql.SQLUtils;
-import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.engine.plan.SqlPlanMatcher;
-import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.engine.plan.SqlPlan;
+import org.the.force.jdbc.partition.engine.plan.SqlPlanMatcher;
+import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.thirdparty.druid.sql.SQLUtils;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -22,7 +23,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class SqlPlanManager {
 
-    private static Logger logger = LoggerFactory.getLogger(SqlPlanManager.class);
+    private static Log logger = LogFactory.getLog(SqlPlanManager.class);
 
     private final LogicDbConfig logicDbConfig;
 
@@ -60,7 +61,7 @@ public class SqlPlanManager {
             SQLStatement sqlStatement = stmtList.get(0);
             sqlStatement.accept(sqlPlanMatcher);
             SqlPlan sqlPlan = sqlPlanMatcher.getSqlPlan();
-            logger.info("\n\t\t\t\tlogic sql:{} \n\t\t\t\tsql execution plan:{}", sql, sqlPlan.toString());
+            logger.info(MessageFormat.format("\n\t\t\t\tlogic sql:{0} \n\t\t\t\tsql execution plan:{1}", sql, sqlPlan.toString()));
             return sqlPlan;
         } catch (Exception e) {
             logger.error("logic plan:" + sql, e);

@@ -1,19 +1,20 @@
 package org.the.force.jdbc.partition.engine.parser;
 
+import org.testng.annotations.Test;
+import org.the.force.jdbc.partition.common.tuple.Pair;
+import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
+import org.the.force.jdbc.partition.engine.plan.model.SqlTable;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 import org.the.force.thirdparty.druid.util.JdbcConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
-import org.the.force.jdbc.partition.engine.plan.model.SqlTable;
-import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 @Test
 public class TableConditionJsonParserTest extends AbstractVisitor {
 
-    private Logger logger = LoggerFactory.getLogger(TableConditionJsonParserTest.class);
+    private Log logger = LogFactory.getLog(TableConditionJsonParserTest.class);
 
     private SQLExpr where = null;
 
@@ -96,32 +97,32 @@ public class TableConditionJsonParserTest extends AbstractVisitor {
                 SQLExpr newWhere = conditionVisitor.getNewWhere();
 
                 Map<SQLBinaryOpExpr, Pair<Integer, Integer>> conditionTableMap = conditionVisitor.getConditionTableMap();
-                logger.info("{}:======================", k);
+                logger.info(MessageFormat.format("{0}:======================", k));
                 if (where == null) {
                     logger.info("where == null");
                 } else {
-                    logger.info("where=\n{}", SQLUtils.toMySqlString(where));
+                    logger.info("where=\n" + SQLUtils.toMySqlString(where));
                 }
                 if (tableOwnCondition == null) {
                     logger.info("tableOwnCondition == null");
                 } else {
-                    logger.info("tableOwnCondition=\n{}", SQLUtils.toMySqlString(tableOwnCondition));
+                    logger.info("tableOwnCondition=\n" + SQLUtils.toMySqlString(tableOwnCondition));
                     SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker();
                     tableOwnCondition.accept(conditionChecker);
-                    logger.info("tableOwnCondition 子查询\n{}", conditionChecker.getSubQueryList());
+                    logger.info("tableOwnCondition 子查询\n" + conditionChecker.getSubQueryList());
                 }
                 if (newWhere == null) {
                     logger.info("newWhere == null");
                 } else {
-                    logger.info("newWhere=\n{}", SQLUtils.toMySqlString(newWhere));
+                    logger.info("newWhere=\n" + SQLUtils.toMySqlString(newWhere));
                     SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker();
                     newWhere.accept(conditionChecker);
-                    logger.info("newWhere 子查询\n{}", conditionChecker.getSubQueryList());
+                    logger.info("newWhere 子查询\n" + conditionChecker.getSubQueryList());
                 }
                 if (conditionTableMap == null) {
                     logger.info("conditionTableMap == null");
                 } else {
-                    logger.info("conditionTableMap\n{}", conditionTableMap);
+                    logger.info("conditionTableMap\n" + conditionTableMap);
                 }
                 if (newWhere == null) {
                     break;

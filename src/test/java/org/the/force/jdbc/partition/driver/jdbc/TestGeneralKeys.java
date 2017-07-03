@@ -22,7 +22,7 @@ public class TestGeneralKeys extends TestJdbcBase {
         PreparedStatement preparedStatement = connection.prepareStatement(testSql, Statement.RETURN_GENERATED_KEYS);
         preparedStatement.setString(1, "1");
         int result = preparedStatement.executeUpdate();
-        logger.info("result={}", result);
+        logger.info("result=" + result);
         ResultSet rs = preparedStatement.getGeneratedKeys();
         printResultSet(rs);
         connection.commit();
@@ -39,7 +39,7 @@ public class TestGeneralKeys extends TestJdbcBase {
         preparedStatement.addBatch();
 
         int[] result = preparedStatement.executeBatch();
-        logger.info("result={}", Arrays.toString(result));
+        logger.info("result=" + Arrays.toString(result));
         ResultSet rs = preparedStatement.getGeneratedKeys();
         printResultSet(rs);
         connection.commit();

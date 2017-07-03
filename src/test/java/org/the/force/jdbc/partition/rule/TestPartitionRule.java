@@ -4,8 +4,6 @@ import com.google.common.collect.Sets;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.driver.SqlDialect;
@@ -14,6 +12,8 @@ import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.TreeSet;
 @Test(priority = 300)
 public class TestPartitionRule extends TestJdbcPartitionBase {
 
-    private Logger logger = LoggerFactory.getLogger(TestPartitionRule.class);
+    private Log logger = LogFactory.getLog(TestPartitionRule.class);
 
     @Test(priority = 301)
     public void test2() throws Exception {
@@ -46,7 +46,7 @@ public class TestPartitionRule extends TestJdbcPartitionBase {
         set.add(new SqlColumnValue("id", 5));
         DefaultPartitionRule defaultPartitionRule = new DefaultPartitionRule();
         SortedSet<Partition> partitions = defaultPartitionRule.selectPartitions(partitionEvent, set);
-        logger.info("partions:{}", partitions.toString());
+        logger.info("partions:"+ partitions.toString());
     }
 
     public void testSort() throws Exception {

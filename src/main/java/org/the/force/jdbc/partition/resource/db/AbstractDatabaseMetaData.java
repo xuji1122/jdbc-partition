@@ -7,11 +7,41 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * Created by xuji on 2017/7/2.
  */
-public class AbstractDatabaseMetaData implements DatabaseMetaData {
+public abstract class AbstractDatabaseMetaData implements DatabaseMetaData {
+
+    protected static final String[] CATALOG_HEADER = new String[] {"TABLE_CAT"};
+
+    protected static final String[] TABLE_TYPE_HEADER = new String[] {"TABLE_TYPE"};
+
+    protected static final String[] SCHAMA_HEADER = new String[] {"TABLE_SCHEM", "TABLE_CATALOG"};
+
+    protected static final String[] TABLE_HEADER =
+        new String[] {"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME", "REF_GENERATION"};
+
+    protected static final String[] COLUMN_HEADER =
+        new String[] {"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX",
+            "NULLABLE", "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION", "IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA",
+            "SCOPE_TABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN"};
+
+    protected static final int[] COLUMN_HEADER_TYPES =
+        new int[] {Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.INTEGER, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.CHAR,
+            Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.SMALLINT, Types.CHAR, Types.CHAR};
+
+    protected static final String[] PK_HEADER = new String[] {"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME", "KEY_SEQ", "PK_NAME"};
+
+    protected static final int[] PK_HEADER_TYPES = new int[] {Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.SMALLINT, Types.CHAR};
+
+    protected static final String[] INDEX_HEADER =
+        new String[] {"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "INDEX_QUALIFIER", "INDEX_NAME", "TYPE", "ORDINAL_POSITION", "COLUMN_NAME", "ASC_OR_DESC", "CARDINALITY", "PAGES",
+            "FILTER_CONDITION"};
+    protected static final int[] INDEX_HEADER_TYPES =
+        new int[] {Types.CHAR, Types.CHAR, Types.CHAR, Types.BOOLEAN, Types.CHAR, Types.CHAR, Types.SMALLINT, Types.SMALLINT, Types.CHAR, Types.CHAR, Types.INTEGER, Types.INTEGER,
+            Types.CHAR};
 
     public boolean allProceduresAreCallable() throws SQLException {
         throw new UnsupportedSqlOperatorException();

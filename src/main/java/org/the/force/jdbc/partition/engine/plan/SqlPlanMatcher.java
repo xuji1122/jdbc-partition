@@ -1,5 +1,14 @@
 package org.the.force.jdbc.partition.engine.plan;
 
+import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.engine.plan.ddl.TableDdlPlan;
+import org.the.force.jdbc.partition.engine.plan.dml.DeletePlan;
+import org.the.force.jdbc.partition.engine.plan.dml.InsertPlan;
+import org.the.force.jdbc.partition.engine.plan.dml.MySqlReplaceIntoPlan;
+import org.the.force.jdbc.partition.engine.plan.dml.UpdatePlan;
+import org.the.force.jdbc.partition.engine.plan.dql.blockquery.StatementBlockQueryPlan;
+import org.the.force.jdbc.partition.engine.plan.dql.unionquery.StatementUnionQueryPlan;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
@@ -17,17 +26,8 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlInser
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlReplaceStatement;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdateStatement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.the.force.jdbc.partition.engine.plan.dml.DeletePlan;
-import org.the.force.jdbc.partition.engine.plan.dml.MySqlReplaceIntoPlan;
-import org.the.force.jdbc.partition.engine.plan.dml.UpdatePlan;
-import org.the.force.jdbc.partition.engine.plan.dql.unionquery.StatementUnionQueryPlan;
-import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
-import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
-import org.the.force.jdbc.partition.engine.plan.ddl.TableDdlPlan;
-import org.the.force.jdbc.partition.engine.plan.dml.InsertPlan;
-import org.the.force.jdbc.partition.engine.plan.dql.blockquery.StatementBlockQueryPlan;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class SqlPlanMatcher extends AbstractVisitor {
 
-    private static Logger logger = LoggerFactory.getLogger(SqlPlanMatcher.class);
+    private static Log logger = LogFactory.getLog(SqlPlanMatcher.class);
 
     protected final LogicDbConfig logicDbConfig;
 

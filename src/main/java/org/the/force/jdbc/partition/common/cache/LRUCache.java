@@ -1,7 +1,5 @@
 package org.the.force.jdbc.partition.common.cache;
 
-import org.the.force.jdbc.partition.common.cache.CachedResource;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 

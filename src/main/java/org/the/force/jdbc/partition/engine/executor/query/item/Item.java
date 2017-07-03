@@ -7,6 +7,8 @@ import java.sql.SQLException;
  */
 public interface Item {
 
+    String getColumnLabel() throws SQLException;
+    
     String getColumnName() throws SQLException;
 
     String getSchemaName() throws SQLException;
@@ -15,6 +17,6 @@ public interface Item {
 
     String getCatalogName() throws SQLException;
 
-    String getColumnLabel() throws SQLException;
+
 
 }

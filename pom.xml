@@ -155,17 +155,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>mysql:mysql-connector-java</include>
-                                    <include>org.apache.curator:curator-framework</include>
-                                    <include>org.apache.curator:curator-client</include>
-                                    <include>org.apache.zookeeper:zookeeper</include>
-                                    <include>jline:jline</include>
-                                    <include>io.netty:netty</include>
-                                    <include>com.google.guava:guava</include>
-                                </includes>
-                            </artifactSet>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>

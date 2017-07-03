@@ -23,28 +23,27 @@ public class LogFactory {
     private static Constructor logConstructor;
 
     static {
-        String logType= System.getProperty("druid.logType");
-        if(logType != null){
-            if(logType.equalsIgnoreCase("slf4j")){
-                tryImplementation("org.slf4j.Logger", "SLF4JImpl");
-            }else if(logType.equalsIgnoreCase("log4j")){
-                tryImplementation("org.apache.log4j.Logger", "Log4jImpl");
-            }else if(logType.equalsIgnoreCase("log4j2")){
-                tryImplementation("org.apache.logging.log4j.Logger", "Log4j2Impl");
-            }else if(logType.equalsIgnoreCase("commonsLog")){
-                tryImplementation("org.apache.commons.logging.LogFactory",
-                        "JakartaCommonsLoggingImpl");
-            }else if(logType.equalsIgnoreCase("jdkLog")){
+        String logType = System.getProperty("druid.logType");
+        String packageName = LogFactory.class.getPackage().getName();
+        if (logType != null) {
+            if (logType.equalsIgnoreCase("slf4j")) {
+                tryImplementation("org.slf4j.Logger", packageName + ".SLF4JImpl");
+            } else if (logType.equalsIgnoreCase("log4j")) {
+                tryImplementation("org.apache.log4j.Logger", packageName + ".Log4jImpl");
+            } else if (logType.equalsIgnoreCase("log4j2")) {
+                tryImplementation("org.apache.logging.log4j.Logger", packageName + ".Log4j2Impl");
+            } else if (logType.equalsIgnoreCase("commonsLog")) {
+                tryImplementation("org.apache.commons.logging.LogFactory", packageName + ".JakartaCommonsLoggingImpl");
+            } else if (logType.equalsIgnoreCase("jdkLog")) {
                 tryImplementation("java.util.logging.Logger", "Jdk14LoggingImpl");
             }
         }
-        tryImplementation("org.slf4j.Logger", "SLF4JImpl");
+        tryImplementation("org.slf4j.Logger", packageName + ".SLF4JImpl");
         // 优先选择log4j,而非Apache Common Logging. 因为后者无法设置真实Log调用者的信息
-        tryImplementation("org.apache.log4j.Logger", "Log4jImpl");
-        tryImplementation("org.apache.logging.log4j.Logger", "Log4j2Impl");
-        tryImplementation("org.apache.commons.logging.LogFactory",
-                          "JakartaCommonsLoggingImpl");
-        tryImplementation("java.util.logging.Logger", "Jdk14LoggingImpl");
+        tryImplementation("org.apache.log4j.Logger", packageName + ".logging.Log4jImpl");
+        tryImplementation("org.apache.logging.log4j.Logger", packageName + ".Log4j2Impl");
+        tryImplementation("org.apache.commons.logging.LogFactory", packageName + ".JakartaCommonsLoggingImpl");
+        tryImplementation("java.util.logging.Logger", packageName + ".Jdk14LoggingImpl");
         if (logConstructor == null) {
             try {
                 logConstructor = NoLoggingImpl.class.getConstructor(String.class);
@@ -63,7 +62,7 @@ public class LogFactory {
         try {
             Resources.classForName(testClassName);
             Class implClass = Resources.classForName(implClassName);
-            logConstructor = implClass.getConstructor(new Class[] { String.class });
+            logConstructor = implClass.getConstructor(new Class[] {String.class});
 
             Class<?> declareClass = logConstructor.getDeclaringClass();
             if (!Log.class.isAssignableFrom(declareClass)) {
@@ -100,7 +99,7 @@ public class LogFactory {
         try {
             Resources.classForName("org.apache.log4j.Logger");
             Class implClass = Resources.classForName("Log4jImpl");
-            logConstructor = implClass.getConstructor(new Class[] { String.class });
+            logConstructor = implClass.getConstructor(new Class[] {String.class});
         } catch (Throwable t) {
             //ignore
         }
@@ -111,7 +110,7 @@ public class LogFactory {
         try {
             Resources.classForName("java.util.logging.Logger");
             Class implClass = Resources.classForName("Jdk14LoggingImpl");
-            logConstructor = implClass.getConstructor(new Class[] { String.class });
+            logConstructor = implClass.getConstructor(new Class[] {String.class});
         } catch (Throwable t) {
             //ignore
         }

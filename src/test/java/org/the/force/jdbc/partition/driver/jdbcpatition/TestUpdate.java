@@ -5,6 +5,7 @@ import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 
 /**
@@ -37,11 +38,12 @@ public class TestUpdate extends TestJdbcPartitionBase {
             preparedStatement.addBatch();
             if (i > 0 && i % 200 == 0) {//10
                 int[] array = preparedStatement.executeBatch();
-                logger.info("number={},size={}", i, array.length);
+                String msg = MessageFormat.format("number={0},size={1}", i, array.length);
+                logger.info(msg);
             }
         }
         int[] array = preparedStatement.executeBatch();
-        logger.info("result size ={}", array.length);
+        logger.info("result size ="+array.length);
         connection.commit();
         logger.info("耗时=" + (System.currentTimeMillis() - start));
         connection.close();
@@ -63,7 +65,7 @@ public class TestUpdate extends TestJdbcPartitionBase {
             preparedStatement.setString(i * 6 + 6, "ok");
         }
         int result = preparedStatement.executeUpdate();
-        logger.info("result={}", result);
+        logger.info("result="+ result);
         connection.close();
     }
 
@@ -79,7 +81,7 @@ public class TestUpdate extends TestJdbcPartitionBase {
         preparedStatement.setInt(5, 4);
         preparedStatement.setInt(6, 10);
         int result = preparedStatement.executeUpdate();
-        logger.info("result={}", result);
+        logger.info("result=" + result);
         connection.commit();
         connection.close();
     }
@@ -93,7 +95,7 @@ public class TestUpdate extends TestJdbcPartitionBase {
         preparedStatement.setInt(2, 0);
         preparedStatement.setInt(3, 1);
         int result = preparedStatement.executeUpdate();
-        logger.info("result={}", result);
+        logger.info("result=" + result);
         connection.commit();
         connection.close();
     }
@@ -106,7 +108,7 @@ public class TestUpdate extends TestJdbcPartitionBase {
         preparedStatement.setInt(1, 1);
         preparedStatement.setInt(2, 2);
         int result = preparedStatement.executeUpdate();
-        logger.info("result={}", result);
+        logger.info("result=" + result);
         connection.commit();
         connection.close();
     }

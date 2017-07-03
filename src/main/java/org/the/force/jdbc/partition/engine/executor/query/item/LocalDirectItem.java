@@ -24,15 +24,15 @@ public class LocalDirectItem implements Item {
     }
 
     public String getSchemaName() throws SQLException {
-        return logicColumn.getLogicTable().getSchema();
+        return logicColumn.logicTable().getSchema();
     }
 
     public String getTableName() throws SQLException {
-        return logicColumn.getLogicTable().getTableName();
+        return logicColumn.logicTable().getTableName();
     }
 
     public String getCatalogName() throws SQLException {
-        return logicColumn.getLogicTable().getCatalog();
+        return logicColumn.logicTable().getCatalog();
     }
 
     @Override

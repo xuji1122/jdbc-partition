@@ -1,6 +1,10 @@
 package org.the.force.jdbc.partition.resource.table.model;
 
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,16 +18,57 @@ public class LogicTable {
 
     private final String tableName;
 
-    private final Set<LogicColumn> columns = new LinkedHashSet<>();
+    private final Map<String, LogicColumn> columns = new LinkedHashMap<>();
 
     private final Set<String> pkColumns = new LinkedHashSet<>();
 
+    private final Map<String, Set<String>> uniqueColumns = new LinkedHashMap<>();
+
     //index信息
 
-    public LogicTable(String schema, String tableName) {
-        catalog = schema;
+    public LogicTable(String catalog, String schema, String tableName, DatabaseMetaData databaseMetaData) throws Exception {
+        this.catalog = catalog;
         this.schema = schema;
         this.tableName = tableName;
+        init(databaseMetaData);
+    }
+
+    private void init(DatabaseMetaData databaseMetaData) throws Exception {
+        ResultSet rs = databaseMetaData.getColumns(catalog, schema, tableName, null);
+        while (rs.next()) {
+            String columnName = rs.getString("COLUMN_NAME");
+            int sqlDataType = rs.getInt("DATA_TYPE");
+            LogicColumn logicColumn = new LogicColumn(this, columnName, sqlDataType);
+            columns.put(columnName.toLowerCase(), logicColumn);
+        }
+        rs = databaseMetaData.getPrimaryKeys(catalog, schema, tableName);
+        while (rs.next()) {
+            String pkColumn = rs.getString(4);
+            pkColumns.add(pkColumn);
+        }
+        rs = databaseMetaData.getIndexInfo(catalog, schema, tableName, false, true);
+        while (rs.next()) {
+            if (rs.getBoolean("NON_UNIQUE")) {
+                continue;
+            }
+            String indexName = rs.getString("INDEX_NAME");
+            if (!uniqueColumns.containsKey(indexName)) {
+                uniqueColumns.put(indexName, new LinkedHashSet<>());
+            }
+            uniqueColumns.get(indexName).add(rs.getString("COLUMN_NAME"));
+        }
+    }
+
+    public Map<String, LogicColumn> getColumns() {
+        return columns;
+    }
+
+    public Set<String> getPkColumns() {
+        return pkColumns;
+    }
+
+    public Map<String, Set<String>> getUniqueColumns() {
+        return uniqueColumns;
     }
 
     public String getSchema() {
@@ -48,21 +93,28 @@ public class LogicTable {
 
         if (!getCatalog().equals(that.getCatalog()))
             return false;
-        if (!getSchema().equals(that.getSchema()))
-            return false;
+        if (getSchema() != null) {
+            if (!getSchema().equals(that.getSchema()))
+                return false;
+        } else {
+            if (that.getSchema() != null) {
+                return false;
+            }
+        }
         return getTableName().equals(that.getTableName());
 
     }
 
     public int hashCode() {
         int result = getCatalog().hashCode();
-        result = 31 * result + getSchema().hashCode();
+        if (getSchema() != null) {
+            result = 31 * result + getSchema().hashCode();
+        }
         result = 31 * result + getTableName().hashCode();
         return result;
     }
 
-    @Override
     public String toString() {
-        return "LogicTable{" + "catalog='" + catalog + '\'' + ", schema='" + schema + '\'' + ", tableName='" + tableName + '\'' + '}';
+        return tableName;
     }
 }

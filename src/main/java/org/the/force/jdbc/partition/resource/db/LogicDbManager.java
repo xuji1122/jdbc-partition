@@ -6,17 +6,28 @@ import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.resource.table.impl.LogicTableManagerImpl;
 import org.the.force.jdbc.partition.rule.PartitionComparator;
 import org.the.force.jdbc.partition.rule.config.DataNode;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by xuji on 2017/6/22.
  */
 public class LogicDbManager implements LogicDbConfig {
+
+    private static Log logger = LogFactory.getLog(LogicDbManager.class);
 
     private static String PHYSIC_DBS_PATH = "physic_dbs";
 
@@ -32,7 +43,7 @@ public class LogicDbManager implements LogicDbConfig {
 
     private final ConcurrentSkipListMap<String, PhysicDbConfig> physicDbConfigMap;
 
-    private final Map<String, LogicTableManagerImpl> logicTableManagerMap;
+    private final ConcurrentSkipListMap<String, LogicTableManagerImpl> logicTableManagerMap;
 
 
     public LogicDbManager(DataNode logicDbNode, SqlDialect sqlDialect, String paramStr, Properties info) throws PartitionConfigException {
@@ -42,7 +53,7 @@ public class LogicDbManager implements LogicDbConfig {
         this.paramStr = paramStr;
         this.info = info;
         physicDbConfigMap = new ConcurrentSkipListMap<>(PartitionComparator.getSingleton());
-        logicTableManagerMap = new ConcurrentHashMap<>(512);
+        logicTableManagerMap = new ConcurrentSkipListMap<>(PartitionComparator.getSingleton());
         init();
     }
 
@@ -66,7 +77,7 @@ public class LogicDbManager implements LogicDbConfig {
             List<DataNode> logicTables = logicTablesNode.children();
             for (DataNode logicTableNode : logicTables) {
                 String logicTableName = logicTableNode.getKey().toLowerCase();
-                LogicTableManagerImpl logicTableManager = new LogicTableManagerImpl(sqlDialect, logicTableName, logicTableNode);
+                LogicTableManagerImpl logicTableManager = new LogicTableManagerImpl(this, logicTableName, logicTableNode);
                 logicTableManagerMap.put(logicTableName, logicTableManager);
             }
         } catch (Exception e) {
@@ -78,6 +89,26 @@ public class LogicDbManager implements LogicDbConfig {
         }
     }
 
+    public void loadDbMetaData() throws Exception {
+        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        CountDownLatch countDownLatch = new CountDownLatch(logicTableManagerMap.size());
+        for (Map.Entry<String, LogicTableManagerImpl> entry : logicTableManagerMap.entrySet()) {
+            executorService.submit(() -> {
+                try {
+                    entry.getValue().initDbMetaData();
+                } catch (Exception e) {
+                    logger.error(MessageFormat.format("{0} initDbMetaData failed", entry.getKey()), e);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+        executorService.shutdown();
+        countDownLatch.await();
+        while (!executorService.isTerminated()) {
+            Thread.sleep(20);
+        }
+    }
 
     public SqlDialect getSqlDialect() {
         return sqlDialect;
@@ -91,10 +122,14 @@ public class LogicDbManager implements LogicDbConfig {
         return paramStr;
     }
 
+
     public Properties getInfo() {
         return info;
     }
 
+    public String getActualDriverClassName() {
+        return actualDriverClassName;
+    }
 
     public void putPhysicDbConfig(String physicDbName, PhysicDbConfig physicDbConfig) throws PartitionConfigException {
         physicDbConfigMap.put(physicDbName.toLowerCase(), physicDbConfig);
@@ -127,6 +162,15 @@ public class LogicDbManager implements LogicDbConfig {
     }
 
 
+    public SortedSet<String> getLogicTables() {
+        return logicTableManagerMap.keySet();
+    }
+
+    public Map<String, LogicTableManagerImpl> getLogicTableManagerMap() {
+        return logicTableManagerMap;
+    }
+
+
     public boolean equals(Object o) {
         if (this == o)
             return true;
@@ -142,11 +186,5 @@ public class LogicDbManager implements LogicDbConfig {
     }
 
 
-    public String getActualDriverClassName() {
-        return actualDriverClassName;
-    }
 
-    public Map<String, LogicTableManagerImpl> getLogicTableManagerMap() {
-        return logicTableManagerMap;
-    }
 }

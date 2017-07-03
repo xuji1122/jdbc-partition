@@ -1,21 +1,22 @@
 package org.the.force.jdbc.partition.engine;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.driver.JdbcPartitionConnection;
-import org.the.force.jdbc.partition.exception.SqlParseException;
-import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.engine.executor.ExecutorConfig;
 import org.the.force.jdbc.partition.engine.executor.WriteCommand;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
-import org.the.force.jdbc.partition.engine.result.UpdateMerger;
 import org.the.force.jdbc.partition.engine.plan.PhysicSqlPlan;
+import org.the.force.jdbc.partition.engine.result.UpdateMerger;
+import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.statement.AbstractPreparedStatement;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class PhysicSqlEngine extends AbstractPreparedStatement {
 
-    private static Logger logger = LoggerFactory.getLogger(PhysicSqlEngine.class);
+    private static Log logger = LogFactory.getLog(PhysicSqlEngine.class);
 
     protected final JdbcPartitionConnection jdbcPartitionConnection;
 
@@ -78,7 +79,7 @@ public class PhysicSqlEngine extends AbstractPreparedStatement {
         try {
             physicSqlPlan.setParameters(physicDbExecutor, logicSqlParameterHolder);
             if (logger.isDebugEnabled()) {
-                logger.debug("sql解析结果:{}", physicDbExecutor.toString());
+                logger.debug(MessageFormat.format("sql解析结果:{0}", physicDbExecutor.toString()));
             }
             if (jdbcPartitionConnection.getAutoCommit() && physicDbExecutor.sqlSize() > 1) {
                 forceTransaction = true;
@@ -170,7 +171,7 @@ public class PhysicSqlEngine extends AbstractPreparedStatement {
         try {
             physicSqlPlan.setParameters(physicDbExecutor, logicSqlParameterHolder);
             if (logger.isDebugEnabled()) {
-                logger.debug("sql解析结果:{}", physicDbExecutor.toString());
+                logger.debug(MessageFormat.format("sql解析结果:{0}", physicDbExecutor.toString()));
             }
             if (jdbcPartitionConnection.getAutoCommit() && physicDbExecutor.sqlSize() > 1) {
                 forceTransaction = true;

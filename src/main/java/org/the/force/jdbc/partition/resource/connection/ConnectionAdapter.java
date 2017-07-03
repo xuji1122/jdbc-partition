@@ -1,13 +1,15 @@
 package org.the.force.jdbc.partition.resource.connection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.PhysicDbConfig;
 import org.the.force.jdbc.partition.resource.statement.StatementCacheConnection;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +23,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class ConnectionAdapter {
 
-    private Logger logger = LoggerFactory.getLogger(ConnectionAdapter.class);
+    private Log logger = LogFactory.getLog(ConnectionAdapter.class);
 
     private volatile boolean closed = false;
 
@@ -31,7 +33,7 @@ public class ConnectionAdapter {
 
     private int transactionIsolation = java.sql.Connection.TRANSACTION_REPEATABLE_READ;
 
-    private Map<String, java.sql.Connection> connectionMap;
+    private Map<String, Connection> connectionMap;
 
     private Set<String> initDbSet;
 
@@ -59,7 +61,7 @@ public class ConnectionAdapter {
         checkClosed();
         physicDbName = physicDbName.toLowerCase();
         if (initDbSet.add(physicDbName)) {
-            logger.info("init connection for {}", physicDbName);
+            logger.info(MessageFormat.format("init connection for {0}", physicDbName));
             doInit(physicDbName);
         }
     }
@@ -98,8 +100,9 @@ public class ConnectionAdapter {
      * @return
      * @throws SQLException
      */
-    public java.sql.Connection getConnection(String physicDbName) throws SQLException {
+    public Connection getConnection(String physicDbName) throws SQLException {
         checkClosed();
+        initConnection(physicDbName);
         physicDbName = physicDbName.toLowerCase();
         return connectionMap.get(physicDbName);
     }

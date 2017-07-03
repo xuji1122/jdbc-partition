@@ -1,20 +1,26 @@
 package org.the.force.jdbc.partition.resource.table.model;
 
+import org.the.force.thirdparty.druid.util.JdbcUtils;
+
 /**
  * Created by xuji on 2017/6/7.
  */
 public class LogicColumn {
 
-    private LogicTable logicTable;
+    private final LogicTable logicTable;
 
-    private String columnName;
+    private final String columnName;
 
-    public LogicColumn(LogicTable logicTable, String columnName) {
+    private final int sqlDataType;//jdbcType
+
+    public LogicColumn(LogicTable logicTable, String columnName, int sqlDataType) {
         this.logicTable = logicTable;
         this.columnName = columnName;
+        this.sqlDataType = sqlDataType;
     }
 
-    public LogicTable getLogicTable() {
+
+    public LogicTable logicTable() {
         return logicTable;
     }
 
@@ -22,6 +28,12 @@ public class LogicColumn {
         return columnName;
     }
 
+    public int getSqlDataType() {
+        return sqlDataType;
+    }
+
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
@@ -30,19 +42,20 @@ public class LogicColumn {
 
         LogicColumn that = (LogicColumn) o;
 
-        if (!logicTable.equals(that.logicTable))
+        if (!logicTable().equals(that.logicTable()))
             return false;
-        return columnName.equals(that.columnName);
-
+        return getColumnName().equals(that.getColumnName());
     }
 
+    @Override
     public int hashCode() {
-        int result = logicTable.hashCode();
-        result = 31 * result + columnName.hashCode();
+        int result = logicTable().hashCode();
+        result = 31 * result + getColumnName().hashCode();
         return result;
     }
 
     public String toString() {
-        return "LogicColumn{" + "logicTable=" + logicTable + ", columnName='" + columnName + '\'' + '}';
+        return columnName + ":" + JdbcUtils.getTypeName(sqlDataType);
     }
+
 }

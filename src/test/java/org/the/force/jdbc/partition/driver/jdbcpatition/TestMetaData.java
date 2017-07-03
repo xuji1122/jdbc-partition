@@ -1,7 +1,8 @@
-package org.the.force.jdbc.partition.driver.jdbc;
+package org.the.force.jdbc.partition.driver.jdbcpatition;
 
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcBase;
+import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -11,30 +12,25 @@ import java.sql.Statement;
 /**
  * Created by xuji on 2017/7/1.
  */
-@Test(priority = 20)
-public class TestMetaData extends TestJdbcBase {
+@Test(priority = 400)
+public class TestMetaData extends TestJdbcPartitionBase {
 
 
     public void test1() throws Exception {
         Connection connection = getConnection();
         DatabaseMetaData dsMetaData = connection.getMetaData();
-        ResultSet resultSet = dsMetaData.getTables("test", null, null, new String[] {"TABLE"});
-        logger.info("表格信息");
+        ResultSet resultSet = dsMetaData.getTables("db_order", null, null, new String[] {"TABLE"});
+        logger.info("partition 表格信息");
         printResultSet(resultSet);
-        resultSet = dsMetaData.getColumns("test", "test", "t_user", null);
-        logger.info("column信息");
+        resultSet = dsMetaData.getColumns("db_order", "db_order", "t_user", null);
+        logger.info("partition column信息");
         printResultSet(resultSet);
-        resultSet = dsMetaData.getPrimaryKeys("test", "test", "t_user");
-        logger.info("primaryKeys信息");
-        printResultSet(resultSet);
-
-        resultSet = dsMetaData.getIndexInfo("test", "test", "t_user", false, false);
-        logger.info("index信息");
+        resultSet = dsMetaData.getPrimaryKeys("db_order", "db_order", "t_user");
+        logger.info("partition primaryKeys信息");
         printResultSet(resultSet);
 
-        Statement statement = connection.createStatement();
-        resultSet = statement.executeQuery("DESC t_user");
-        logger.info("desc 信息");
+        resultSet = dsMetaData.getIndexInfo("db_order", "db_order", "t_user", false, false);
+        logger.info("partition index信息");
         printResultSet(resultSet);
         connection.close();
     }
@@ -43,36 +39,46 @@ public class TestMetaData extends TestJdbcBase {
         Connection connection = getConnection();
         DatabaseMetaData dsMetaData = connection.getMetaData();
         ResultSet resultSet = dsMetaData.getSchemas(null, null);
-        logger.info("schemas 信息1");
+        logger.info("partition schemas 信息1");
         printResultSet(resultSet);
         resultSet = dsMetaData.getSchemas();
-        logger.info("schemas 信息2");
+        logger.info("partition schemas 信息2");
         printResultSet(resultSet);
         connection.close();
     }
 
-    public void test3() throws Exception {
+    public void testCatalogs() throws Exception {
         Connection connection = getConnection();
         DatabaseMetaData dsMetaData = connection.getMetaData();
         ResultSet resultSet = dsMetaData.getCatalogs();
-        logger.info("catalogs 信息");
+        logger.info("partition catalogs 信息");
         printResultSet(resultSet);
         connection.close();
     }
+
     public void test4() throws Exception {
         Connection connection = getConnection();
         DatabaseMetaData dsMetaData = connection.getMetaData();
         ResultSet resultSet = dsMetaData.getTableTypes();
-        logger.info("tableTypes 信息");
+        logger.info("partition tableTypes 信息");
         printResultSet(resultSet);
         connection.close();
     }
+
     public void test5() throws Exception {
         Connection connection = getConnection();
         DatabaseMetaData dsMetaData = connection.getMetaData();
-        ResultSet resultSet = dsMetaData.getColumns("test", null, null,null);
-        logger.info("全库column信息");
+        ResultSet resultSet = dsMetaData.getColumns("db_order", null, null, null);
+        logger.info("partition 全库column信息");
         printResultSet(resultSet);
         connection.close();
     }
+
+//    public void test6() throws Exception {
+//        Connection connection = getConnection();
+//        Statement statement = connection.createStatement();
+//        ResultSet resultSet = statement.executeQuery("DESC t_user");
+//        logger.info("partition desc 信息");
+//        printResultSet(resultSet);
+//    }
 }

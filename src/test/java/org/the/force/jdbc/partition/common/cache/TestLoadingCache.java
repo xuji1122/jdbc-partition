@@ -16,20 +16,22 @@ import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.sql.SqlPlanManager;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 /**
  * Created by xuji on 2017/6/2.
  */
 public class TestLoadingCache extends TestJdbcPartitionBase {
 
-    private static Logger logger = LoggerFactory.getLogger(TestLoadingCache.class);
+    private static Log logger = LogFactory.getLog(TestLoadingCache.class);
 
     @Test
     public void test1() throws Exception {
         LoadingCache<String, String> loadingCache =
             CacheBuilder.newBuilder().maximumSize(1024).concurrencyLevel(1024).initialCapacity(512).build(new CacheLoader<String, String>() {
                 public String load(String key) throws Exception {
-                    logger.info("load {}", key);
+                    logger.info("load "+key);
                     return key + "_value";
                 }
             });

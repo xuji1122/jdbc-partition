@@ -1,9 +1,10 @@
 package org.the.force.jdbc.partition.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
+import java.text.MessageFormat;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class TestJavaUtil {
 
-    private Logger logger = LoggerFactory.getLogger(TestJavaUtil.class);
+    private Log logger = LogFactory.getLog(TestJavaUtil.class);
 
     @Test
     public void test1() {
@@ -27,7 +28,7 @@ public class TestJavaUtil {
                 if (entry.getKey() == entry1.getKey()) {
                     continue;
                 }
-                logger.info("{},{}", entry.getValue(), entry1.getValue());
+                logger.info(MessageFormat.format("{0},{1}", entry.getValue(), entry1.getValue()));
             }
         }
     }
@@ -37,21 +38,22 @@ public class TestJavaUtil {
         Set<String> initDbSet = new ConcurrentSkipListSet<>();
         initDbSet.add("1");
         initDbSet.add("2");
-        logger.info("{}", initDbSet.size());
+        logger.info(initDbSet.size()+"");
         Iterator<String> ite = initDbSet.iterator();
-        while(ite.hasNext()){
+        while (ite.hasNext()) {
             ite.next();
             ite.remove();
         }
-        logger.info("{}", initDbSet.size());
+        logger.info(initDbSet.size()+"");
 
     }
+
     @Test
-    public void test3(){
-        Object v = new String[]{"123"};
-        if(v instanceof String[]){
-            String[] a = (String[])v;
-            logger.info(a.length+"");
+    public void test3() {
+        Object v = new String[] {"123"};
+        if (v instanceof String[]) {
+            String[] a = (String[]) v;
+            logger.info(a.length + "");
         }
     }
 

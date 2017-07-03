@@ -1,23 +1,23 @@
 package org.the.force.jdbc.partition.engine.plan.dml;
 
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLUpdateStatement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.plan.PhysicSqlPlan;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLUpdateStatement;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 /**
  * Created by xuji on 2017/5/18.
  */
 public class UpdatePlan implements PhysicSqlPlan {
 
-    private static Logger logger = LoggerFactory.getLogger(UpdatePlan.class);
+    private static Log logger = LogFactory.getLog(UpdatePlan.class);
 
     private final LogicDbConfig logicDbConfig;
 

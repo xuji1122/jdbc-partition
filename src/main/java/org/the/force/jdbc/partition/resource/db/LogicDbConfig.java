@@ -4,6 +4,7 @@ import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.resource.table.LogicTableManager;
 
 import java.util.Properties;
+import java.util.SortedSet;
 
 /**
  * Created by xuji on 2017/5/19.
@@ -21,6 +22,8 @@ public interface LogicDbConfig {
     PhysicDbConfig getPhysicDbConfig(String physicDbName);
 
     int getPhysicDbSize();
+
+    SortedSet<String> getLogicTables();
 
     LogicTableManager getLogicTableManager(String logicTableName);
 

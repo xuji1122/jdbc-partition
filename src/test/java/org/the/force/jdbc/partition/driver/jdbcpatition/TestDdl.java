@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.text.MessageFormat;
 
 /**
  * Created by xuji on 2017/6/19.
@@ -26,10 +27,10 @@ public class TestDdl extends TestJdbcPartitionBase {
             PreparedStatement preparedStatement = connection.prepareStatement(sqls[0]);
             int result = preparedStatement.executeUpdate();
             preparedStatement.close();
-            logger.info("drop table {} result={}", tableName, result);
+            logger.info(MessageFormat.format("drop table {0} result={1}", tableName, result));
             preparedStatement = connection.prepareStatement(sqls[1]);
             result = preparedStatement.executeUpdate();
-            logger.info("create table {} result={}", tableName, result);
+            logger.info(MessageFormat.format("create table {0} result={1}", tableName, result));
             preparedStatement.close();
         }
         connection.close();

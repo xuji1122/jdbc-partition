@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.result;
+package org.the.force.jdbc.partition.resource.resultset;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

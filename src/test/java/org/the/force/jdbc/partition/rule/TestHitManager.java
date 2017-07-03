@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.rule;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.rule.hits.HitManager;
 import org.the.force.jdbc.partition.rule.hits.PartitionColumn;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class TestHitManager {
 
-    private static Logger logger = LoggerFactory.getLogger(TestHitManager.class);
+    private static Log logger = LogFactory.getLog(TestHitManager.class);
 
     @Test
     public void test1() {

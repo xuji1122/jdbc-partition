@@ -5,6 +5,7 @@ import org.the.force.jdbc.partition.TestJdbcBase;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 
 /**
@@ -14,7 +15,6 @@ import java.time.LocalDate;
  * 3，clearParameters  手动调用才会清空 异常之后可以重复  不去清空
  * 4，statement是否需要缓存的问题 不缓存 很少使用 无法预见sql 预编译也不存在
  */
-@Test(priority = 20)
 public class TestStatement extends TestJdbcBase {
 
     private String testSql = "INSERT INTO  t_user(id,channel,app_id,identifier,birth_date,status) VALUES(?,?,?,?,?,?)  ON DUPLICATE KEY UPDATE app_id=app_id,status=status";
@@ -36,11 +36,11 @@ public class TestStatement extends TestJdbcBase {
             preparedStatement.addBatch();
             if (i > 0 && i % 200 == 0) {//10
                 int[] array = preparedStatement.executeBatch();
-                logger.info("number={},size={}", i, array.length);
+                logger.info(MessageFormat.format("number={0},size={1}", i, array.length));
             }
         }
         int[] array = preparedStatement.executeBatch();
-        logger.info("size={}", array.length);
+        logger.info("size="+ array.length);
         connection.commit();
         logger.info("耗时=" + (System.currentTimeMillis() - start));
         connection.close();
