@@ -1,5 +1,7 @@
 package org.the.force.jdbc.partition.resource.resultset;
 
+import org.the.force.jdbc.partition.resource.table.model.LogicTable;
+
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
@@ -8,16 +10,13 @@ import java.sql.SQLException;
  */
 public class RSMetaDataAdapter extends WrappedRSMetaData {
 
-    private final String logicTableName;
-
-    private final String logicDbName;
+    private final LogicTable logicTable;
 
     private Integer columnCount;
 
-    public RSMetaDataAdapter(ResultSetMetaData original, String logicTableName, String logicDbName) {
+    public RSMetaDataAdapter(ResultSetMetaData original, LogicTable logicTable) {
         super(original);
-        this.logicTableName = logicTableName;
-        this.logicDbName = logicDbName;
+        this.logicTable = logicTable;
     }
 
     public int getColumnCount() throws SQLException {
@@ -29,15 +28,15 @@ public class RSMetaDataAdapter extends WrappedRSMetaData {
     }
 
     public String getSchemaName(int column) throws SQLException {
-        return null;
+        return logicTable.getSchema();
     }
 
     public String getTableName(int column) throws SQLException {
-        return logicTableName;
+        return logicTable.getTableName();
     }
 
     public String getCatalogName(int column) throws SQLException {
-        return logicDbName;
+        return logicTable.getCatalog();
     }
 
     public void setColumnCount(Integer columnCount) {
