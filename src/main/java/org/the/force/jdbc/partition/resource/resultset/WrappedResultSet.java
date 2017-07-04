@@ -56,7 +56,7 @@ public abstract class WrappedResultSet implements ResultSet {
 
     protected final ResultSet getResultSet() throws SQLException {
         if (afterLast) {
-            throw new SQLException("cursor is end");
+            throw new SQLException("cursor is afterLast");
         }
         if (rsIndex > -1 && rsIndex < rsList.size()) {
             return rsList.get(rsIndex);
