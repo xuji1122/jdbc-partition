@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.sqlName;
 
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
@@ -23,7 +24,7 @@ public class SqlNameParser {
         String alias = sqlExprTableSource.getAlias();//大小写敏感
         SqlProperty sqlProperty = getSqlProperty(sqlExprTableSource.getExpr());
         if (sqlProperty == null) {
-            return null;
+            throw new SqlParseException("sqlProperty == null");
         }
         return new SqlExprTable(sqlProperty.getOwnerName(), sqlProperty.getName(), alias);
     }

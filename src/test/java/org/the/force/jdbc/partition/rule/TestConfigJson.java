@@ -28,7 +28,7 @@ public class TestConfigJson extends TestJdbcPartitionBase {
                 .retryPolicy(retryPolicy).build();
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
-        LogicDbManager logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, null, null);
+        LogicDbManager logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
         String json = BeanUtils.toJson(logicDbConfig);
         logger.info("1:\n" + json);
     }

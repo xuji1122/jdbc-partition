@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser;
 
+import com.google.common.collect.Lists;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
@@ -13,7 +14,6 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
-import org.the.force.thirdparty.druid.sql.parser.ParserException;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlProperty;
@@ -25,6 +25,7 @@ import org.the.force.jdbc.partition.engine.plan.model.SqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class TableConditionParser extends AbstractVisitor {
      */
     private final SQLExpr originalWhere;//重置过子查询 where被替换掉子查询类型时  sql输出的支持
 
-    private final SqlTable[] orderedSqlTables;//有序的sqlTable数组
+    private final List<SqlTable> orderedSqlTables;//有序的sqlTable数组
 
     private final boolean inSelectJoinMode;
 
@@ -58,11 +59,13 @@ public class TableConditionParser extends AbstractVisitor {
 
     private final StackArray tableOwnColumnStack;//不为null这说明需要判断表格 join 的归集条件
 
+    private boolean hasSqlNameInValue;// 取值表达式中含有sqlName
+
     //相等的条件  分区字段
-    private final Map<SqlColumn, SQLExpr> partitionColumnValueMap = new HashMap<>();
+    private final Map<SqlColumn, SQLExpr> currentTableColumnValueMap = new HashMap<>();
 
     //分区字段 in表达式分库分表
-    private final Map<SqlColumn, SQLInListExpr> partitionColumnInValuesMap = new HashMap<>();
+    private final Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = new HashMap<>();
 
     private final SqlTable currentSqlTable;//传入的
 
@@ -75,29 +78,32 @@ public class TableConditionParser extends AbstractVisitor {
 
 
     //重置之后的where条件
-    private SQLExpr newWhere;//对象并且去除了tableOwnCondition
+    private SQLExpr newWhere;//对象去除了tableOwnCondition
 
-    private boolean hasSqlNameInValue;// 取值表达式中含有sqlName
+
 
     //join的条件
 
     public TableConditionParser(LogicDbConfig logicDbConfig, SqlTable sqlTable, SQLExpr originalWhere) {
-        this(logicDbConfig, originalWhere, 0, sqlTable);
+        this(logicDbConfig, originalWhere, 0, Lists.newArrayList(sqlTable));
     }
 
-    public TableConditionParser(LogicDbConfig logicDbConfig, SQLExpr originalWhere, int currentIndex, SqlTable... orderedSqlTables) {
-        this.currentSqlTable = orderedSqlTables[currentIndex];
+    public TableConditionParser(LogicDbConfig logicDbConfig, SQLExpr originalWhere, int currentIndex, List<SqlTable> orderedSqlTables) {
+        if (currentIndex < 0 || currentIndex >= orderedSqlTables.size()) {
+            throw new SqlParseException("currentIndex<0||currentIndex>=orderedSqlTables.size()");
+        }
+        this.currentSqlTable = orderedSqlTables.get(currentIndex);
         this.logicDbConfig = logicDbConfig;
-        this.inSelectJoinMode = orderedSqlTables.length > 1;
+        this.inSelectJoinMode = orderedSqlTables.size() > 1;
         if (inSelectJoinMode) {
             partitionColumnStack = new StackArray(16);
             tableOwnColumnStack = new StackArray(16);
             //TODO check 表格不重复
-            this.orderedSqlTables = orderedSqlTables;
+            this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
         } else {
             partitionColumnStack = new StackArray(8);
             tableOwnColumnStack = null;
-            this.orderedSqlTables = new SqlTable[] {currentSqlTable};
+            this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
         }
 
         boolean singleRelation = true;//where条件是单一的关系型表达式
@@ -129,12 +135,12 @@ public class TableConditionParser extends AbstractVisitor {
     }
 
 
-    public Map<SqlColumn, SQLExpr> getPartitionColumnValueMap() {
-        return partitionColumnValueMap;
+    public Map<SqlColumn, SQLExpr> getCurrentTableColumnValueMap() {
+        return currentTableColumnValueMap;
     }
 
-    public Map<SqlColumn, SQLInListExpr> getPartitionColumnInValuesMap() {
-        return partitionColumnInValuesMap;
+    public Map<SqlColumn, SQLInListExpr> getCurrentTableColumnInValuesMap() {
+        return currentTableColumnInValuesMap;
     }
 
     public Map<SQLBinaryOpExpr, Pair<Integer, Integer>> getConditionTableMap() {
@@ -318,7 +324,15 @@ public class TableConditionParser extends AbstractVisitor {
             int index1 = getOwnerFromTables(c1);
             int index2 = getOwnerFromTables(c2);
             if (index1 == index2) {
-                throw new ParserException("表格匹配重复");
+                //同一个表
+                if (currentSqlTable == orderedSqlTables.get(index1)) {
+                    if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
+                        //按照表名 归集sql条件，只归集明确有表格归属的sql条件
+                        this.currentTableCondition = x;
+                        this.newWhere = null;
+                    }
+                }
+                return false;
             }
             boolean flag = index1 > index2;
             conditionTableMap.put(x, new Pair<>(flag ? index2 : index1, flag ? index1 : index2));
@@ -366,11 +380,11 @@ public class TableConditionParser extends AbstractVisitor {
             return false;
         }
 
-        if (!logicDbConfig.getLogicTableManager(currentSqlTable.getTableName()).getLogicTableConfig()[0].getPartitionColumnNames().contains(c.getName().toLowerCase())) {
-            return false;
-        }
+//        if (!logicDbConfig.getLogicTableManager(currentSqlTable.getTableName()).getLogicTableConfig()[0].getPartitionColumnNames().contains(c.getName().toLowerCase())) {
+//            return false;
+//        }
         SqlColumn sqlColumn = new SqlColumn(currentSqlTable, c.getName());
-        partitionColumnValueMap.put(sqlColumn, right);
+        currentTableColumnValueMap.put(sqlColumn, right);
         return false;
     }
 
@@ -461,16 +475,16 @@ public class TableConditionParser extends AbstractVisitor {
         if (!partitionColumnStack.isAllTrue()) {//不在and语义下
             return false;
         }
-        if (!logicDbConfig.getLogicTableManager(currentSqlTable.getTableName()).getLogicTableConfig()[0].getPartitionColumnNames().contains(c.getName().toLowerCase())) {
-            return false;
-        }
+//        if (!logicDbConfig.getLogicTableManager(currentSqlTable.getTableName()).getLogicTableConfig()[0].getPartitionColumnNames().contains(c.getName().toLowerCase())) {
+//            return false;
+//        }
         try {
             SqlColumn sqlColumn = new SqlColumn(currentSqlTable, c.getName());
-            if (partitionColumnInValuesMap.containsKey(sqlColumn)) {
+            if (currentTableColumnInValuesMap.containsKey(sqlColumn)) {
                 //TODO 不必要的重复sql 不支持
                 return false;
             }
-            partitionColumnInValuesMap.put(sqlColumn, x);
+            currentTableColumnInValuesMap.put(sqlColumn, x);
             return false;
         } catch (Exception e) {
             return false;
@@ -545,8 +559,8 @@ public class TableConditionParser extends AbstractVisitor {
     private int getOwnerFromTables(SqlProperty c) {
         //前缀匹配
         String ownerName = c.getOwnerName();
-        for (int i = 0; i < orderedSqlTables.length; i++) {
-            SqlTable sqlTable = orderedSqlTables[i];
+        for (int i = 0; i < orderedSqlTables.size(); i++) {
+            SqlTable sqlTable = orderedSqlTables.get(i);
             if (ownerName != null) {
                 if (ownerName.equals(sqlTable.getAlias())) {
                     return i;
@@ -560,6 +574,9 @@ public class TableConditionParser extends AbstractVisitor {
 
             } else {
                 //TODO 表格含有此列 表格配置信息
+                if (orderedSqlTables.size() == 1) {
+                    return 0;
+                }
             }
 
         }
@@ -568,9 +585,16 @@ public class TableConditionParser extends AbstractVisitor {
 
     // ======子查询 check相关====
 
-    private  SQLExpr checkExpr(SQLExpr x) {
+    private SQLExpr checkExpr(SQLExpr x) {
+        //保证幂等操作，多个tableSource可能会重复调用
+        if (x instanceof ExitsSubQueriedExpr) {
+            return null;
+        }
+        if (x instanceof SQLInSubQueriedExpr) {
+            return null;
+        }
         if (x instanceof SQLInSubQueryExpr) {
-            return new SQLInSubQueriedExpr(logicDbConfig,(SQLInSubQueryExpr) x);
+            return new SQLInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) x);
         } else if (x instanceof SQLNotExpr) {
             SQLNotExpr sqlNotExpr = (SQLNotExpr) x;
             SQLExpr sqlExpr = sqlNotExpr.getExpr();
@@ -585,14 +609,14 @@ public class TableConditionParser extends AbstractVisitor {
         return null;
     }
 
-    private  ExitsSubQueriedExpr checkExitsQuery(SQLMethodInvokeExpr methodInvokeExpr, boolean not) {
+    private ExitsSubQueriedExpr checkExitsQuery(SQLMethodInvokeExpr methodInvokeExpr, boolean not) {
         if (methodInvokeExpr.getMethodName().equalsIgnoreCase("exits")) {
             List<SQLExpr> parameters = methodInvokeExpr.getParameters();
             if (!parameters.isEmpty() && parameters.size() == 1) {
                 SQLExpr pExpr = parameters.get(0);
                 if (pExpr instanceof SQLQueryExpr) {
                     SQLQueryExpr sqlQueryExpr = (SQLQueryExpr) pExpr;
-                    ExitsSubQueriedExpr r = new ExitsSubQueriedExpr(logicDbConfig,sqlQueryExpr,methodInvokeExpr, not);
+                    ExitsSubQueriedExpr r = new ExitsSubQueriedExpr(logicDbConfig, sqlQueryExpr, methodInvokeExpr, not);
                     return r;
                 }
             }

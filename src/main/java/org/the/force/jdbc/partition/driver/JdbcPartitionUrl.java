@@ -44,7 +44,13 @@ public class JdbcPartitionUrl {
     }
 
     public static JdbcPartitionUrl getInstance(String url) throws SQLException {
+        if (!url.startsWith(PREFIX)) {
+            return null;
+        }
         int atIndex = url.indexOf("@", PREFIX.length());
+        if (atIndex < 0) {
+            return null;
+        }
         String sqlDialect = url.substring(PREFIX.length(), atIndex);
         SqlDialect sqlDialectEnum = SqlDialect.getByName(sqlDialect);
         if (sqlDialectEnum == null) {

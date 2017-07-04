@@ -9,6 +9,7 @@ import org.the.force.jdbc.partition.resource.table.model.LogicTable;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 /**
  * Created by xuji on 2017/6/7.
@@ -45,7 +46,7 @@ public class LogicTableManagerImpl implements LogicTableManager {
         dataChanged();
     }
 
-    public void initDbMetaData() throws Exception {
+    public void initDbMetaData() throws SQLException {
         ConnectionAdapter connectionAdapter = null;
         try {
             connectionAdapter = new ConnectionAdapter(logicDbConfig);
@@ -63,7 +64,10 @@ public class LogicTableManagerImpl implements LogicTableManager {
         return logicTableName;
     }
 
-    public LogicTable getLogicTable() {
+    public LogicTable getLogicTable() throws SQLException {
+        if (logicTable == null) {//可能第一次初始化失败了
+            initDbMetaData();
+        }
         return logicTable;
     }
 

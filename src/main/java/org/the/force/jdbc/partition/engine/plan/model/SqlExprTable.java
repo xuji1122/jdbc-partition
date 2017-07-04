@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.plan.model;
 
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
+import org.the.force.jdbc.partition.resource.table.model.LogicTable;
 
 import java.util.Set;
 
@@ -11,6 +12,7 @@ public class SqlExprTable implements SqlTable {
     private final String schema;
     private final String tableName;
     private String alias;
+    private LogicTable logicTable;
 
     public SqlExprTable(String schema, String tableName, String alias) {
         if (schema == null || schema.length() < 1) {
@@ -78,8 +80,19 @@ public class SqlExprTable implements SqlTable {
         return this.tableName.compareTo(o.getTableName());
     }
 
+    public LogicTable getLogicTable() {
+        return logicTable;
+    }
+
+    public void setLogicTable(LogicTable logicTable) {
+        this.logicTable = logicTable;
+    }
+
     //TODO
     public Set<String> getColumns() {
+        if (logicTable != null) {
+            logicTable.getColumns().keySet();
+        }
         return null;
     }
 }

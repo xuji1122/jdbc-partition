@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.resource.table.model;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -26,14 +27,14 @@ public class LogicTable {
 
     //index信息
 
-    public LogicTable(String catalog, String schema, String tableName, DatabaseMetaData databaseMetaData) throws Exception {
+    public LogicTable(String catalog, String schema, String tableName, DatabaseMetaData databaseMetaData) throws SQLException {
         this.catalog = catalog;
         this.schema = schema;
         this.tableName = tableName;
         init(databaseMetaData);
     }
 
-    private void init(DatabaseMetaData databaseMetaData) throws Exception {
+    private void init(DatabaseMetaData databaseMetaData) throws SQLException {
         ResultSet rs = databaseMetaData.getColumns(catalog, schema, tableName, null);
         while (rs.next()) {
             String columnName = rs.getString("COLUMN_NAME");

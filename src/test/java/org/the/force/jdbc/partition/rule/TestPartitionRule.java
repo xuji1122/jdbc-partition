@@ -37,7 +37,7 @@ public class TestPartitionRule extends TestJdbcPartitionBase {
                 .retryPolicy(retryPolicy).build();
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
-        LogicDbManager logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, null, null);
+        LogicDbManager logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
         LogicTableConfig logicTableConfig = logicDbConfig.getLogicTableManager("t_user").getLogicTableConfig()[0];
         PartitionEvent partitionEvent = new PartitionEvent("t_user", PartitionEvent.EventType.INSERT, logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());

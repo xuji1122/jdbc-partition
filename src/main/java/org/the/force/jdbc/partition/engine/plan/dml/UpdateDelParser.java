@@ -1,37 +1,36 @@
 package org.the.force.jdbc.partition.engine.plan.dml;
 
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
+import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
 import org.the.force.jdbc.partition.engine.parser.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.parser.SqlParserContext;
 import org.the.force.jdbc.partition.engine.parser.TableConditionParser;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
+import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
 import org.the.force.jdbc.partition.engine.plan.model.SqlColumn;
+import org.the.force.jdbc.partition.engine.plan.model.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
+import org.the.force.jdbc.partition.engine.plan.model.SqlTablePartition;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
-import org.the.force.jdbc.partition.engine.plan.model.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.plan.model.SqlTablePartition;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -47,50 +46,51 @@ public class UpdateDelParser {
 
     protected SqlExprTable sqlExprTable;
 
-    protected LogicTableConfig logicTableConfig;
+    //protected LogicTableConfig logicTableConfig;
 
-    private PartitionEvent.EventType eventType;
+    private final PartitionEvent.EventType eventType;
 
     //private SQLExprTableSource originSqlExprTableSource;//不可变
 
-    private SQLExpr where;
+    private final SQLExpr where;
 
-    private Map<SqlColumn, SQLExpr> columnValueMap;//静态不变
+    private final Map<SqlColumn, SQLExpr> columnValueMap;//静态不变
 
-    private Map<SqlColumn, SQLInListExpr> sqlInValuesMap;//原始的in表达式，不可变
+    private final Map<SqlColumn, SQLInListExpr> sqlInValuesMap;//原始的in表达式，不可变
 
     public UpdateDelParser(LogicDbConfig logicDbConfig, UpdateDelParserAdapter updateDelParserAdapter) throws Exception {
         this.logicDbConfig = logicDbConfig;
         this.updateDelParserAdapter = updateDelParserAdapter;
         this.eventType = updateDelParserAdapter.getEventType();
-        visit(updateDelParserAdapter.getSQLExprTableSource());
-        visitWhere(updateDelParserAdapter.getCondition());
-    }
-
-    protected void visit(SQLTableSource tableSource) {
-        if (tableSource instanceof SQLExprTableSource) {
-            sqlExprTable = SqlNameParser.getSQLExprTable((SQLExprTableSource) tableSource);
-            //originSqlExprTableSource = SqlNameParser.copySQLExprTableSource((SQLExprTableSource) tableSource);
-            logicTableConfig = logicDbConfig.getLogicTableManager(sqlExprTable.getTableName()).getLogicTableConfig()[0];
-        }
-    }
-
-    protected void visitWhere(SQLExpr where) throws Exception {
-        TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, sqlExprTable, where);
+        sqlExprTable = SqlNameParser.getSQLExprTable(updateDelParserAdapter.getSQLExprTableSource());
+        TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, sqlExprTable, updateDelParserAdapter.getCondition());
         this.where = tableConditionParser.getOriginalWhere();
-        columnValueMap = tableConditionParser.getPartitionColumnValueMap();
-        sqlInValuesMap = tableConditionParser.getPartitionColumnInValuesMap();
+        columnValueMap = tableConditionParser.getCurrentTableColumnValueMap();
+        sqlInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
     }
+
 
     public void addParameters(PhysicDbExecutor physicDbExecutor, LogicSqlParameterHolder logicSqlParameterHolder) throws Exception {
-        if (sqlInValuesMap.isEmpty() && columnValueMap.isEmpty()) {
+        LogicTableConfig[] configPair = logicDbConfig.getLogicTableManager(sqlExprTable.getTableName()).getLogicTableConfig();
+        LogicTableConfig logicTableConfig = configPair[0];
+        //TODO 数据迁移时老区新区 周新区 update时策略 新区老区双写，表格主键的获取
+        Map<SqlColumn, SQLExpr> partitionColumnValueMap = new HashMap<>();
+        Map<SqlColumn, SQLInListExpr> partitionSqlInValuesMap = new HashMap<>();
+        Set<String> partitionColumnNames = logicTableConfig.getPartitionColumnNames();
+        columnValueMap.entrySet().stream().filter(entry -> partitionColumnNames.contains(entry.getKey().getColumnName().toLowerCase())).forEach(entry -> {
+            partitionColumnValueMap.put(entry.getKey(), entry.getValue());
+        });
+        sqlInValuesMap.entrySet().stream().filter(entry -> partitionColumnNames.contains(entry.getKey().getColumnName().toLowerCase())).forEach(entry -> {
+            partitionSqlInValuesMap.put(entry.getKey(), entry.getValue());
+        });
+        if (partitionColumnValueMap.isEmpty() && partitionSqlInValuesMap.isEmpty()) {
             allPartitionSql();
             return;
         }
-        if (!sqlInValuesMap.isEmpty()) {
-            columnInListPartition(physicDbExecutor, logicSqlParameterHolder);
+        if (!partitionSqlInValuesMap.isEmpty()) {
+            columnInListPartition(logicTableConfig, partitionColumnValueMap, partitionSqlInValuesMap, physicDbExecutor, logicSqlParameterHolder);
         } else {
-            columnEqualsPartition(physicDbExecutor, logicSqlParameterHolder);
+            columnEqualsPartition(logicTableConfig, partitionColumnValueMap, physicDbExecutor, logicSqlParameterHolder);
         }
     }
 
@@ -110,7 +110,9 @@ public class UpdateDelParser {
      * @param logicSqlParameterHolder
      * @throws SQLException
      */
-    protected void columnInListPartition(PhysicDbExecutor physicDbExecutor, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
+    protected void columnInListPartition(LogicTableConfig logicTableConfig, Map<SqlColumn, SQLExpr> partitionColumnValueMap, Map<SqlColumn, SQLInListExpr> partitionColumnSqlInValuesMap,
+        PhysicDbExecutor physicDbExecutor, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
+
         SqlParserContext sqlParserContext = new SqlParserContext(logicDbConfig, logicSqlParameterHolder);
         SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
@@ -119,12 +121,11 @@ public class UpdateDelParser {
          */
         Map<SqlColumn, Map<Partition, Pair<SQLInListExpr, List<SQLExpr>>>> columnPartitionResultMap = new HashMap<>();
 
-        //TODO 数据迁移时老区新区 周新区 update时策略 新区老区双写，表格主键的获取
         PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), eventType, logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
         //TODO no partition的处理 跳过
-        for (Map.Entry<SqlColumn, SQLInListExpr> entry1 : sqlInValuesMap.entrySet()) {
+        for (Map.Entry<SqlColumn, SQLInListExpr> entry1 : partitionColumnSqlInValuesMap.entrySet()) {
             //指定的column,一个column对象唯一一个SQLInListExpr对象
             SqlColumn sqlColumn = entry1.getKey();
             Map<Partition, Pair<SQLInListExpr, List<SQLExpr>>> partitionInListMap = new HashMap<>();
@@ -136,7 +137,7 @@ public class UpdateDelParser {
                 Object value = sqlValueFunctionMatcher.matchSqlValueFunction(sqlExpr, sqlParserContext).getSqlValue(sqlExpr, sqlParserContext).getValue();
                 columnValueOuter.setValue(value);
                 partitionColumnValueTreeSet.add(columnValueOuter);
-                for (Map.Entry<SqlColumn, SQLExpr> entry2 : columnValueMap.entrySet()) {//等于的选项全部拿出来
+                for (Map.Entry<SqlColumn, SQLExpr> entry2 : partitionColumnValueMap.entrySet()) {//等于的选项全部拿出来
                     SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getColumnName());
                     value = sqlValueFunctionMatcher.matchSqlValueFunction(entry2.getValue(), sqlParserContext).getSqlValue(entry2.getValue(), sqlParserContext).getValue();
                     columnValueInner.setValue(value);
@@ -226,7 +227,8 @@ public class UpdateDelParser {
      * @param logicSqlParameterHolder
      * @throws SQLException
      */
-    protected void columnEqualsPartition(PhysicDbExecutor physicDbExecutor, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
+    protected void columnEqualsPartition(LogicTableConfig logicTableConfig, Map<SqlColumn, SQLExpr> partitionColumnValueMap, PhysicDbExecutor physicDbExecutor,
+        LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
         SqlParserContext sqlParserContext = new SqlParserContext(logicDbConfig, logicSqlParameterHolder);
         SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
@@ -235,17 +237,17 @@ public class UpdateDelParser {
         PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), eventType, logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-        for (Map.Entry<SqlColumn, SQLExpr> entry2 : columnValueMap.entrySet()) {
+        for (Map.Entry<SqlColumn, SQLExpr> entry2 : partitionColumnValueMap.entrySet()) {
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getColumnName());
             Object value = sqlValueFunctionMatcher.matchSqlValueFunction(entry2.getValue(), sqlParserContext).getSqlValue(entry2.getValue(), sqlParserContext).getValue();
             columnValueInner.setValue(value);
             partitionColumnValueTreeSet.add(columnValueInner);
         }
-        SortedSet<Partition> parttions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
-        if (parttions.isEmpty()) {
+        SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
+        if (partitions.isEmpty()) {
             return;
         }
-        for (Partition partition : parttions) {
+        for (Partition partition : partitions) {
             SqlTablePartition sqlTablePartition = new SqlTablePartition(sqlExprTable, partition);
             StringBuilder sqlSb = new StringBuilder();
             MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, sqlTablePartition, logicSqlParameterHolder);

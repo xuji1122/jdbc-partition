@@ -37,7 +37,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
             CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace(zkRootPath).connectionTimeoutMs(15000).sessionTimeoutMs(20000).retryPolicy(retryPolicy).build();
         curatorFramework.start();
         zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
-        logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, null, null);
+        logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
 
     }
 

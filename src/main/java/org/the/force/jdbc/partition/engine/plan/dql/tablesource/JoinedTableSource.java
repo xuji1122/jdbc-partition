@@ -1,5 +1,10 @@
 package org.the.force.jdbc.partition.engine.plan.dql.tablesource;
 
+import org.the.force.jdbc.partition.engine.parser.sqlName.SelectLabelParser;
+import org.the.force.jdbc.partition.engine.plan.model.QueriedSqlTable;
+import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
+import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.jdbc.partition.resource.table.model.LogicTable;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
@@ -20,7 +25,9 @@ import org.the.force.jdbc.partition.engine.plan.model.SqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by xuji on 2017/6/4.
@@ -44,7 +51,7 @@ public class JoinedTableSource extends SQLTableSourceImpl {
         this.logicDbConfig = logicDbConfig;
         this.originalWhere = originalWhere;
         parseTableSource(sqlJoinTableSource);
-        //目标是聚合查询则不必归集where条件
+
     }
 
     private void parseTableSource(SQLJoinTableSource sqlJoinTableSource) throws Exception {
@@ -53,45 +60,50 @@ public class JoinedTableSource extends SQLTableSourceImpl {
         if (left instanceof SQLJoinTableSource) {
             parseTableSource((SQLJoinTableSource) left);
         } else {
-            addAtomicSource(left);
+            SqlTable sqlTable = getSqlTable(left);
+            sqlTables.add(sqlTable);
+            tableSources.add(left);
         }
-        addAtomicSource(right);
+        SqlTable sqlTable = getSqlTable(right);
+        sqlTables.add(sqlTable);
+        tableSources.add(right);
         JoinConnector joinConnector = new JoinConnector(sqlJoinTableSource.getJoinType(), sqlJoinTableSource.getCondition());
         joinConnectors.add(joinConnector);
     }
 
-    private void addAtomicSource(SQLTableSource tableSource) throws Exception {
+    //主要目的是获取tableSource包括哪些列，从而为sql条件归集提供必要的依据
+    private SqlTable getSqlTable(SQLTableSource tableSource) throws Exception {
         if (tableSource instanceof SQLExprTableSource) {
-            SqlTable sqlTable = SqlNameParser.getSQLExprTable((SQLExprTableSource) tableSource);
-            sqlTables.add(sqlTable);
-            tableSources.add(tableSource);
+            SqlExprTable sqlTable = SqlNameParser.getSQLExprTable((SQLExprTableSource) tableSource);
+            LogicTable logicTable = logicDbConfig.getLogicTableManager(sqlTable.getTableName()).getLogicTable();
+            sqlTable.setLogicTable(logicTable);
+            return sqlTable;
+        }
+        if (tableSource.getAlias() == null) {
+            throw new SqlParseException("tableSource.getAlias()==null)");
+        }
+        if (tableSource instanceof SQLJoinTableSource) {
+            SQLJoinTableSource sqlJoinTableSource = (SQLJoinTableSource) tableSource;
+            SQLTableSource left = sqlJoinTableSource.getLeft();
+            SqlTable leftSqlTable = getSqlTable(left);
+            SQLTableSource right = sqlJoinTableSource.getRight();
+            SqlTable rightSqlTable = getSqlTable(right);
+            Set<String> mergeColumns = new LinkedHashSet<>();
+            mergeColumns.addAll(leftSqlTable.getColumns());
+            mergeColumns.addAll(rightSqlTable.getColumns());
+            return new QueriedSqlTable(tableSource.getAlias(), mergeColumns);
         } else if (tableSource instanceof SQLSubqueryTableSource) {
             SQLSubqueryTableSource sqlSubqueryTableSource = (SQLSubqueryTableSource) tableSource;
-            String alias = sqlSubqueryTableSource.getAlias();
-            if (alias == null) {
-                //TODO 不支持
-                throw new UnsupportedSqlOperatorException("alias == null");
-            }
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
-            if (sqlSelectQuery == null) {
-                throw new UnsupportedSqlOperatorException("sqlSelectQuery == null");
-            }
-            if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-                SQLSelectQueryBlock sqlSelectQueryBlock = (SQLSelectQueryBlock) sqlSelectQuery;
-                List<SQLSelectItem> itemList =  sqlSelectQueryBlock.getSelectList();
-                //获取表结构配置
-
-            } else if (sqlSelectQuery instanceof SQLUnionQuery) {
-                SQLUnionQuery sqlUnionQuery = (SQLUnionQuery) sqlSelectQuery;
-
-            } else {
-                throw new UnsupportedSqlOperatorException("sqlSelectQuery not block and not union" + PartitionSqlUtils.toSql(tableSource, logicDbConfig.getSqlDialect()));
-            }
-            tableSources.add(sqlSubqueryTableSource);
+            Set<String> columns = new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlSelectQuery);
+            return new QueriedSqlTable(tableSource.getAlias(), columns);
         } else if (tableSource instanceof SQLUnionQueryTableSource) {
-            tableSources.add(tableSource);
+            SQLUnionQueryTableSource sqlUnionQueryTableSource = (SQLUnionQueryTableSource)tableSource;
+            Set<String> columns = new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlUnionQueryTableSource.getUnion());
+            return new QueriedSqlTable(tableSource.getAlias(), columns);
         } else {
             //TODO
+            throw new SqlParseException("无法识别的tableSource类型" + tableSource.getClass().getName());
         }
     }
 

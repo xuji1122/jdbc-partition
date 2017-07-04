@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by xuji on 2017/7/2.
  */
 public class JsonParser {
     JsonLexer jsonLexer;
@@ -60,17 +59,17 @@ public class JsonParser {
                 return value;
             }
             //[
-            if (currentToken.type == JsonTokenType.LEFTBRACKET) {
-                eat(JsonTokenType.LEFTBRACKET);
+            if (currentToken.type == JsonTokenType.LEFT_BRACKET) {
+                eat(JsonTokenType.LEFT_BRACKET);
                 ArrayList<Object> list = getList();
-                eat(JsonTokenType.RIGHTBRACKET);
+                eat(JsonTokenType.RIGHT_BRACKET);
                 return list;
             }
             //{
-            if (currentToken.type == JsonTokenType.LEFTbrace) {
-                eat(JsonTokenType.LEFTbrace);
-                HashMap<String, Object> jo = getKVmap();
-                eat(JsonTokenType.RIGHTbrace);
+            if (currentToken.type == JsonTokenType.LEFT_BRACE) {
+                eat(JsonTokenType.LEFT_BRACE);
+                HashMap<String, Object> jo = getMap();
+                eat(JsonTokenType.RIGHT_BRACE);
                 return jo;
             }
         }
@@ -97,7 +96,7 @@ public class JsonParser {
         return list;
     }
 
-    private HashMap<String, Object> getKVmap() {
+    private HashMap<String, Object> getMap() {
         HashMap<String, Object> jo = new HashMap<>();
         Object k = getJson();//到key结束
         eat(JsonTokenType.COLON);//key之后的:

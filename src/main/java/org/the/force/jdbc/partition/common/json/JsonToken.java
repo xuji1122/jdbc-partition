@@ -1,7 +1,8 @@
 package org.the.force.jdbc.partition.common.json;
 
+import java.text.MessageFormat;
+
 /**
- * Created by xuji on 2017/7/2.
  */
 public class JsonToken {
     JsonTokenType type;
@@ -11,11 +12,13 @@ public class JsonToken {
         this.type = type;
         this.value = value;
     }
+
     public JsonToken(JsonTokenType type, char c) {
         this.type = type;
-        this.value = c+"";
+        this.value = c + "";
     }
+
     public String toString() {
-        return String.format("JsonToken({%s}, {%s})", type, value);
+        return MessageFormat.format("JsonToken({0}, {1})", type, value);
     }
 }

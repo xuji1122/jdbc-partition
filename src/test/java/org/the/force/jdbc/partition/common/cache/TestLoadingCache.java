@@ -52,7 +52,7 @@ public class TestLoadingCache extends TestJdbcPartitionBase {
             CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace(zkRootPath).connectionTimeoutMs(15000).sessionTimeoutMs(20000).retryPolicy(retryPolicy).build();
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
-        LogicDbConfig logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, null, null);
+        LogicDbConfig logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
         SqlPlanManager sqlPlanManager = new SqlPlanManager(logicDbConfig);
         String sql = "update  t_order set status=? where order_id=?";
         sqlPlanManager.getSqlPlan(sql);

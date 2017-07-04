@@ -16,6 +16,8 @@ import org.the.force.jdbc.partition.engine.plan.PhysicSqlPlan;
 import org.the.force.jdbc.partition.engine.plan.model.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.plan.model.SqlExprTable;
 import org.the.force.jdbc.partition.engine.plan.model.SqlTablePartition;
+import org.the.force.jdbc.partition.exception.PartitionConfigException;
+import org.the.force.jdbc.partition.exception.UnsupportedSqlClauseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
@@ -49,13 +51,13 @@ public class InsertPlan implements PhysicSqlPlan {
     private final SQLInsertStatement originStatement;//输出物理sql的模板，本身不会变，但是outputVisitor会重写输出sql的逻辑
 
 
-    protected SqlExprTable sqlTable;//只对应一个逻辑表,有临时状态
+    protected final SqlExprTable sqlTable;//只对应一个逻辑表,有临时状态
 
-    protected LogicTableConfig logicTableConfig;//不可变对象
+    //protected LogicTableConfig logicTableConfig;//不可变对象
 
     protected PartitionEvent.EventType eventType;//
 
-    protected Map<Integer, SqlColumnValue> partitionColumnMap;//有状态，不支持并发
+    //protected Map<Integer, SqlColumnValue> partitionColumnMap;//有状态，不支持并发
 
     //private SQLExprTableSource originSqlExprTableSource;//不可变
 
@@ -65,30 +67,25 @@ public class InsertPlan implements PhysicSqlPlan {
     public InsertPlan(LogicDbConfig logicDbConfig, SQLInsertStatement sqlStatement) throws Exception {
         this.logicDbConfig = logicDbConfig;
         this.originStatement = sqlStatement;
-        prepare();
-    }
-
-
-    public final void prepare() throws Exception {
         if (originStatement.getQuery() != null) {
-            //TODO 不支持的异常
+            throw new UnsupportedSqlClauseException("originStatement.getQuery() != null");
         }
         sqlTable = SqlNameParser.getSQLExprTable(originStatement.getTableSource());
         if (sqlTable == null) {
             throw new RuntimeException("sqlExprTable == null");
         }
         //originSqlExprTableSource = originStatement.getTableSource();
-        String logicTableName = sqlTable.getTableName();
+        //String logicTableName = sqlTable.getTableName();
         // TODO ` 符号的命名空间
-        logicTableConfig = logicDbConfig.getLogicTableManager(logicTableName).getLogicTableConfig()[0];
+
         //解析columns
-        visitColumns(originStatement.getColumns());
+        //visitColumns(originStatement.getColumns());
         //解析 values
         //valuesClauseList.addAll(originStatement.getValuesList());
         //originStatement.getValuesList().clear();
     }
 
-    protected void visitColumns(List<SQLExpr> columnExprs) throws SQLException {
+    protected Map<Integer, SqlColumnValue> visitColumns(LogicTableConfig logicTableConfig, List<SQLExpr> columnExprs) throws SQLException {
 
         Map<Integer, SqlColumnValue> map = new HashMap<>();
         for (int i = 0; i < columnExprs.size(); i++) {
@@ -100,12 +97,17 @@ public class InsertPlan implements PhysicSqlPlan {
         }
         if (map.isEmpty()) {
             //TODO 异常处理
+            throw new PartitionConfigException("insert语句必须包含分库分表列");
         }
-        partitionColumnMap = map;
+        return map;
     }
 
-    protected SqlTablePartition visit(SQLInsertStatement.ValuesClause valuesClause, PartitionEvent partitionEvent, SqlParserContext sqlParserContext) throws Exception {
+    protected SqlTablePartition visit(LogicTableConfig logicTableConfig, SQLInsertStatement.ValuesClause valuesClause, SqlParserContext sqlParserContext) throws Exception {
+        PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), eventType, logicTableConfig.getPartitionColumnConfigs());
+        partitionEvent.setPartitions(logicTableConfig.getPartitions());
+        partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
         SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
+        Map<Integer, SqlColumnValue> partitionColumnMap = visitColumns(logicTableConfig, originStatement.getColumns());
         List<SQLExpr> sqlExprList = valuesClause.getValues();
         for (int i = 0; i < sqlExprList.size(); i++) {
             SQLExpr sqlExpr = sqlExprList.get(i);
@@ -148,18 +150,19 @@ public class InsertPlan implements PhysicSqlPlan {
 
     public final void setParameters(PhysicDbExecutor physicDbExecutor, LogicSqlParameterHolder logicSqlParameterHolder) throws Exception {
         SqlParserContext sqlParserContext = new SqlParserContext(logicDbConfig, logicSqlParameterHolder);
+
+        LogicTableConfig[] configPair = logicDbConfig.getLogicTableManager(sqlTable.getTableName()).getLogicTableConfig();
+        LogicTableConfig logicTableConfig = configPair[0];
         //TODO 数据迁移时老区新区 周新区  有on duplacate key update时策略 新区老区双写，表格主键的获取
-        PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), eventType, logicTableConfig.getPartitionColumnConfigs());
-        partitionEvent.setPartitions(logicTableConfig.getPartitions());
-        partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
         //TODO no partition的处理 跳过
+
         //复制模式，修改其中的部分
         //key为physicTableName
         int lineNumber = logicSqlParameterHolder.getLineNumber();
         Map<SqlTablePartition, List<SQLInsertStatement.ValuesClause>> subsMap = new LinkedHashMap<>();
         List<SQLInsertStatement.ValuesClause> valuesClauseList = originStatement.getValuesList();
         for (SQLInsertStatement.ValuesClause valuesClause : valuesClauseList) {
-            SqlTablePartition sqlTablePartition = visit(valuesClause, partitionEvent, sqlParserContext);
+            SqlTablePartition sqlTablePartition = visit(logicTableConfig, valuesClause, sqlParserContext);
             List<SQLInsertStatement.ValuesClause> pair = subsMap.get(sqlTablePartition);
             if (pair == null) {
                 pair = new ArrayList<>();
@@ -188,8 +191,8 @@ public class InsertPlan implements PhysicSqlPlan {
         }
     }
 
-
+    @Override
     public String toString() {
-        return "InsertPlan{" + "sqlExprTable=" + sqlTable + ", partitionColumnMap=" + partitionColumnMap + '}';
+        return "InsertPlan{" + "sqlTable=" + sqlTable + ", eventType=" + eventType + '}';
     }
 }

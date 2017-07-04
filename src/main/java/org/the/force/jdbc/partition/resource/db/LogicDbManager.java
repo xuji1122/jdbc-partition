@@ -3,12 +3,15 @@ package org.the.force.jdbc.partition.resource.db;
 import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.exception.PartitionConfigException;
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.table.impl.LogicTableManagerImpl;
 import org.the.force.jdbc.partition.rule.PartitionComparator;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
+import org.the.force.thirdparty.druid.util.JdbcUtils;
 
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +49,7 @@ public class LogicDbManager implements LogicDbConfig {
     private final ConcurrentSkipListMap<String, LogicTableManagerImpl> logicTableManagerMap;
 
 
-    public LogicDbManager(DataNode logicDbNode, SqlDialect sqlDialect, String paramStr, Properties info) throws PartitionConfigException {
+    public LogicDbManager(DataNode logicDbNode, SqlDialect sqlDialect, String paramStr, Properties info) throws SQLException {
         this.logicDbNode = logicDbNode;
         this.sqlDialect = sqlDialect;
         this.logicDbName = logicDbNode.getKey();
@@ -57,14 +60,14 @@ public class LogicDbManager implements LogicDbConfig {
         init();
     }
 
-    private void init() throws PartitionConfigException {
+    private void init() throws SQLException  {
         try {
             String json = logicDbNode.getData();
             JsonParser parser = new JsonParser(json);
             Map<String, Object> map = parser.parse();
             String actualDriverClassName = map.get("actualDriverClassName").toString().trim();
-            Class.forName(actualDriverClassName);
             this.actualDriverClassName = actualDriverClassName;
+            JdbcUtils.createDriver(this.actualDriverClassName);
             DataNode physicDbsNode = logicDbNode.children(PHYSIC_DBS_PATH);
             List<DataNode> physicDbNodes = physicDbsNode.children();
             for (DataNode physicDb : physicDbNodes) {
@@ -154,7 +157,11 @@ public class LogicDbManager implements LogicDbConfig {
     }
 
     public LogicTableManagerImpl getLogicTableManager(String logicTableName) {
-        return logicTableManagerMap.get(logicTableName.toLowerCase());
+        LogicTableManagerImpl logicTableManager = logicTableManagerMap.get(logicTableName.toLowerCase());
+        if (logicTableManager == null) {
+            throw new SqlParseException("getLogicTableManager is null");
+        }
+        return logicTableManager;
     }
 
     public Map<String, PhysicDbConfig> getPhysicDbConfigMap() {

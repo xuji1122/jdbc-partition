@@ -24,19 +24,6 @@ public abstract class BlockQueryPlan extends SQLTableSourceImpl implements Query
 
     }
 
-    public String getAlias() {
-        return null;
-    }
-
-    public void setAlias(String alias) {
-
-    }
-
-    public List<SQLHint> getHints() {
-        return null;
-    }
-
-
     public LogicDbConfig getLogicDbConfig() {
         return logicDbConfig;
     }

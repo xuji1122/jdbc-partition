@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser;
 
+import com.google.common.collect.Lists;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
@@ -91,7 +92,7 @@ public class TableConditionJsonParserTest extends AbstractVisitor {
             sqlStatement.accept(this);
             //logger.info("原始sql\n:{}",SQLUtils.toMySqlString(sqlStatement));
             for (int k = 0; k < sqlTable.length; k++) {
-                TableConditionParser conditionVisitor = new TableConditionParser(null, where, k, sqlTable);
+                TableConditionParser conditionVisitor = new TableConditionParser(null, where, k, Lists.newArrayList(sqlTable));
                 SQLExpr where = conditionVisitor.getOriginalWhere();
                 SQLExpr tableOwnCondition = conditionVisitor.getCurrentTableCondition();
                 SQLExpr newWhere = conditionVisitor.getNewWhere();

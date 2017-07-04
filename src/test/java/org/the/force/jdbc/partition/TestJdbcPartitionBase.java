@@ -4,6 +4,7 @@ import org.the.force.jdbc.partition.driver.JdbcPartitionDriver;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 
 import java.text.MessageFormat;
+import java.util.Properties;
 
 /**
  * Created by xuji on 2017/7/1.
@@ -16,6 +17,9 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
     protected String defaultPhysicDbConnectionUrlPrefix;
     //数据库名和表名约定不变
     protected final String logicDbName = "db_order";
+
+    protected String paramStr;
+    protected Properties propInfo;
 
     public TestJdbcPartitionBase() {
         super();
@@ -48,6 +52,10 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+        paramStr = "characterEncoding=utf-8&allowMultiQueries=true&cachePrepStmts=true&useServerPrepStmts=false";
+        propInfo = new Properties();
+        propInfo.put("user", user);
+        propInfo.put("password", password);
         logger.info("actualDriverClassName=" + actualDriverClassName);
         logger.info("dbConnectionUrl=" + dbConnectionUrl);
         logger.info("defaultPhysicDbConnectionUrlPrefix={}" + defaultPhysicDbConnectionUrlPrefix);

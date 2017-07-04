@@ -15,6 +15,7 @@ import java.time.LocalDate;
  * 3，clearParameters  手动调用才会清空 异常之后可以重复  不去清空
  * 4，statement是否需要缓存的问题 不缓存 很少使用 无法预见sql 预编译也不存在
  */
+//@Test(priority = 20)
 public class TestStatement extends TestJdbcBase {
 
     private String testSql = "INSERT INTO  t_user(id,channel,app_id,identifier,birth_date,status) VALUES(?,?,?,?,?,?)  ON DUPLICATE KEY UPDATE app_id=app_id,status=status";

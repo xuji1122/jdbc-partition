@@ -13,19 +13,19 @@ public class OuterBlockQueryPlan extends BlockQueryPlan {
 
     private final SQLSelectQueryBlock selectQuery;
 
-    private final SQLExpr where;
+    private final SQLExpr outerCondition;
 
-    public OuterBlockQueryPlan(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery, SQLExpr where) throws Exception {
+    public OuterBlockQueryPlan(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery, SQLExpr outerCondition) throws Exception {
         super(logicDbConfig);
         this.selectQuery = selectQuery;
-        this.where = where;
+        this.outerCondition = outerCondition;
     }
 
     public SQLSelectQueryBlock getSelectQuery() {
         return selectQuery;
     }
 
-    public SQLExpr getWhere() {
-        return where;
+    public SQLExpr getOuterCondition() {
+        return outerCondition;
     }
 }

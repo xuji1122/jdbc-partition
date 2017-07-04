@@ -22,7 +22,7 @@ public class JsonLexer {
         while (this.endChar != Character.MIN_VALUE) {
             char current = text.charAt(pos);
             if (isSpace(current)) {
-                skip_whitespace();
+                skipWhitespace();
                 continue;
             }
             if (Character.isDigit(current) || current == '-') {
@@ -31,20 +31,20 @@ public class JsonLexer {
             }
             if (current == '{') {
                 advance();
-                return new JsonToken(JsonTokenType.LEFTbrace, '{');
+                return new JsonToken(JsonTokenType.LEFT_BRACE, '{');
             }
 
             if (current == '}') {
                 advance();
-                return new JsonToken(JsonTokenType.RIGHTbrace, '}');
+                return new JsonToken(JsonTokenType.RIGHT_BRACE, '}');
             }
             if (current == '[') {
                 advance();
-                return new JsonToken(JsonTokenType.LEFTBRACKET, '[');
+                return new JsonToken(JsonTokenType.LEFT_BRACKET, '[');
             }
             if (current == ']') {
                 advance();
-                return new JsonToken(JsonTokenType.RIGHTBRACKET, ']');
+                return new JsonToken(JsonTokenType.RIGHT_BRACKET, ']');
             }
             if (current == ':') {
                 advance();
@@ -82,7 +82,7 @@ public class JsonLexer {
         }
     }
 
-    private void skip_whitespace() {
+    private void skipWhitespace() {
         while (this.endChar != Character.MIN_VALUE && isSpace(text.charAt(pos))) {
             advance();
         }

@@ -34,7 +34,6 @@ public class TableDdlPlan implements PhysicSqlPlan {
 
     private final SQLStatement sqlStatement;
 
-
     protected final SqlExprTable sqlExprTable;
 
     protected final LogicTableConfig logicTableConfig;
