@@ -8,7 +8,6 @@ import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLAllColumnExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
