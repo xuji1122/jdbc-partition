@@ -1,5 +1,10 @@
 package org.the.force.jdbc.partition.rule;
 
+import org.the.force.jdbc.partition.rule.comparator.PhysicDbComparator;
+import org.the.force.jdbc.partition.rule.comparator.PhysicDbTableComparator;
+import org.the.force.jdbc.partition.rule.comparator.PhysicTableComparator;
+
+import java.util.Comparator;
 import java.util.SortedSet;
 
 /**
@@ -23,12 +28,11 @@ public interface PartitionRule {
 
 
     /**
-     * 分区规则的类型
-     * 既可以用于标识{@link Partition}的类型，也用来区分{@link PartitionColumnConfig}的功能，PartitionColumnConfig是原因，Partition是结果
+     * 字段分区功能的类型
+     * 用来区分{@link PartitionColumnConfig}的功能，PartitionColumnConfig是原因，Partition是结果
      * PartitionColumnConfig是用来定位选择Partition的依据
      */
     enum RuleType {
-        None,//不分库也不分表
         DB,//只用于分库
         TABLE_IN_DB,//用于某个物理库之内的表
         TABLE,//分库分表一步到位,物理表全局唯一，通过物理表直接关联到物理库，做好了物理表的选择就确定了物理库
@@ -38,7 +42,31 @@ public interface PartitionRule {
             str = str.trim().toUpperCase();
             return RuleType.valueOf(str);
         }
+    }
 
+
+    /**
+     * 用来排序分区列表，方便取模运算之后根据顺序直接定位分区
+     */
+    enum PartitionSortType {
+        BY_DB(new PhysicDbComparator()),//根据物理库排列分区
+        BY_DB_AND_TABLE(new PhysicDbTableComparator()),//先根据物理库排列，在根据物理库内的物理表排列
+        BY_TABLE(new PhysicTableComparator()),//物理表全局唯一，根据物理表排列，物理表直接关联到物理库，做好了物理表的选择就确定了物理库
+        ;
+        private final Comparator<Partition> comparator;
+
+        PartitionSortType(Comparator<Partition> comparator) {
+            this.comparator = comparator;
+        }
+
+        public static PartitionSortType valueOfString(String str) {
+            str = str.trim().toUpperCase();
+            return PartitionSortType.valueOf(str);
+        }
+
+        public Comparator<Partition> getComparator() {
+            return comparator;
+        }
     }
 
 

@@ -29,12 +29,10 @@ public class NullSqlParameter implements SqlParameter {
         }
     }
 
-    @Override
     public Object getValue() {
         return null;
     }
 
-    @Override
     public int getSqlType() {
         return Types.NULL;
     }

@@ -4,7 +4,7 @@ import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.util.JdbcConstants;
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.engine.plan.SqlPlanMatcher;
+import org.the.force.jdbc.partition.engine.executor.plan.SqlPlanMatcher;
 
 import java.util.List;
 

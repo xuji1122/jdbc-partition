@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.engine.executor.cursor;
 
-import org.the.force.jdbc.partition.engine.executor.query.rowKey.RowKeyComparator;
-import org.the.force.jdbc.partition.engine.executor.query.rowKey.RowKeyFunction;
+import org.the.force.jdbc.partition.engine.executor.elements.rowKey.RowKeyComparator;
+import org.the.force.jdbc.partition.engine.executor.elements.rowKey.RowKeyFunction;
 import org.the.force.jdbc.partition.engine.result.DataItemRowComparator;
 import org.the.force.jdbc.partition.engine.result.RowCursor;
-import org.the.force.jdbc.partition.engine.executor.query.item.RowQueryItems;
+import org.the.force.jdbc.partition.engine.executor.elements.item.RowQueryItems;
 import org.the.force.jdbc.partition.engine.result.DataItemRow;
 
 import java.sql.ResultSetMetaData;

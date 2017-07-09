@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.engine.parser.value;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.jdbc.partition.exception.UnsupportedExprException;
-import org.the.force.jdbc.partition.engine.parser.SqlParserContext;
+import org.the.force.jdbc.partition.engine.parser.SqlValueEvalContext;
 
 import java.math.BigDecimal;
 
@@ -14,28 +14,28 @@ import java.math.BigDecimal;
 public class ValueFunctionUtils {
 
 
-    public static SqlValue getValue(SQLExpr sqlExpr, SqlParserContext sqlParserContext) throws UnsupportedExprException {
-        SqlValueFunction valueFunction = SqlValueFunctionMatcher.getSingleton().matchSqlValueFunction(sqlExpr, sqlParserContext);
+    public static SqlValue getValue(SQLExpr sqlExpr, SqlValueEvalContext sqlValueEvalContext) throws UnsupportedExprException {
+        SqlValueFunction valueFunction = SqlValueFunctionMatcher.getSingleton().matchSqlValueFunction(sqlExpr, sqlValueEvalContext);
         if (valueFunction == null) {
             throw new RuntimeException("valueFunction==null");
         }
-        SqlValue value = valueFunction.getSqlValue(sqlExpr, sqlParserContext);
+        SqlValue value = valueFunction.getSqlValue(sqlExpr, sqlValueEvalContext);
         if (value == null) {
             throw new RuntimeException("getValue==null");
         }
         return value;
     }
 
-    public static Object[] getLeftRightValue(SQLBinaryOpExpr sqlBinaryOpExpr, SqlParserContext sqlParserContext) throws UnsupportedExprException {
+    public static Object[] getLeftRightValue(SQLBinaryOpExpr sqlBinaryOpExpr, SqlValueEvalContext sqlValueEvalContext) throws UnsupportedExprException {
         SQLExpr leftSqlExpr = sqlBinaryOpExpr.getLeft();
         SQLExpr rightSqlExpr = sqlBinaryOpExpr.getRight();
-        SqlValueFunction leftValueF = SqlValueFunctionMatcher.getSingleton().matchSqlValueFunction(leftSqlExpr, sqlParserContext);
-        SqlValueFunction rightValueF = SqlValueFunctionMatcher.getSingleton().matchSqlValueFunction(rightSqlExpr, sqlParserContext);
+        SqlValueFunction leftValueF = SqlValueFunctionMatcher.getSingleton().matchSqlValueFunction(leftSqlExpr, sqlValueEvalContext);
+        SqlValueFunction rightValueF = SqlValueFunctionMatcher.getSingleton().matchSqlValueFunction(rightSqlExpr, sqlValueEvalContext);
         if (leftValueF == null || rightValueF == null) {
             throw new RuntimeException("leftValueF==null|| rightValueF==null");
         }
-        Object leftValue = leftValueF.getSqlValue(leftSqlExpr, sqlParserContext).getValue();
-        Object rightValue = rightValueF.getSqlValue(rightSqlExpr, sqlParserContext).getValue();
+        Object leftValue = leftValueF.getSqlValue(leftSqlExpr, sqlValueEvalContext).getValue();
+        Object rightValue = rightValueF.getSqlValue(rightSqlExpr, sqlValueEvalContext).getValue();
         if (leftValue == null || rightValue == null) {
             throw new RuntimeException("leftValue==null||rightValue==null");
         }

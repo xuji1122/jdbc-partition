@@ -99,6 +99,19 @@ public class TestUpdate extends TestJdbcPartitionBase {
         connection.commit();
         connection.close();
     }
+    @Test(priority = 402)
+    public void testUpdate3() throws Exception {
+        Connection connection = getConnection();
+        connection.setAutoCommit(false);
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE t_user  SET status=?   WHERE channel=? AND  id = ?");
+        preparedStatement.setString(1, "testUpdate2");
+        preparedStatement.setInt(2, 0);
+        preparedStatement.setInt(3, 1);
+        int result = preparedStatement.executeUpdate();
+        logger.info("result=" + result);
+        connection.commit();
+        connection.close();
+    }
 
     @Test(priority = 402)
     public void testDelete() throws Exception {

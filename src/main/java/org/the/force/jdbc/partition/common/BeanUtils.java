@@ -1,9 +1,14 @@
 package org.the.force.jdbc.partition.common;
 
+import com.google.common.collect.Lists;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +28,16 @@ public class BeanUtils {
             return;
         }
         if (source instanceof String) {
-            sb.append("\"").append(source.toString()).append("\"");
+            String s = (String) source;
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < s.length(); i++) {
+                char ch = s.charAt(i);
+                if (ch == '"') {
+                    stringBuilder.append('\\');
+                }
+                stringBuilder.append(ch);
+            }
+            sb.append("\"").append(s).append("\"");
             return;
         } else if (source instanceof Number) {
             sb.append(source.toString());
@@ -58,9 +72,11 @@ public class BeanUtils {
             return;
         }
         Method[] methods = source.getClass().getMethods();
+        List<Method> methodList = Lists.newArrayList(methods);
+        Collections.sort(methodList, (o1, o2) -> o1.getName().compareTo(o2.getName()));
         sb.append("{");
         boolean first = true;
-        for (Method method : methods) {
+        for (Method method : methodList) {
             Class<?>[] ps = method.getParameterTypes();
             if (ps != null && ps.length > 0) {
                 continue;
@@ -82,7 +98,7 @@ public class BeanUtils {
             } else {
                 first = false;
             }
-            if(key.equalsIgnoreCase("")){
+            if (key.equalsIgnoreCase("")) {
 
             }
             sb.append("\"");

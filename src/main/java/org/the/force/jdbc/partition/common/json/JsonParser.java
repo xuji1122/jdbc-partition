@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.common.json;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,7 +15,7 @@ public class JsonParser {
     public JsonParser(String jsonText) {
         JsonLexer jsonLexer = new JsonLexer(jsonText);
         this.jsonLexer = jsonLexer;
-        this.currentToken = jsonLexer.get_next_token();
+        this.currentToken = jsonLexer.getNextToken();
     }
 
     public <T> T parse() {
@@ -61,6 +62,10 @@ public class JsonParser {
             //[
             if (currentToken.type == JsonTokenType.LEFT_BRACKET) {
                 eat(JsonTokenType.LEFT_BRACKET);
+                if (currentToken.type == JsonTokenType.RIGHT_BRACKET) {
+                    eat(JsonTokenType.RIGHT_BRACKET);
+                    return new ArrayList<>();
+                }
                 ArrayList<Object> list = getList();
                 eat(JsonTokenType.RIGHT_BRACKET);
                 return list;
@@ -68,9 +73,16 @@ public class JsonParser {
             //{
             if (currentToken.type == JsonTokenType.LEFT_BRACE) {
                 eat(JsonTokenType.LEFT_BRACE);
+                if (currentToken.type == JsonTokenType.RIGHT_BRACE) {
+                    eat(JsonTokenType.RIGHT_BRACE);
+                    return null;
+                }
                 HashMap<String, Object> jo = getMap();
                 eat(JsonTokenType.RIGHT_BRACE);
                 return jo;
+            }
+            if (currentToken.type == JsonTokenType.RIGHT_BRACE) {
+                return null;
             }
         }
         return null;
@@ -78,7 +90,7 @@ public class JsonParser {
 
     private void eat(JsonTokenType type) {
         if (this.currentToken.type == type) {
-            currentToken = jsonLexer.get_next_token();
+            currentToken = jsonLexer.getNextToken();
             return;
         }
         error(MessageFormat.format("json格式不对称 \n\rjson={0}\n\rcurrentText={1}\n\rexpectTokenType={2}", jsonLexer.getText(), jsonLexer.getCurrentText(), type.getDesc()));
@@ -88,7 +100,11 @@ public class JsonParser {
 
     private ArrayList<Object> getList() {
         ArrayList<Object> list = new ArrayList<>();
-        list.add(getJson());
+        Object object = getJson();
+        if (object == null) {
+            return list;
+        }
+        list.add(object);
         while (currentToken.type == JsonTokenType.COMMA) {
             eat(JsonTokenType.COMMA);
             list.add(getJson());
@@ -101,6 +117,7 @@ public class JsonParser {
         Object k = getJson();//到key结束
         eat(JsonTokenType.COLON);//key之后的:
         Object v = getJson();
+
         jo.put(k.toString(), v);
         while (currentToken.type == JsonTokenType.COMMA) {
 

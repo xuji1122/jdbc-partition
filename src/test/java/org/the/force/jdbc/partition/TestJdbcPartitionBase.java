@@ -1,9 +1,15 @@
 package org.the.force.jdbc.partition;
 
+import org.the.force.jdbc.partition.common.BeanUtils;
 import org.the.force.jdbc.partition.driver.JdbcPartitionDriver;
 import org.the.force.jdbc.partition.driver.SqlDialect;
+import org.the.force.jdbc.partition.rule.config.JsonDataNode;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -19,7 +25,10 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
     protected final String logicDbName = "db_order";
 
     protected String paramStr;
+
     protected Properties propInfo;
+
+    protected JsonDataNode jsonDbDataNode;
 
     public TestJdbcPartitionBase() {
         super();
@@ -38,7 +47,7 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
         logger.info("projectBasePath=" + projectBasePath);
 
         zkConnectStr = System.getProperty("zk.connect.str", "localhost:2181");
-        zkRootPath = sqlDialectName + "db";
+        zkRootPath = "db/" + sqlDialectName + "db";
         logger.info("zkConnectStr=" + zkConnectStr);
         logger.info("zkRootPath=" + zkRootPath);
         //TODO 可能变化的点
@@ -59,5 +68,18 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
         logger.info("actualDriverClassName=" + actualDriverClassName);
         logger.info("dbConnectionUrl=" + dbConnectionUrl);
         logger.info("defaultPhysicDbConnectionUrlPrefix={}" + defaultPhysicDbConnectionUrlPrefix);
+
+        Yaml yml = new Yaml();
+        Object object;
+        try {
+            object = yml.load(new FileInputStream(getYamlFromFile(logicDbName + ".yml")));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        jsonDbDataNode = new JsonDataNode(null, logicDbName, (Map<String, Object>) ((Map<String, Object>) object).get(logicDbName));
+        logger.info("yml config info:\n" + object.toString());
+        logger.info("implClass:" + object.getClass().getName());
+        String json = BeanUtils.toJson(jsonDbDataNode);
+        logger.info("json:\n" + json);
     }
 }

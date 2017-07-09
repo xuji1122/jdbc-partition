@@ -58,4 +58,9 @@ public class Triple<L, M, R> {
     public int hashCode() {
         return (getLeft() == null ? 0 : getLeft().hashCode()) ^ (getMiddle() == null ? 0 : getMiddle().hashCode()) ^ (getRight() == null ? 0 : getRight().hashCode());
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append('(').append(getLeft()).append(',').append(getMiddle()).append(',').append(getRight()).append(')').toString();
+    }
 }

@@ -7,6 +7,8 @@ import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableManager;
 import org.the.force.jdbc.partition.resource.table.model.LogicTable;
 import org.the.force.jdbc.partition.rule.config.DataNode;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -15,6 +17,8 @@ import java.sql.SQLException;
  * Created by xuji on 2017/6/7.
  */
 public class LogicTableManagerImpl implements LogicTableManager {
+
+    private Log logger = LogFactory.getLog(LogicTableManagerImpl.class);
 
     private static String OLD_PATH = "old";
 
@@ -52,6 +56,8 @@ public class LogicTableManagerImpl implements LogicTableManager {
             connectionAdapter = new ConnectionAdapter(logicDbConfig);
             DatabaseMetaData databaseMetaData = new MySqlDdMetaDataImpl(logicDbConfig, connectionAdapter);
             logicTable = new LogicTable(logicDbConfig.getLogicDbName(), null, logicTableName, databaseMetaData);
+        } catch (Exception e) {
+            logger.warn("initDbMetaData failed:"+logicTableName,e);
         } finally {
             if (connectionAdapter != null) {
                 connectionAdapter.closeConnection();

@@ -12,6 +12,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <mysql-connector-java.version>5.1.30</mysql-connector-java.version>
+        <snakeyaml.version>1.17</snakeyaml.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -36,6 +37,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -57,13 +63,24 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <!-- yml文件解析 -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>6.11</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <!--  日志实现包 全部是provided 具体实现参考LogFactory -->
         <dependency>
             <groupId>commons-logging</groupId>

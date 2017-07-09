@@ -30,7 +30,6 @@ public class ObjectSqlParameter implements SqlParameter {
         return parameter;
     }
 
-    @Override
     public int getSqlType() {
         if (sqlType != null) {
             return sqlType.intValue();

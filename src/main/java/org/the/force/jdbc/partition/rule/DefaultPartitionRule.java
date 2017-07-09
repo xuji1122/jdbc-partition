@@ -22,14 +22,14 @@ public class DefaultPartitionRule implements PartitionRule {
     private final HashFunction hashFunction = Hashing.murmur3_128();
 
     public SortedSet<Partition> selectPartitions(PartitionEvent partitionEvent, SortedSet<PartitionColumnValue> partitionColumnValueSet) {
-        SortedSet<Partition> returnPartitions =
-            selectFromPartitions(partitionEvent, partitionColumnValueSet, partitionEvent.getPhysicDbs(), partitionEvent.getPartitions());
+
+        SortedSet<Partition> returnPartitions = selectFromPartitions(partitionEvent, partitionColumnValueSet, partitionEvent.getPhysicDbs(), partitionEvent.getPartitions());
         return returnPartitions;
     }
 
     protected SortedSet<Partition> selectFromPartitions(PartitionEvent partitionEvent, SortedSet<PartitionColumnValue> partitionColumnValueSet, SortedSet<String> physicDbs,
         SortedSet<Partition> partitions) {
-        TreeSet<Partition> dbPartitions = new TreeSet<>();
+        TreeSet<Partition> dbPartitions = new TreeSet<>(partitionEvent.getPartitionSortType().getComparator());
         //======分库路由===
 
         LinkedList<Triple<PartitionColumnValue, PartitionColumnConfig, Long>> partitionRuleAndValues = new LinkedList<>();
@@ -46,7 +46,7 @@ public class DefaultPartitionRule implements PartitionRule {
                 if (partitionColumnConfig.getPartitionRuleType() == RuleType.TABLE) {
                     //优先判断此类分库且分表的列
                     //一次性分库并分表 严格按照表格定义分区，物理库是关联属性
-                    TreeSet<Partition> one = new TreeSet<>();
+                    TreeSet<Partition> one = new TreeSet<>(partitionEvent.getPartitionSortType().getComparator());
                     one.add(doOnePartitionSelect(val, partitions));
                     return one;
                 } else if (partitionColumnConfig.getPartitionRuleType() == RuleType.DB) {
@@ -89,16 +89,16 @@ public class DefaultPartitionRule implements PartitionRule {
             if (partitionEvent.getEventType() == PartitionEvent.EventType.INSERT || partitionEvent.getEventType() == PartitionEvent.EventType.DDL) {
                 return dbPartitions;
             }
-            TreeSet<Partition> returnPartitions = new TreeSet<>();
+            TreeSet<Partition> returnPartitions = new TreeSet<>(partitionEvent.getPartitionSortType().getComparator());
             Map<String, List<Partition>> map = partitions.stream().collect(Collectors.groupingBy(Partition::getPhysicDbName, Collectors.toList()));
             for (Triple<PartitionColumnValue, PartitionColumnConfig, Long> partitionValue : partitionRuleAndValues) {
                 if (partitionValue.getMiddle().getPartitionRuleType() == RuleType.TABLE_IN_DB) {
                     for (List<Partition> list : map.values()) {
-                        TreeSet<Partition> set = new TreeSet<>();
+                        TreeSet<Partition> set = new TreeSet<>(partitionEvent.getPartitionSortType().getComparator());
                         set.addAll(list);
                         returnPartitions.add(doOnePartitionSelect(partitionValue.getRight(), set));
                     }
-                }else{
+                } else {
                     //TODO 异常
                 }
             }
@@ -107,7 +107,7 @@ public class DefaultPartitionRule implements PartitionRule {
             //先分库 再分表
             for (Triple<PartitionColumnValue, PartitionColumnConfig, Long> shardingValue : partitionRuleAndValues) {
                 if (shardingValue.getMiddle().getPartitionRuleType() == RuleType.TABLE_IN_DB) {
-                    TreeSet<Partition> set = new TreeSet<>();
+                    TreeSet<Partition> set = new TreeSet<>(partitionEvent.getPartitionSortType().getComparator());
                     set.add(doOnePartitionSelect(shardingValue.getRight(), dbPartitions));
                     return set;
                 }
@@ -125,7 +125,6 @@ public class DefaultPartitionRule implements PartitionRule {
             Partition partition = partitionIterator.next();
             if (index == to) {
                 return partition;
-
             }
             index++;
         }

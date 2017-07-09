@@ -7,9 +7,10 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.engine.plan.model.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
+import org.the.force.jdbc.partition.rule.comparator.NameComparator;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
@@ -33,25 +34,25 @@ public class TestPartitionRule extends TestJdbcPartitionBase {
     public void test2() throws Exception {
         ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(500, 3);
         CuratorFramework curatorFramework =
-            CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace(sqlDialectName + "db").connectionTimeoutMs(15000).sessionTimeoutMs(20000)
-                .retryPolicy(retryPolicy).build();
+            CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace(zkRootPath).connectionTimeoutMs(15000).sessionTimeoutMs(20000).retryPolicy(retryPolicy).build();
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
         LogicDbManager logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
         LogicTableConfig logicTableConfig = logicDbConfig.getLogicTableManager("t_user").getLogicTableConfig()[0];
-        PartitionEvent partitionEvent = new PartitionEvent("t_user", PartitionEvent.EventType.INSERT, logicTableConfig.getPartitionColumnConfigs());
+        PartitionEvent partitionEvent =
+            new PartitionEvent("t_user", PartitionEvent.EventType.INSERT, PartitionRule.PartitionSortType.BY_TABLE, logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         TreeSet<PartitionColumnValue> set = new TreeSet<>();
         set.add(new SqlColumnValue("id", 5));
         DefaultPartitionRule defaultPartitionRule = new DefaultPartitionRule();
         SortedSet<Partition> partitions = defaultPartitionRule.selectPartitions(partitionEvent, set);
-        logger.info("partions:"+ partitions.toString());
+        logger.info("partitions:" + partitions.toString());
     }
 
     public void testSort() throws Exception {
         List<String> list = Arrays.asList("t_9", "t_8", "t_11", "t_07", "t_m_01", "t_m_2");
-        Set<String> set = Sets.newTreeSet(PartitionComparator.getSingleton());
+        Set<String> set = Sets.newTreeSet(NameComparator.getSingleton());
         set.addAll(list);
         logger.info(set.toString());
     }

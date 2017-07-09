@@ -7,7 +7,7 @@ import org.the.force.jdbc.partition.rule.config.DataNode;
  */
 public interface PartitionFactory {
 
-    Partition buildPartition(PartitionRule.RuleType partitionType, DataNode partitionNode) throws Exception;
+    Partition buildPartition(DataNode partitionNode) throws Exception;
 
 
 }

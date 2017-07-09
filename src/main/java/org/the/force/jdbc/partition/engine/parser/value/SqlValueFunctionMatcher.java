@@ -11,7 +11,7 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLTextLiteralExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLValuableExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
 import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
-import org.the.force.jdbc.partition.engine.parser.SqlParserContext;
+import org.the.force.jdbc.partition.engine.parser.SqlValueEvalContext;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -30,7 +30,7 @@ public class SqlValueFunctionMatcher {
 
     private Map<Class, SqlValueFunction> classMap = new LinkedHashMap<>();
 
-    public SqlValueFunction matchSqlValueFunction(SQLExpr sqlExpr, SqlParserContext sqlParserContext) {
+    public SqlValueFunction matchSqlValueFunction(SQLExpr sqlExpr, SqlValueEvalContext sqlValueEvalContext) {
         for (Map.Entry<Class, SqlValueFunction> entry : classMap.entrySet()) {
             if (entry.getKey().isInstance(sqlExpr)) {
                 return entry.getValue();

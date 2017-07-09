@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
 import org.the.force.jdbc.partition.engine.executor.WriteCommand;
-import org.the.force.jdbc.partition.rule.PartitionComparator;
+import org.the.force.jdbc.partition.rule.comparator.NameComparator;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 public class PhysicDbExecutor {
 
     //physicDbName为key
-    private TreeMap<String, PhysicTableExecutor> dbExecuteRouterMap = new TreeMap<>(PartitionComparator.getSingleton());
+    private TreeMap<String, PhysicTableExecutor> dbExecuteRouterMap = new TreeMap<>(NameComparator.getSingleton());
 
     public final PhysicTableExecutor get(String physicDbName) {
         PhysicTableExecutor sqlExecuteRouter = dbExecuteRouterMap.get(physicDbName.toLowerCase());

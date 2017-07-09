@@ -5,7 +5,7 @@ import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.table.impl.LogicTableManagerImpl;
-import org.the.force.jdbc.partition.rule.PartitionComparator;
+import org.the.force.jdbc.partition.rule.comparator.NameComparator;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
@@ -16,10 +16,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -55,8 +52,8 @@ public class LogicDbManager implements LogicDbConfig {
         this.logicDbName = logicDbNode.getKey();
         this.paramStr = paramStr;
         this.info = info;
-        physicDbConfigMap = new ConcurrentSkipListMap<>(PartitionComparator.getSingleton());
-        logicTableManagerMap = new ConcurrentSkipListMap<>(PartitionComparator.getSingleton());
+        physicDbConfigMap = new ConcurrentSkipListMap<>(NameComparator.getSingleton());
+        logicTableManagerMap = new ConcurrentSkipListMap<>(NameComparator.getSingleton());
         init();
     }
 

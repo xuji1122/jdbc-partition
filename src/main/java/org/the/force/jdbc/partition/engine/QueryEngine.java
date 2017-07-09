@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine;
 
 import org.the.force.jdbc.partition.driver.JdbcPartitionConnection;
-import org.the.force.jdbc.partition.engine.plan.QueryPlan;
+import org.the.force.jdbc.partition.engine.executor.plan.QueryPlan;
 import org.the.force.jdbc.partition.resource.statement.AbstractPreparedStatement;
 
 /**

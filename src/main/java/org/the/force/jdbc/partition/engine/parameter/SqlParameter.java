@@ -11,6 +11,4 @@ import java.sql.SQLException;
 public interface SqlParameter extends SqlValue {
 
     void set(int parameterIndex, PreparedStatement preparedStatement) throws SQLException;
-
-    int getSqlType();
 }

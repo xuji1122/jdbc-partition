@@ -6,14 +6,12 @@ import com.google.common.cache.LoadingCache;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
-import org.the.force.jdbc.partition.resource.sql.SqlPlanManager;
+import org.the.force.jdbc.partition.resource.sql.SqlExecutionPlanManager;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
@@ -53,14 +51,14 @@ public class TestLoadingCache extends TestJdbcPartitionBase {
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
         LogicDbConfig logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
-        SqlPlanManager sqlPlanManager = new SqlPlanManager(logicDbConfig);
+        SqlExecutionPlanManager sqlExecutionPlanManager = new SqlExecutionPlanManager(logicDbConfig);
         String sql = "update  t_order set status=? where order_id=?";
-        sqlPlanManager.getSqlPlan(sql);
+        sqlExecutionPlanManager.getSqlExecutionPlan(sql);
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=?";
-        sqlPlanManager.getSqlPlan(sql);
+        sqlExecutionPlanManager.getSqlExecutionPlan(sql);
 
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=? and status=? ";
-        sqlPlanManager.getSqlPlan(sql);
+        sqlExecutionPlanManager.getSqlExecutionPlan(sql);
     }
 
 

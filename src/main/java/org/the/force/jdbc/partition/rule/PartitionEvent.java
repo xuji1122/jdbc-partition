@@ -16,6 +16,8 @@ public class PartitionEvent {
 
     private final EventType eventType;
 
+    private final PartitionRule.PartitionSortType partitionSortType;
+
     /**
      * key为columnName,一个column可以有多个分库分表的功能
      */
@@ -26,9 +28,11 @@ public class PartitionEvent {
     private SortedSet<String> physicDbs;
 
 
-    public PartitionEvent(String logicTableName, EventType eventType, Map<String, Set<PartitionColumnConfig>> partitionColumnConfigMap) {
+    public PartitionEvent(String logicTableName, EventType eventType, PartitionRule.PartitionSortType partitionSortType,
+        Map<String, Set<PartitionColumnConfig>> partitionColumnConfigMap) {
         this.logicTableName = logicTableName;
         this.eventType = eventType;
+        this.partitionSortType = partitionSortType;
         this.partitionColumnConfigMap = partitionColumnConfigMap;
     }
 
@@ -61,12 +65,12 @@ public class PartitionEvent {
         this.physicDbs = physicDbs;
     }
 
+    public PartitionRule.PartitionSortType getPartitionSortType() {
+        return partitionSortType;
+    }
+
     public static enum EventType {
-        DDL,
-        INSERT,
-        UPDATE,
-        DELETE,
-        SELECT,
+        DDL, INSERT, UPDATE, DELETE, SELECT,
     }
 
 

@@ -22,7 +22,6 @@ public class TimestampSqlParameter implements SqlParameter {
         this.cal = cal;
     }
 
-    @Override
     public void set(int parameterIndex, PreparedStatement preparedStatement) throws SQLException {
         if (cal == null) {
             preparedStatement.setTimestamp(parameterIndex, timestamp);
@@ -31,12 +30,10 @@ public class TimestampSqlParameter implements SqlParameter {
         }
     }
 
-    @Override
     public Object getValue() {
         return new Timestamp(timestamp.getTime());
     }
 
-    @Override
     public int getSqlType() {
         return Types.TIMESTAMP;
     }

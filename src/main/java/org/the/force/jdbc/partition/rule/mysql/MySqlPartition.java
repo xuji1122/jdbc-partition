@@ -5,7 +5,7 @@ import org.the.force.jdbc.partition.rule.Partition;
 /**
  * Created by xuji on 2017/6/30.
  */
-public abstract class MySqlPartition implements Partition {
+public final class MySqlPartition implements Partition {
 
     private final String physicTableName;
 

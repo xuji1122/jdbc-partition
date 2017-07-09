@@ -30,12 +30,10 @@ public class TimeSqlParameter implements SqlParameter {
         }
     }
 
-    @Override
     public Object getValue() {
         return time;
     }
 
-    @Override
     public int getSqlType() {
         return Types.TIME;
     }

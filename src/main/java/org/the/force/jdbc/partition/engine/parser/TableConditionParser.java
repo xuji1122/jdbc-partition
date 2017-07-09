@@ -1,29 +1,27 @@
 package org.the.force.jdbc.partition.engine.parser;
 
 import com.google.common.collect.Lists;
+import org.the.force.jdbc.partition.common.tuple.Pair;
+import org.the.force.jdbc.partition.engine.executor.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlProperty;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
+import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableColumnsParser;
+import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLAllColumnExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBetweenExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
-import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
-import org.the.force.jdbc.partition.engine.parser.sqlName.SqlProperty;
-import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
-import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.plan.model.SqlColumn;
-import org.the.force.jdbc.partition.engine.plan.model.SqlTable;
-import org.the.force.jdbc.partition.exception.SqlParseException;
-import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,56 +31,52 @@ import java.util.Map;
 /**
  * Created by xuji on 2017/5/21.
  * 对where子句的column value条件进行访问、筛选，以单表的路由判断为目的，是sql改写核心实现类之一，主要功能如下
- * 1，判断指定的sqlTable的分库分表列的条件（通过partitionColumnStack实现）
- * 2，重置子查询的条件  目前只支持  exits 子查询和 in 子查询，用子查询对象替换掉原始的where条件中的子查询条件
- * 3，对表格join的场景，归集sqlTable的查询条件（通过tableOwnColumnStack实现）,currentTableCondition
- * 4, 对表格join的场景，搜集可能出现在where条件中的join条件  conditionTableMap
- * 5，对表格join的场景，从原始的where条件中 去除已经归集到tableSource的条件和join的条件，拼装新的where条件 newWhere
+ * 1，判断指定的sqlTable的分库分表列的条件（通过currentTableColumnValueConditionStack实现）输出currentTableColumnValueMap  currentTableColumnInValuesMap
+ * 2，重置子查询的条件  目前只支持  exits 子查询和 in 子查询，用子查询对象替换掉原始的where条件中的子查询条件，输出subQueryResetWhere
+ * 3，归集sqlTable的查询条件（通过tableOwnConditionStack实现）,输出currentTableCondition
+ * 4, 搜集可能出现在where条件中的join条件  输出joinConditionMap
+ * 5，从原始的where条件中 去除已经归集到tableSource的条件和join的条件，拼装新的where条件 输出newWhere
+ * 6, 判断sql重写时是否需要强制指定tableSource的alias(不保证ok，除了where条件还有其他sql子句影响)
  * <p>
  */
 public class TableConditionParser extends AbstractVisitor {
 
-    private final LogicDbConfig logicDbConfig;
-
     /**
-     * TODO 条件中含有动态值（含有 列，只能支持数据库的查询?）
+     * 输入项
      */
-    private final SQLExpr originalWhere;//重置过子查询 where被替换掉子查询类型时  sql输出的支持
+
+    private final LogicDbConfig logicDbConfig;
 
     private final List<SqlTable> orderedSqlTables;//有序的sqlTable数组
 
-    private final boolean inSelectJoinMode;
-
-    private boolean originalWhereHasSubQuery;//原始的where表达式是否有子查询，子查询可能被归集到某个tableSource发生转移，因此调用方需要二次check
-
-    private final StackArray partitionColumnStack;
-
-    private final StackArray tableOwnColumnStack;//不为null这说明需要判断表格 join 的归集条件
-
-    private boolean hasSqlNameInValue;// 取值表达式中含有sqlName
-
-    //相等的条件  分区字段
-    private final Map<SqlColumn, SQLExpr> currentTableColumnValueMap = new HashMap<>();
-
-    //分区字段 in表达式分库分表
-    private final Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = new HashMap<>();
-
     private final SqlTable currentSqlTable;//传入的
 
-    //两个sqlName关系的sql表达式  分析where条件中的join表达式 Pair是orderedSqlTables的索引
-    private final Map<SQLBinaryOpExpr, Pair<Integer, Integer>> conditionTableMap = new HashMap<>();
+    /**
+     * 仅仅作为中间状态的
+     */
+    private final StackArray currentTableColumnValueConditionStack;//表格列的取值是否是全局有效的
+
+    private final StackArray tableOwnConditionStack;//条件归集到当前表的条件
+
+    private boolean hasSqlNameInValue = false;
+    /**
+     * 输出项
+     */
+    private final SQLExpr subQueryResetWhere;//重置过子查询的，状态只会因为子查询而改变
+
+    private final SubQueryConditionVisitor subQueryConditionVisitor;
+
+    private final Map<SqlColumn, SQLExpr> currentTableColumnValueMap = new HashMap<>();
+
+    private final Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = new HashMap<>();
+
+    //两个sqlName关系的sql表达式
+    private final Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> joinConditionMap = new HashMap<>();
 
     //按照sqlTable归集的字段条件（and语义下）
-    private SQLExpr currentTableCondition;//归集到某个tableSource的sql条件
+    private SQLExpr currentTableOwnCondition;//归集到currentSqlTable的sql条件
 
-
-
-    //重置之后的where条件
-    private SQLExpr newWhere;//对象去除了tableOwnCondition
-
-
-
-    //join的条件
+    private SQLExpr otherCondition;//originalWhere对象去除了currentTableCondition剩余的条件
 
     public TableConditionParser(LogicDbConfig logicDbConfig, SqlTable sqlTable, SQLExpr originalWhere) {
         this(logicDbConfig, originalWhere, 0, Lists.newArrayList(sqlTable));
@@ -94,46 +88,51 @@ public class TableConditionParser extends AbstractVisitor {
         }
         this.currentSqlTable = orderedSqlTables.get(currentIndex);
         this.logicDbConfig = logicDbConfig;
-        this.inSelectJoinMode = orderedSqlTables.size() > 1;
-        if (inSelectJoinMode) {
-            partitionColumnStack = new StackArray(16);
-            tableOwnColumnStack = new StackArray(16);
-            //TODO check 表格不重复
-            this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
-        } else {
-            partitionColumnStack = new StackArray(8);
-            tableOwnColumnStack = null;
-            this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
-        }
-
+        this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
+        subQueryConditionVisitor = new SubQueryConditionVisitor(logicDbConfig);
+        currentTableColumnValueConditionStack = new StackArray(16);
+        tableOwnConditionStack = new StackArray(16);
         boolean singleRelation = true;//where条件是单一的关系型表达式
 
-        if (originalWhere instanceof SQLBinaryOpExpr) {
-            SQLBinaryOpExpr sqlBinaryOpExpr = (SQLBinaryOpExpr) originalWhere;
-            SQLBinaryOperator operator = sqlBinaryOpExpr.getOperator();
-            if (operator.isLogical()) {
-                singleRelation = false;
-            }
-        }
-        if (singleRelation) {
-            //确保原始的where表达式 能够重置子查询条件
-            SQLExpr newExpr = checkExpr(originalWhere);//转换SQLExpr的类型
-            if (newExpr != null) {
-                originalWhereHasSubQuery = true;
-                this.originalWhere = newExpr;
-            } else {
-                this.originalWhere = originalWhere;
-            }
-            this.originalWhere.accept(this);
-            if (currentTableCondition != null && inSelectJoinMode) {
-                this.newWhere = null;
-            }
+        if (originalWhere == null) {
+            subQueryResetWhere = null;
         } else {
-            this.originalWhere = originalWhere;
-            this.originalWhere.accept(this);
+            if (originalWhere instanceof SQLBinaryOpExpr) {
+                SQLBinaryOpExpr sqlBinaryOpExpr = (SQLBinaryOpExpr) originalWhere;
+                SQLBinaryOperator operator = sqlBinaryOpExpr.getOperator();
+                if (operator.isLogical()) {
+                    singleRelation = false;
+                }
+            }
+            if (singleRelation) {
+                //确保原始的where表达式 能够重置子查询条件
+                SQLExpr newExpr = subQueryConditionVisitor.checkSubExpr(originalWhere);//转换SQLExpr的类型
+                if (newExpr != null) {
+                    this.subQueryResetWhere = newExpr;
+                    this.subQueryResetWhere.accept(subQueryConditionVisitor);
+                    hasSqlNameInValue = true;
+                } else {
+                    this.subQueryResetWhere = originalWhere;
+                }
+                this.subQueryResetWhere.accept(this);
+                if (currentTableOwnCondition != null) {
+                    this.otherCondition = null;
+                }
+            } else {
+                this.subQueryResetWhere = originalWhere;
+                this.subQueryResetWhere.accept(this);
+            }
         }
+
     }
 
+    public SQLExpr getSubQueryResetWhere() {
+        return this.subQueryResetWhere;
+    }
+
+    public List<SQLExpr> getSubQueryList() {
+        return subQueryConditionVisitor.getSubQueryList();
+    }
 
     public Map<SqlColumn, SQLExpr> getCurrentTableColumnValueMap() {
         return currentTableColumnValueMap;
@@ -143,24 +142,16 @@ public class TableConditionParser extends AbstractVisitor {
         return currentTableColumnInValuesMap;
     }
 
-    public Map<SQLBinaryOpExpr, Pair<Integer, Integer>> getConditionTableMap() {
-        return conditionTableMap;
+    public Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> getJoinConditionMap() {
+        return joinConditionMap;
     }
 
-    public boolean isOriginalWhereHasSubQuery() {
-        return originalWhereHasSubQuery;
+    public SQLExpr getCurrentTableOwnCondition() {
+        return currentTableOwnCondition;
     }
 
-    public SQLExpr getOriginalWhere() {
-        return this.originalWhere;
-    }
-
-    public SQLExpr getNewWhere() {
-        return newWhere;
-    }
-
-    public SQLExpr getCurrentTableCondition() {
-        return currentTableCondition;
+    public SQLExpr getOtherCondition() {
+        return otherCondition;
     }
 
     //替换子查询的类型
@@ -170,18 +161,20 @@ public class TableConditionParser extends AbstractVisitor {
             if (sqlBinaryOpExpr.getOperator().isLogical()) {
                 SQLExpr left = sqlBinaryOpExpr.getLeft();
                 SQLExpr right = sqlBinaryOpExpr.getRight();
-                SQLExpr newExpr = checkExpr(left);
+                SQLExpr newExpr = subQueryConditionVisitor.checkSubExpr(left);
                 if (newExpr != null) {
                     sqlBinaryOpExpr.setLeft(newExpr);
-                    originalWhereHasSubQuery = true;
+                    newExpr.accept(subQueryConditionVisitor);
+                    hasSqlNameInValue = true;
                 }
-                newExpr = checkExpr(right);
+                newExpr = subQueryConditionVisitor.checkSubExpr(right);
                 if (newExpr != null) {
                     sqlBinaryOpExpr.setRight(newExpr);
-                    originalWhereHasSubQuery = true;
+                    newExpr.accept(subQueryConditionVisitor);
                 }
             }
         }
+
     }
 
     /**
@@ -195,118 +188,82 @@ public class TableConditionParser extends AbstractVisitor {
         SQLExpr left = x.getLeft();
         SQLExpr right = x.getRight();
         if (operator == SQLBinaryOperator.BooleanOr || operator == SQLBinaryOperator.BooleanXor) {
-            if (tableOwnColumnStack == null || !tableOwnColumnStack.isAllTrue()) {
-                partitionColumnStack.push(false);//当前设置为or语义下
-                left.accept(this);
+            currentTableColumnValueConditionStack.push(false);//当前设置为or语义下
+
+            SQLExpr parent = this.currentTableOwnCondition;//保留parent节点的引用
+            SQLExpr otherConditionParent = this.otherCondition;//保留parent节点的引用
+            this.currentTableOwnCondition = null;//当前parent
+            this.otherCondition = null;
+            left.accept(this);
+            SQLExpr leftGuiJi = this.currentTableOwnCondition;
+            SQLExpr leftOther = this.otherCondition;
+            if (leftGuiJi == null) {//不归属于currentTable newWhere复制了条件
+                tableOwnConditionStack.push(false);//推入false
+                this.otherCondition = null;
                 right.accept(this);
-                partitionColumnStack.pop();
+                currentTableColumnValueConditionStack.pop();
+
+                SQLExpr rightOther = this.otherCondition;
+                //                if (rightOther == null) {
+                //                    throw new SqlParseException("rightOther==null");
+                //                }
+                tableOwnConditionStack.pop();
+                //非tableOwn的条件
+                this.otherCondition = mergeLogicalCondition(otherConditionParent, leftOther, rightOther, x);
+                return false;
             } else {
-                SQLExpr parent = this.currentTableCondition;//保留parent节点的引用
-                SQLExpr newWhereParent = this.newWhere;//保留parent节点的引用
-                this.currentTableCondition = null;//当前parent
-                this.newWhere = null;
-                partitionColumnStack.push(false);//当前设置为or语义下
-                left.accept(this);
-                SQLExpr leftGuiJi = this.currentTableCondition;
-                SQLExpr leftNew = this.newWhere;
-                if (leftGuiJi == null) {
-                    tableOwnColumnStack.push(false);//推入false
-                    this.newWhere = null;
-                    right.accept(this);
-                    SQLExpr rightNew = this.newWhere;
-                    partitionColumnStack.pop();
-                    tableOwnColumnStack.pop();
-                    this.newWhere = mergeLogicalSqlExpr(newWhereParent, leftNew, rightNew, x);
-                    return false;
+                this.currentTableOwnCondition = null;
+                this.otherCondition = null;
+                right.accept(this);
+                currentTableColumnValueConditionStack.pop();
+                tableOwnConditionStack.pop();
+                SQLExpr rightGuiJi = this.currentTableOwnCondition;
+                SQLExpr rightOther = this.otherCondition;
+                if (rightGuiJi != null) {
+                    this.currentTableOwnCondition = mergeLogicalCondition(parent, leftGuiJi, rightGuiJi, x);
+                    this.otherCondition = mergeLogicalCondition(otherConditionParent, leftOther, rightOther, x);
                 } else {
-                    this.currentTableCondition = null;
-                    this.newWhere = null;
-                    right.accept(this);
-                    partitionColumnStack.pop();
-                    tableOwnColumnStack.pop();
-                    SQLExpr rightGuiJi = this.currentTableCondition;
-                    SQLExpr rightNew = this.newWhere;
-                    if (rightGuiJi != null) {
-                        this.currentTableCondition = mergeLogicalSqlExpr(parent, leftGuiJi, rightGuiJi, x);
-                        this.newWhere = mergeLogicalSqlExpr(newWhereParent, leftNew, rightNew, x);
-                    } else {
-                        this.newWhere = mergeLogicalSqlExpr(newWhereParent, left, rightNew, x);
-                    }
-                    return false;
+                    this.otherCondition = mergeLogicalCondition(otherConditionParent, left, rightOther, x);
                 }
+                return false;
             }
-            return false;
         } else if (operator == SQLBinaryOperator.BooleanAnd) {
-            if (tableOwnColumnStack == null) {
-                partitionColumnStack.push(true);
-                left.accept(this);
-                right.accept(this);
-                partitionColumnStack.pop();
-                return false;
-            } else {
-                SQLExpr parent = this.currentTableCondition;//保留parent节点的引用
-                SQLExpr newWhereParent = this.newWhere;//保留parent节点的引用
-                this.currentTableCondition = null;//当前parent
-                this.newWhere = null;
-                partitionColumnStack.push(true);
-                tableOwnColumnStack.push(true);
+            currentTableColumnValueConditionStack.push(true);
 
-                left.accept(this);
-                SQLExpr leftGuiJi = this.currentTableCondition;
-                SQLExpr leftNew = this.newWhere;
-                this.currentTableCondition = null;
-                this.newWhere = null;
-                right.accept(this);
-                partitionColumnStack.pop();
-                tableOwnColumnStack.pop();
-                SQLExpr rightGuiJi = this.currentTableCondition;
-                SQLExpr rightNew = this.newWhere;
-                this.currentTableCondition = mergeLogicalSqlExpr(parent, leftGuiJi, rightGuiJi, x);
-                this.newWhere = mergeLogicalSqlExpr(newWhereParent, leftNew, rightNew, x);
-                return false;
-            }
+            SQLExpr parent = this.currentTableOwnCondition;//保留parent节点的引用
+            SQLExpr otherConditionParent = this.otherCondition;//保留parent节点的引用
+            this.currentTableOwnCondition = null;//当前parent
+            this.otherCondition = null;
+            tableOwnConditionStack.push(true);
 
+            left.accept(this);
+            SQLExpr leftGuiJi = this.currentTableOwnCondition;
+            SQLExpr leftOther = this.otherCondition;
+            this.currentTableOwnCondition = null;
+            this.otherCondition = null;
+            right.accept(this);
+            currentTableColumnValueConditionStack.pop();
+            tableOwnConditionStack.pop();
+            SQLExpr rightGuiJi = this.currentTableOwnCondition;
+            SQLExpr rightOther = this.otherCondition;
+            this.currentTableOwnCondition = mergeLogicalCondition(parent, leftGuiJi, rightGuiJi, x);
+            this.otherCondition = mergeLogicalCondition(otherConditionParent, leftOther, rightOther, x);
+            return false;
         } else {
             return visitRelationalExpr(x, left, right);
         }
     }
 
-    private SQLExpr mergeLogicalSqlExpr(SQLExpr parent, SQLExpr left, SQLExpr right, SQLBinaryOpExpr originalOpExpr) {
-        SQLExpr mergeExpr = null;
-        if (left != null && right != null) {
-            mergeExpr = new SQLBinaryOpExpr(left, originalOpExpr.getOperator(), right, originalOpExpr.getDbType());
-            mergeExpr.getAttributes().putAll(originalOpExpr.getAttributes());
-
-        } else if (left != null) {
-            mergeExpr = left;
-
-        } else if (right != null) {
-            mergeExpr = right;
-        }
-        if (mergeExpr == null) {
-            return null;
-        }
-        if (parent == null) {
-            return mergeExpr;
-        }
-        if (parent instanceof SQLBinaryOpExpr) {
-            SQLBinaryOpExpr sqlBinaryOpExpr = (SQLBinaryOpExpr) parent;
-            if (ParserUtils.isLogical(sqlBinaryOpExpr)) {
-                sqlBinaryOpExpr.setLeft(mergeExpr);
-                return parent;
-            }
-        }
-        return parent;
-    }
-
     private boolean visitRelationalExpr(SQLBinaryOpExpr x, SQLExpr left, SQLExpr right) {
-        //保留当前条件 确保newWhere尽量包含所有
-        this.newWhere = x;
-        //判断是否是RelationalCondition 决定是否访问
-
+        //保留当前条件 确保otherCondition尽量包含所有
+        if (this.otherCondition == null) {
+            this.otherCondition = x;
+        }
         if (!ParserUtils.isRelational(x)) {
             return true;
         }
+
+        //判断是否是RelationalCondition 决定是否访问
         boolean l = left instanceof SQLName;
         boolean r = right instanceof SQLName;
         // > != 等二元操作符
@@ -316,7 +273,8 @@ public class TableConditionParser extends AbstractVisitor {
         if (l && r) {
             //TODO 如果是join表达式则 newWhere不需要保留此条件，因此需要确定是否是join 条件 表达式
             //TODO join的条件
-            if (!partitionColumnStack.isAllTrue()) {//不在and语义下
+            //join的条件必须是两个都满足
+            if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
                 return false;
             }
             SqlProperty c1 = SqlNameParser.getSqlProperty(left);
@@ -326,19 +284,24 @@ public class TableConditionParser extends AbstractVisitor {
             if (index1 == index2) {
                 //同一个表
                 if (currentSqlTable == orderedSqlTables.get(index1)) {
-                    if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
+                    if (currentTableColumnValueConditionStack.isAllTrue()) {
                         //按照表名 归集sql条件，只归集明确有表格归属的sql条件
-                        this.currentTableCondition = x;
-                        this.newWhere = null;
+                        this.currentTableOwnCondition = x;
+                        this.otherCondition = null;
                     }
                 }
                 return false;
             }
-            boolean flag = index1 > index2;
-            conditionTableMap.put(x, new Pair<>(flag ? index2 : index1, flag ? index1 : index2));
-            if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
-                this.newWhere = null;
+            if (orderedSqlTables.size() < 2 || !tableOwnConditionStack.isAllTrue()) {
+                return false;
             }
+            boolean flag = index1 > index2;
+            Pair<Integer, Integer> pair = new Pair<>(flag ? index2 : index1, flag ? index1 : index2);
+            if (!joinConditionMap.containsKey(pair)) {
+                joinConditionMap.put(pair, new ArrayList<>());
+            }
+            joinConditionMap.get(pair).add(x);
+            this.otherCondition = null;
             return false;
         }
         if (r) {
@@ -364,25 +327,18 @@ public class TableConditionParser extends AbstractVisitor {
         if (b) {
             return false;
         }
-        if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
+        if (tableOwnConditionStack != null && tableOwnConditionStack.isAllTrue()) {
             //按照表名 归集sql条件，只归集明确有表格归属的sql条件
-            this.currentTableCondition = x;
-            this.newWhere = null;
+            this.currentTableOwnCondition = x;
+            this.otherCondition = null;
         }
         SQLBinaryOperator operator = x.getOperator();
         if (operator != SQLBinaryOperator.Equality) {
             return false;
         }
-        if (logicDbConfig == null) {
+        if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-        if (!partitionColumnStack.isAllTrue()) {//不在and语义下
-            return false;
-        }
-
-//        if (!logicDbConfig.getLogicTableManager(currentSqlTable.getTableName()).getLogicTableConfig()[0].getPartitionColumnNames().contains(c.getName().toLowerCase())) {
-//            return false;
-//        }
         SqlColumn sqlColumn = new SqlColumn(currentSqlTable, c.getName());
         currentTableColumnValueMap.put(sqlColumn, right);
         return false;
@@ -396,7 +352,9 @@ public class TableConditionParser extends AbstractVisitor {
      */
     public boolean visit(SQLBetweenExpr x) {
         SQLExpr sqlExpr = x.getTestExpr();
-        this.newWhere = x;
+        if (this.otherCondition == null) {
+            this.otherCondition = x;
+        }
         if (!(sqlExpr instanceof SQLName)) {
             return true;
         }
@@ -419,9 +377,9 @@ public class TableConditionParser extends AbstractVisitor {
         if (b) {
             return false;
         }
-        if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
-            this.currentTableCondition = x;
-            this.newWhere = null;
+        if (tableOwnConditionStack.isAllTrue()) {
+            this.currentTableOwnCondition = x;
+            this.otherCondition = null;
         }
         return false;
     }
@@ -434,7 +392,9 @@ public class TableConditionParser extends AbstractVisitor {
      */
     public boolean visit(SQLInListExpr x) {
         SQLExpr sqlExpr = x.getExpr();
-        this.newWhere = x;
+        if (this.otherCondition == null) {
+            this.otherCondition = x;
+        }
         if (!(sqlExpr instanceof SQLName)) {
             return true;
         }
@@ -461,34 +421,23 @@ public class TableConditionParser extends AbstractVisitor {
         if (b) {
             return false;
         }
-        if (tableOwnColumnStack != null && tableOwnColumnStack.isAllTrue()) {
-            this.currentTableCondition = x;
-            this.newWhere = null;
-        }
-        //partition column判断
-        if (logicDbConfig == null) {
-            return false;
+        if (tableOwnConditionStack.isAllTrue()) {
+            this.currentTableOwnCondition = x;
+            this.otherCondition = null;
         }
         if (x.isNot()) {
             return false;
         }
-        if (!partitionColumnStack.isAllTrue()) {//不在and语义下
+        if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-//        if (!logicDbConfig.getLogicTableManager(currentSqlTable.getTableName()).getLogicTableConfig()[0].getPartitionColumnNames().contains(c.getName().toLowerCase())) {
-//            return false;
-//        }
-        try {
-            SqlColumn sqlColumn = new SqlColumn(currentSqlTable, c.getName());
-            if (currentTableColumnInValuesMap.containsKey(sqlColumn)) {
-                //TODO 不必要的重复sql 不支持
-                return false;
-            }
-            currentTableColumnInValuesMap.put(sqlColumn, x);
-            return false;
-        } catch (Exception e) {
+        SqlColumn sqlColumn = new SqlColumn(currentSqlTable, c.getName());
+        if (currentTableColumnInValuesMap.containsKey(sqlColumn)) {
+            //TODO 不必要的重复sql 不支持
             return false;
         }
+        currentTableColumnInValuesMap.put(sqlColumn, x);
+        return false;
     }
 
     /**
@@ -504,8 +453,47 @@ public class TableConditionParser extends AbstractVisitor {
     }
 
     public boolean visit(ExitsSubQueriedExpr x) {
-        this.newWhere = x;
+        if (this.otherCondition == null) {
+            this.otherCondition = x;
+        }
         return false;
+    }
+
+    /**
+     * merge sql条件
+     *
+     * @param parent
+     * @param left
+     * @param right
+     * @param originalOpExpr
+     * @return
+     */
+    private SQLExpr mergeLogicalCondition(SQLExpr parent, SQLExpr left, SQLExpr right, SQLBinaryOpExpr originalOpExpr) {
+        SQLExpr mergeExpr = null;
+        if (left != null && right != null) {
+            mergeExpr = new SQLBinaryOpExpr(left, originalOpExpr.getOperator(), right, originalOpExpr.getDbType());
+            mergeExpr.getAttributes().putAll(originalOpExpr.getAttributes());
+
+        } else if (left != null) {
+            mergeExpr = left;
+
+        } else if (right != null) {
+            mergeExpr = right;
+        }
+        if (mergeExpr == null) {
+            return parent;
+        }
+        if (parent == null) {
+            return mergeExpr;
+        }
+        if (parent instanceof SQLBinaryOpExpr) {
+            SQLBinaryOpExpr sqlBinaryOpExpr = (SQLBinaryOpExpr) parent;
+            if (ParserUtils.isLogical(sqlBinaryOpExpr)) {
+                sqlBinaryOpExpr.setLeft(mergeExpr);
+                return parent;
+            }
+        }
+        return parent;
     }
 
     //=========sqlName check相关======
@@ -516,8 +504,11 @@ public class TableConditionParser extends AbstractVisitor {
     }
 
     public boolean visit(SQLPropertyExpr x) {
-        SqlProperty c = SqlNameParser.getSqlProperty(x);
-        checkOwner(c);
+        hasSqlNameInValue = true;
+        return false;
+    }
+
+    public boolean visit(SQLAllColumnExpr x) {
         hasSqlNameInValue = true;
         return false;
     }
@@ -530,24 +521,11 @@ public class TableConditionParser extends AbstractVisitor {
      */
     private boolean checkOwner(SqlProperty c) {
         //前缀匹配
-        String ownerName = c.getOwnerName();
-        if (ownerName != null) {
-            if (ownerName.equals(currentSqlTable.getAlias())) {
-                return true;
-            }
-            if (ownerName.equalsIgnoreCase(currentSqlTable.getTableName())) {
-                if (currentSqlTable.getAlias() == null) {
-                    currentSqlTable.setAlias(ownerName);
-                }
-                return true;
-            }
-            if (currentSqlTable.getAlias() != null && !ownerName.equals(currentSqlTable.getAlias())) {
-                return false;
-            }
-        }
-        //表格含有此列
         //表格配置信息
-        return !inSelectJoinMode;
+        if (orderedSqlTables.size() == 1) {
+            return true;
+        }
+        return SqlTableColumnsParser.checkOwner(currentSqlTable, c);
     }
 
     /**
@@ -558,71 +536,20 @@ public class TableConditionParser extends AbstractVisitor {
      */
     private int getOwnerFromTables(SqlProperty c) {
         //前缀匹配
+        if (orderedSqlTables.size() == 1) {
+            return 0;
+        }
         String ownerName = c.getOwnerName();
         for (int i = 0; i < orderedSqlTables.size(); i++) {
             SqlTable sqlTable = orderedSqlTables.get(i);
-            if (ownerName != null) {
-                if (ownerName.equals(sqlTable.getAlias())) {
-                    return i;
-                }
-                if (ownerName.equalsIgnoreCase(sqlTable.getTableName())) {
-                    if (sqlTable.getAlias() == null) {
-                        sqlTable.setAlias(ownerName);
-                    }
-                    return i;
-                }
-
-            } else {
-                //TODO 表格含有此列 表格配置信息
-                if (orderedSqlTables.size() == 1) {
-                    return 0;
-                }
+            if (SqlTableColumnsParser.checkOwner(sqlTable, c)) {
+                return i;
             }
-
         }
         throw new SqlParseException("无法匹配table source");
     }
 
-    // ======子查询 check相关====
 
-    private SQLExpr checkExpr(SQLExpr x) {
-        //保证幂等操作，多个tableSource可能会重复调用
-        if (x instanceof ExitsSubQueriedExpr) {
-            return null;
-        }
-        if (x instanceof SQLInSubQueriedExpr) {
-            return null;
-        }
-        if (x instanceof SQLInSubQueryExpr) {
-            return new SQLInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) x);
-        } else if (x instanceof SQLNotExpr) {
-            SQLNotExpr sqlNotExpr = (SQLNotExpr) x;
-            SQLExpr sqlExpr = sqlNotExpr.getExpr();
-            if (sqlExpr instanceof SQLMethodInvokeExpr) {
-                return checkExitsQuery((SQLMethodInvokeExpr) sqlExpr, true);
-                //将exitsSubQueriedExpr 设置到x的parent下
-            }
-        } else if (x instanceof SQLMethodInvokeExpr) {
-            SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) x;
-            return checkExitsQuery(methodInvokeExpr, false);
-        }
-        return null;
-    }
-
-    private ExitsSubQueriedExpr checkExitsQuery(SQLMethodInvokeExpr methodInvokeExpr, boolean not) {
-        if (methodInvokeExpr.getMethodName().equalsIgnoreCase("exits")) {
-            List<SQLExpr> parameters = methodInvokeExpr.getParameters();
-            if (!parameters.isEmpty() && parameters.size() == 1) {
-                SQLExpr pExpr = parameters.get(0);
-                if (pExpr instanceof SQLQueryExpr) {
-                    SQLQueryExpr sqlQueryExpr = (SQLQueryExpr) pExpr;
-                    ExitsSubQueriedExpr r = new ExitsSubQueriedExpr(logicDbConfig, sqlQueryExpr, methodInvokeExpr, not);
-                    return r;
-                }
-            }
-        }
-        return null;
-    }
 
     /**
      * and or等column value条件 必须在and的语境下才能生效，为了在遍历sql条件时判断当前是否在and的语义下

@@ -6,6 +6,7 @@ import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 import org.the.force.thirdparty.druid.util.JdbcUtils;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -29,6 +30,7 @@ public class TestJdbcBase {
     protected String actualDriverClassName;
     //数据库名和表名约定不变
     protected final String dbName = "test";
+
 
     public TestJdbcBase() {
         init();
@@ -66,6 +68,11 @@ public class TestJdbcBase {
     protected String[] loadSqlFromFile(String filePath) {
         filePath = projectBasePath + "/doc/" + sqlDialectName + "/" + filePath;
         return PartitionSqlUtils.loadSqlFromFile(filePath, sqlDialect);
+    }
+
+    protected File getYamlFromFile(String filePath) {
+        filePath = projectBasePath + "/doc/" + sqlDialectName + "/" + filePath;
+        return new File(filePath);
     }
 
     protected Connection getConnection() throws SQLException {

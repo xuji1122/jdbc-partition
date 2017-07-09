@@ -17,6 +17,8 @@ public interface LogicTableConfig {
 
     PartitionRule getPartitionRule();
 
+    PartitionRule.PartitionSortType getPartitionSortType();
+
     SortedSet<String> getPartitionColumnNames();
 
     Map<String, Set<PartitionColumnConfig>> getPartitionColumnConfigs();

@@ -1,5 +1,13 @@
 package org.the.force.jdbc.partition.resource.statement;
 
+import org.the.force.jdbc.partition.engine.parameter.ByteSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.DecimalSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.DoubleSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.FloatSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.LongSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.ShortSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.StringSqlParameter;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
@@ -75,42 +83,42 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
 
 
     public void setByte(int parameterIndex, byte x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.TINYINT));
+        logicSqlParameterHolder.setParameter(parameterIndex, new ByteSqlParameter(x));
     }
 
 
     public void setShort(int parameterIndex, short x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.SMALLINT));
+        logicSqlParameterHolder.setParameter(parameterIndex, new ShortSqlParameter(x));
     }
 
 
     public void setInt(int parameterIndex, int x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.INTEGER));
+        logicSqlParameterHolder.setParameter(parameterIndex, new IntegerSqlParameter(x));
     }
 
 
     public void setLong(int parameterIndex, long x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.BIGINT));
+        logicSqlParameterHolder.setParameter(parameterIndex, new LongSqlParameter(x));
     }
 
 
     public void setFloat(int parameterIndex, float x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.FLOAT));
+        logicSqlParameterHolder.setParameter(parameterIndex, new FloatSqlParameter(x));
     }
 
 
     public void setDouble(int parameterIndex, double x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.DOUBLE));
+        logicSqlParameterHolder.setParameter(parameterIndex, new DoubleSqlParameter(x));
     }
 
 
     public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.DECIMAL));
+        logicSqlParameterHolder.setParameter(parameterIndex, new DecimalSqlParameter(x));
     }
 
 
     public void setString(int parameterIndex, String x) throws SQLException {
-        logicSqlParameterHolder.setParameter(parameterIndex, new ObjectSqlParameter(x, Types.VARCHAR));
+        logicSqlParameterHolder.setParameter(parameterIndex, new StringSqlParameter(x));
     }
 
 
@@ -146,10 +154,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -295,9 +299,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -313,9 +314,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return value;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -331,9 +329,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return value;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -349,9 +344,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return value;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -367,9 +359,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return reader;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -385,9 +374,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return inputStream;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -403,9 +389,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return reader;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -420,9 +403,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return xmlObject;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -438,9 +418,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -456,9 +433,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -474,9 +448,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -492,9 +463,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return reader;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -510,9 +478,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -528,9 +493,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return x;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -546,9 +508,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return reader;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -564,9 +523,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return value;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -582,9 +538,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return reader;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -600,9 +553,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return inputStream;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 
@@ -618,9 +568,6 @@ public abstract class AbstractPreparedStatement extends AbstractStatement implem
                 return reader;
             }
 
-            public int getSqlType() {
-                return 0;
-            }
         });
     }
 

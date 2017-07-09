@@ -3,10 +3,12 @@ package org.the.force.jdbc.partition.resource.table.model;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by xuji on 2017/6/7.
@@ -21,9 +23,9 @@ public class LogicTable {
 
     private final Map<String, LogicColumn> columns = new LinkedHashMap<>();
 
-    private final Set<String> pkColumns = new LinkedHashSet<>();
+    private final Map<String, LogicColumn> pkColumns = new LinkedHashMap<>();
 
-    private final Map<String, Set<String>> uniqueColumns = new LinkedHashMap<>();
+    private final Map<String, Set<LogicColumn>> uniqueColumns = new LinkedHashMap<>();
 
     //index信息
 
@@ -44,8 +46,8 @@ public class LogicTable {
         }
         rs = databaseMetaData.getPrimaryKeys(catalog, schema, tableName);
         while (rs.next()) {
-            String pkColumn = rs.getString(4);
-            pkColumns.add(pkColumn);
+            String pkColumn = rs.getString("COLUMN_NAME").toLowerCase();
+            pkColumns.put(pkColumn, columns.get(pkColumn));
         }
         rs = databaseMetaData.getIndexInfo(catalog, schema, tableName, false, true);
         while (rs.next()) {
@@ -56,19 +58,20 @@ public class LogicTable {
             if (!uniqueColumns.containsKey(indexName)) {
                 uniqueColumns.put(indexName, new LinkedHashSet<>());
             }
-            uniqueColumns.get(indexName).add(rs.getString("COLUMN_NAME"));
+            uniqueColumns.get(indexName).add(columns.get(rs.getString("COLUMN_NAME").toLowerCase()));
         }
     }
 
-    public Map<String, LogicColumn> getColumns() {
-        return columns;
+    public Set<String> getColumns() {
+
+        return columns.values().stream().map(LogicColumn::getColumnName).collect(Collectors.toSet());
     }
 
     public Set<String> getPkColumns() {
-        return pkColumns;
+        return pkColumns.values().stream().map(LogicColumn::getColumnName).collect(Collectors.toSet());
     }
 
-    public Map<String, Set<String>> getUniqueColumns() {
+    public Map<String, Set<LogicColumn>> getUniqueColumns() {
         return uniqueColumns;
     }
 

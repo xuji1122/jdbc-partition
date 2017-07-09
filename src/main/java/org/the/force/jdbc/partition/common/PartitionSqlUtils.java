@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.common;
 
+import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
@@ -8,7 +9,6 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlOutputVisit
 import org.the.force.thirdparty.druid.sql.dialect.oracle.visitor.OracleParameterizedOutputVisitor;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTOutputVisitor;
 import org.the.force.thirdparty.druid.util.JdbcConstants;
-import org.the.force.jdbc.partition.driver.SqlDialect;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -92,6 +92,26 @@ public class PartitionSqlUtils {
                 }
             }
         }
+    }
+
+    public static String toSqlKey(String sql) {
+        StringBuilder sb = new StringBuilder(sql.length() - 2);
+        for (int i = 0, size = sql.length(); i < size; i++) {
+            char ch = sql.charAt(i);
+            if (ch > ' ') {
+                sb.append(Character.toLowerCase(ch));
+            }
+        }
+        return sb.toString();
+    }
+
+    public static boolean sqlEquals(String sql1, String sql2) {
+        if (sql1 == null || sql2 == null) {
+            return false;
+        }
+        sql1 = toSqlKey(sql1);
+        sql2 = toSqlKey(sql2);
+        return sql1.equals(sql2);
     }
 
 }

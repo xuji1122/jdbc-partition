@@ -1,0 +1,118 @@
+#逻辑数据库名称
+db_order:
+    #逻辑数据库属性配置
+    data:
+        #物理驱动类的类名，注意，物理库只能选择一种类型，不能混用
+        actualDriverClassName: com.mysql.jdbc.Driver
+        #配置文件格式版本号，用于配置文件调整时兼容旧的配置
+        configVersion:  1.0.0
+    #逻辑数据库的子节点，固定两个节点，一个表示物理库的定义，一个表示逻辑表的定义
+    children:
+        # 物理库的地址列表，只有子节点，没有data
+        physic_dbs:
+            #物理库节点的名字被当做一个指针，在定义表格分区时使用
+            children:
+                db_order_0:
+                    url:  jdbc:mysql://dev.db:3306/db_order_0
+                db_order_1:
+                    url:  jdbc:mysql://dev.db:3306/db_order_0
+        # 逻辑表列表，只有子节点，没有data
+        logic_tables:
+            children:
+                #逻辑表 t_user，以key为表名
+                t_user:
+                    #每个逻辑表固定有两个子节点old节点和new节点 new节点用于数据在线迁移时重新定义一套物理存储的规则
+                    children:
+                        #老版本物理表配置
+                        old:
+                            #分库分表规则属性
+                            data:
+                                #分区排序规则
+                                partitionSortType: BY_TABLE
+                                #分区选择规则实现类，默认的是DefaultPartitionRule
+                                #可以是任意一个PartitionRule的实现类
+                                partitionRuleClassName: org.the.force.jdbc.partition.rule.DefaultPartitionRule
+                                #老分区的版本号
+                                version: -1
+                                #分区字段配置
+                                partitionColumnConfigs:
+                                    #id代表字段名
+                                    id:
+                                      #同一个字段可以有多项配置
+                                      - {valueFromIndex: -1,valueToIndex: -1,partitionRuleType: 'TABLE'}
+
+
+                            #物理表子节点，就是逻辑表的分区列表  节点的每个元素就是一个partition,partition是完全自定义的，唯一的约束是physicDbName和physicTableName联合唯一
+                            children:
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_user_0'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_user_1'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_user_2'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_user_3'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_4'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_5'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_6'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_7'}
+                t_order:
+                    children:
+                        #老版本物理表配置，可以有new子节点，用于数据在线迁移时重新定义一套物理存储的规则
+                        old:
+                            #分库分表规则属性
+                            data:
+                                #分区排序规则
+                                partitionSortType: BY_TABLE
+                                #分区选择规则实现类，默认的是DefaultPartitionRule
+                                #可以是任意一个PartitionRule的实现类
+                                partitionRuleClassName: org.the.force.jdbc.partition.rule.DefaultPartitionRule
+                                #老分区的版本号
+                                version: -1
+                                #分区字段配置
+                                partitionColumnConfigs:
+                                    #id代表字段名
+                                    id:
+                                      #同一个字段可以有多项配置
+                                      - {valueFromIndex: -1,valueToIndex: -1,partitionRuleType: 'TABLE'}
+
+
+
+                            #子节点是表格的分区列表  节点的每个元素就是一个partition,partition是完全自定义的，唯一的约束是physicDbName和physicTableName联合唯一
+                            children:
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_0'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_1'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_2'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_3'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_4'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_5'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_6'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_7'}
+                t_order_sku:
+                    children:
+                        #老版本物理表配置，可以有new子节点，用于数据在线迁移时重新定义一套物理存储的规则
+                        old:
+                            #分库分表规则属性
+                            data:
+                                #分区排序规则
+                                partitionSortType: BY_TABLE
+                                #分区选择规则实现类，默认的是DefaultPartitionRule
+                                #可以是任意一个PartitionRule的实现类
+                                partitionRuleClassName: org.the.force.jdbc.partition.rule.DefaultPartitionRule
+                                #老分区的版本号
+                                version: -1
+                                #分区字段配置
+                                partitionColumnConfigs:
+                                    #id代表字段名
+                                    id:
+                                      #同一个字段可以有多项配置
+                                      - {valueFromIndex: -1,valueToIndex: -1,partitionRuleType: 'TABLE'}
+
+
+                            #子节点是表格的分区列表  节点的每个元素就是一个partition,partition是完全自定义的，唯一的约束是physicDbName和physicTableName联合唯一
+                            children:
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_0'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_1'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_2'}
+                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_3'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_4'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_5'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_6'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_7'}
+

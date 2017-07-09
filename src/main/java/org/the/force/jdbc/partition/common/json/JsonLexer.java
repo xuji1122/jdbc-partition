@@ -18,7 +18,7 @@ public class JsonLexer {
         this.endChar = this.text.charAt(pos);
     }
 
-    public JsonToken get_next_token() {
+    public JsonToken getNextToken() {
         while (this.endChar != Character.MIN_VALUE) {
             char current = text.charAt(pos);
             if (isSpace(current)) {
@@ -49,6 +49,15 @@ public class JsonLexer {
             if (current == ':') {
                 advance();
                 return new JsonToken(JsonTokenType.COLON, ':');
+            }
+            // null
+            if ((current == 'n' || current == 'N') && (pos + 3 < text.length())) {
+                String key = text.substring(pos, pos + 4);
+                if (key.equalsIgnoreCase("null")) {
+                    pos = pos + 3;
+                    advance();
+                    return new JsonToken(JsonTokenType.STRING, null);
+                }
             }
             if (current == '"' || current == '\'') {
                 advance();

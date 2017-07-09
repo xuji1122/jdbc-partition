@@ -110,8 +110,8 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdat
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdateTableSource;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MysqlDeallocatePrepareStatement;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlASTVisitor;
-import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
 
 /**
  * Created by xuji on 2017/5/17.
