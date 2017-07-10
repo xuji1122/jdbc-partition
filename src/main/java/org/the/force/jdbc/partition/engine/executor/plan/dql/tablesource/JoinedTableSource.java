@@ -2,8 +2,7 @@ package org.the.force.jdbc.partition.engine.executor.plan.dql.tablesource;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.executor.plan.dql.PlanedTableSource;
-import org.the.force.jdbc.partition.engine.parser.ParserUtils;
-import org.the.force.jdbc.partition.engine.parser.TableConditionParser;
+import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.engine.parser.elements.JoinConnector;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
@@ -11,7 +10,6 @@ import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableParser;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
@@ -23,7 +21,6 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -43,13 +40,13 @@ public class JoinedTableSource extends PlanedTableSource {
 
     private final Map<Integer, PlanedTableSource> planedTableSourceMap = new HashMap<>();
 
-    private SQLExpr newWhere;
+    private SQLExpr otherCondition;
 
 
     public JoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
         super(logicDbConfig);
         super.setParent(sqlJoinTableSource.getParent());
-        this.newWhere = originalWhere;
+        this.otherCondition = originalWhere;
         parseTableSource(sqlJoinTableSource);
         parseTableCondition();
     }
@@ -79,8 +76,8 @@ public class JoinedTableSource extends PlanedTableSource {
         for (int i = 0; i < size; i++) {
             SQLTableSource sqlTableSource = originalTableSources.get(i);
             SqlTable sqlTable = sqlTables.get(i);
-            TableConditionParser parser = new TableConditionParser(logicDbConfig, this.newWhere, i, sqlTables);
-            this.newWhere = parser.getOtherCondition();
+            TableConditionParser parser = new TableConditionParser(logicDbConfig, this.otherCondition, i, sqlTables);
+            this.otherCondition = parser.getOtherCondition();
             SQLExpr tableOwnCondition = parser.getCurrentTableOwnCondition();
             Map<SqlColumn, SQLExpr> currentTableColumnValueMap = parser.getCurrentTableColumnValueMap();
             Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = parser.getCurrentTableColumnInValuesMap();
@@ -141,7 +138,7 @@ public class JoinedTableSource extends PlanedTableSource {
 
     }
 
-    public SQLExpr getNewWhere() {
-        return newWhere;
+    public SQLExpr getOtherCondition() {
+        return otherCondition;
     }
 }

@@ -75,6 +75,8 @@ public class JsonDataNode implements DataNode {
         if (parent != null) {
             sb.append(parent.getPath());
             sb.append("/");
+        } else {
+            sb.append("/");
         }
         sb.append(key);
         return sb.toString();
@@ -140,7 +142,7 @@ public class JsonDataNode implements DataNode {
 
     private void createNode(CuratorFramework curatorFramework) throws Exception {
         try {
-            String path = "/" + getPath();
+            String path = getPath();
             Stat stat = curatorFramework.checkExists().forPath(path);
             if (stat == null) {
                 String result = curatorFramework.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path, null);
@@ -155,7 +157,7 @@ public class JsonDataNode implements DataNode {
         if (this.data == null) {
             return;
         }
-        String path = "/" + getPath();
+        String path = getPath();
         byte[] data = this.data.getBytes("UTF-8");
         Stat stat = curatorFramework.setData().forPath(path, data);
         logger.info("setTableData:" + stat.toString());

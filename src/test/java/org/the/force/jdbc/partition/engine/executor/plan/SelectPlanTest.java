@@ -41,9 +41,42 @@ public class SelectPlanTest extends TestJdbcPartitionBase {
         logger.info(queryPlan.toString());
     }
 
-    public void testTableConditionParser2() throws Exception {
+    public void test2() throws Exception {
         String sql =
             "select id,channel from t_order o join t_order_sku i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
+        QueryPlan queryPlan = (QueryPlan) sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        logger.info(queryPlan.toString());
+    }
+
+    public void test3() throws Exception {
+        String sql =
+            "select id,channel from t_order o ,t_order_sku i  where o.id=i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
+        QueryPlan queryPlan = (QueryPlan) sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        logger.info(queryPlan.toString());
+    }
+
+    public void test4() throws Exception {
+        String sql =
+            "select id,channel from t_order o ,t_order_sku i  where o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=?  and o.status in (select status from t_user) order by id limit 20 ";
+        QueryPlan queryPlan = (QueryPlan) sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        logger.info(queryPlan.toString());
+    }
+    public void test5() throws Exception {
+        String sql =
+            "select o.id,o.channel from t_user t,t_order o ,t_order_sku i  where t.id=o.user_id and o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=?  and o.status in (select status from t_user) order by id limit 20 ";
+        QueryPlan queryPlan = (QueryPlan) sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        logger.info(queryPlan.toString());
+    }
+
+    public void test6() throws Exception {
+        String sql =
+            "select o.id,o.channel from (select id from t_user where id=? ) t,t_order o ,t_order_sku i  where t.id=o.user_id and o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=?  and o.status in (select status from t_user) order by id limit 20 ";
+        QueryPlan queryPlan = (QueryPlan) sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        logger.info(queryPlan.toString());
+    }
+    public void test7() throws Exception {
+        String sql =
+            "select o.id,o.channel from (select id from t_user where id=? ) t,t_order o ,t_order_sku i  where t.id=o.user_id and o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=?  and o.status in (select status from t_user) and exits (select name from t_user) order by i.id limit 20 ";
         QueryPlan queryPlan = (QueryPlan) sqlExecutionPlanManager.getSqlExecutionPlan(sql);
         logger.info(queryPlan.toString());
     }

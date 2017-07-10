@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -78,6 +79,7 @@ public class TableConditionParserTest extends AbstractVisitor {
     public void testTableConditionParser8() {
         String sql =
             "select id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and i.f1 is null and  o.f1 is null and o.f2 is not null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=? and o.user_id in (select id from user) and exits (select 1 from temp) and not exits (select 1 from temp_2 )  order by id limit 20 ";
+        logger.info("sql:\n" + sql);
         printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
     }
 

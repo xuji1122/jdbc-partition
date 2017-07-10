@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.parser;
+package org.the.force.jdbc.partition.engine.parser.table;
 
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -18,13 +18,13 @@ import java.util.List;
 /**
  * Created by xuji on 2017/6/14.
  */
-public class SubQueryConditionVisitor extends AbstractVisitor {
+public class SubQueryConditionChecker extends AbstractVisitor {
 
     private final LogicDbConfig logicDbConfig;
 
     private List<SQLExpr> subQueryList = new ArrayList<>();
 
-    public SubQueryConditionVisitor(LogicDbConfig logicDbConfig) {
+    public SubQueryConditionChecker(LogicDbConfig logicDbConfig) {
         this.logicDbConfig = logicDbConfig;
     }
 

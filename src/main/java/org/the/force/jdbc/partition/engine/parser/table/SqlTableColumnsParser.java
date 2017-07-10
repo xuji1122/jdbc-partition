@@ -1,9 +1,12 @@
-package org.the.force.jdbc.partition.engine.parser.sqlName;
+package org.the.force.jdbc.partition.engine.parser.table;
 
 import org.the.force.jdbc.partition.engine.parser.elements.SqlProperty;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableColumns;
+import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
+import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLAllColumnExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
@@ -23,6 +26,8 @@ import java.util.stream.Collectors;
 public class SqlTableColumnsParser extends AbstractVisitor {
 
     //输入
+
+    private final LogicDbConfig logicDbConfig;
 
     private final SQLTableSource originTableSource;
 
@@ -47,8 +52,13 @@ public class SqlTableColumnsParser extends AbstractVisitor {
         return isContinue;
     }
 
-    public SqlTableColumnsParser(SQLTableSource originTableSource) {
-        this.sqlTable = new SqlTableParser().getSqlTable(originTableSource);
+    public SqlTableColumnsParser(LogicDbConfig logicDbConfig, SQLTableSource originTableSource) {
+        this(logicDbConfig, originTableSource, new SqlTableParser(logicDbConfig).getSqlTable(originTableSource));
+    }
+
+    public SqlTableColumnsParser(LogicDbConfig logicDbConfig, SQLTableSource originTableSource, SqlTable sqlTable) {
+        this.logicDbConfig = logicDbConfig;
+        this.sqlTable = sqlTable;
         this.sqlTableColumns = new SqlTableColumns();
         this.originTableSource = originTableSource;
         //        if (!(originTableSource.getParent() instanceof SQLSelectQuery)) {
@@ -72,7 +82,7 @@ public class SqlTableColumnsParser extends AbstractVisitor {
             if (sqlTableSource.getAlias() != null && sqlTableSource.getAlias().equals(sqlTable.getAlias())) {
                 throw new ParserException("tableSource 别称重复");
             }
-            SqlTable otherSqlTable = new SqlTableParser().getSqlTable(sqlTableSource);
+            SqlTable otherSqlTable = new SqlTableParser(logicDbConfig).getSqlTable(sqlTableSource);
             if (sqlTableSource.getAlias() == null && (otherSqlTable.getTableName().equals(sqlTable.getTableName()) || otherSqlTable.getTableName().equals(sqlTable.getAlias()))) {
                 throw new ParserException("tableSource 名称重复复重复");
             }
@@ -87,6 +97,7 @@ public class SqlTableColumnsParser extends AbstractVisitor {
             }
         }
     }
+
     public void postVisit(SQLObject sqlObject) {
         if (sqlObject == originTableSource) {
             isInTableSource = false;
@@ -102,6 +113,7 @@ public class SqlTableColumnsParser extends AbstractVisitor {
             visitingTableSource = null;
         }
     }
+
     public boolean visit(SQLJoinTableSource sqlJoinTableSource) {
         sqlJoinTableSource.getLeft().accept(this);
         if (sqlJoinTableSource.getCondition() != null) {
@@ -128,34 +140,30 @@ public class SqlTableColumnsParser extends AbstractVisitor {
         if (isInTableSource || visitingTableSource != null) {
             return false;
         }
-        SqlProperty c = SqlNameParser.getSqlProperty(propertyExpr);
-        if (c == null) {
+        SqlProperty sqlProperty = SqlNameParser.getSqlProperty(propertyExpr);
+        if (sqlProperty == null) {
             throw new ParserException("SQLPropertyExpr to SqlProperty is null");
         }
         if (subQuery == null) {
-            if (c.getName().equals("*")) {
-                if (c.getOwnerName() == null) {
+            if (sqlProperty.getName().equals("*")) {
+                if (sqlProperty.getOwnerName() == null) {
                     throw new ParserException("SQLPropertyExpr to SqlProperty is null");
                 }
-                if (c.getOwnerName() != null && checkByOwnerOnly(sqlTable, c)) {
+                Boolean b = checkByOwnerOnly(sqlTable, sqlProperty);
+                if (b != null && b) {
                     sqlTableColumns.setQueryAll(true);
                     isContinue = false;
                     return false;
                 }
             } else {
-                if (checkByOwnerOnly(sqlTable, c)) {
-                    sqlTableColumns.addQueriedColumn(c.getName());
-                } else {
-                    Set<String> columns = sqlTable.getColumns();
-                    if (columns == null || columns.isEmpty()) {
-                        sqlTableColumns.setQueryAll(true);
-                        isContinue = false;
-                        return false;
-                    }
+                Boolean b = checkByOwnerOnly(sqlTable, sqlProperty);
+                if (b != null && b) {
+                    sqlTableColumns.addQueriedColumn(sqlProperty.getName());
                 }
             }
         } else {
-            if (c.getOwnerName() != null && checkByOwnerOnly(sqlTable, c)) {
+            Boolean b = checkByOwnerOnly(sqlTable, sqlProperty);
+            if (b != null && b) {
                 throw new ParserException("不支持在子查询中引用父select的from子句定义的table");
             }
         }
@@ -167,37 +175,45 @@ public class SqlTableColumnsParser extends AbstractVisitor {
         if (isInTableSource || visitingTableSource != null) {
             return false;
         }
-        SqlProperty c = SqlNameParser.getSqlProperty(propertyExpr);
-        if (c == null) {
+        SqlProperty sqlProperty = SqlNameParser.getSqlProperty(propertyExpr);
+        if (sqlProperty == null) {
             throw new ParserException("SQLPropertyExpr to SqlProperty is null");
         }
         if (subQuery == null) {
-            sqlTableColumns.addQueriedColumn(c.getName());
+            boolean b = checkOwner(sqlTable, sqlProperty);
+            if (b) {
+                sqlTableColumns.addQueriedColumn(sqlProperty.getName());
+            }
         }
         return false;
     }
 
-    public static boolean checkOwner(SqlTable sqlTable, SqlProperty c) {
-        if (c.getOwnerName() != null && checkByOwnerOnly(sqlTable, c)) {
-            return true;
+    public static boolean checkOwner(SqlTable sqlTable, SqlProperty sqlProperty) {
+        if (sqlProperty.getOwnerName() != null) {
+            Boolean b = checkByOwnerOnly(sqlTable, sqlProperty);
+            if (b != null) {
+                return b;
+            }
         }
-        return !sqlTable.getColumns().stream().filter(column -> column.equalsIgnoreCase(c.getName())).collect(Collectors.toSet()).isEmpty();
+        Set<String> columns = sqlTable.getColumns();
+        if (columns == null || columns.isEmpty()) {
+            throw new ParserException("sqlTable columns can not init:" + sqlTable.toString());
+        }
+        return !columns.stream().filter(column -> column.equalsIgnoreCase(sqlProperty.getName())).collect(Collectors.toSet()).isEmpty();
     }
 
-    public static boolean checkByOwnerOnly(SqlTable sqlTable, SqlProperty c) {
+    public static Boolean checkByOwnerOnly(SqlTable sqlTable, SqlProperty c) {
         String ownerName = c.getOwnerName();
         if (ownerName != null) {
-            if (ownerName.equals(sqlTable.getAlias())) {
-                return true;
+            if (sqlTable.getAlias() != null) {
+                return sqlTable.getAlias().equals(ownerName);
             }
             if (ownerName.equalsIgnoreCase(sqlTable.getTableName())) {
-                if (sqlTable.getAlias() == null) {
-                    sqlTable.setAlias(ownerName);
-                }
+                sqlTable.setAlias(ownerName);
                 return true;
             }
         }
-        return false;
+        return null;
     }
 
     public String getTableAlias() {

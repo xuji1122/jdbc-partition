@@ -8,13 +8,13 @@ import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
 import org.the.force.jdbc.partition.engine.parser.SqlValueEvalContext;
-import org.the.force.jdbc.partition.engine.parser.TableConditionParser;
+import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.parser.output.MySqlPartitionSqlOutput;
-import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableColumnsParser;
+import org.the.force.jdbc.partition.engine.parser.table.SqlTableColumnsParser;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -68,7 +68,7 @@ public class UpdateDelParser {
         this.where = tableConditionParser.getSubQueryResetWhere();
         columnValueMap = tableConditionParser.getCurrentTableColumnValueMap();
         sqlInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
-        SqlTableColumnsParser parser = new SqlTableColumnsParser(updateDelParserAdapter.getSQLExprTableSource());
+        SqlTableColumnsParser parser = new SqlTableColumnsParser(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
         exprSqlTable.setAlias(parser.getTableAlias());
     }
 

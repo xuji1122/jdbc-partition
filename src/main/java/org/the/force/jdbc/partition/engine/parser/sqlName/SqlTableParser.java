@@ -27,10 +27,6 @@ public class SqlTableParser {
         this.logicDbConfig = logicDbConfig;
     }
 
-    public SqlTableParser() {
-        this.logicDbConfig = null;
-    }
-
     //主要目的是获取tableSource包括哪些列，从而为sql条件归集提供必要的依据
     public SqlTable getSqlTable(SQLTableSource tableSource){
         if (tableSource instanceof SQLExprTableSource) {

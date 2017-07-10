@@ -13,7 +13,7 @@ import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.parser.output.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
-import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableColumnsParser;
+import org.the.force.jdbc.partition.engine.parser.table.SqlTableColumnsParser;
 import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.value.SqlValue;
 import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunction;
@@ -76,7 +76,7 @@ public class InsertPlan implements BatchAbleSqlPlan {
         if (sqlTable == null) {
             throw new RuntimeException("exprSqlTable == null");
         }
-        SqlTableColumnsParser parser = new SqlTableColumnsParser(originStatement.getTableSource());
+        SqlTableColumnsParser parser = new SqlTableColumnsParser(logicDbConfig,originStatement.getTableSource());
         sqlTable.setAlias(parser.getTableAlias());
     }
 

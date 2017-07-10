@@ -4,16 +4,15 @@ import org.the.force.jdbc.partition.engine.executor.plan.dql.PlanedTableSource;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableColumns;
-import org.the.force.jdbc.partition.engine.parser.sqlName.SqlTableColumnsParser;
+import org.the.force.jdbc.partition.engine.parser.table.SqlTableColumnsParser;
+import org.the.force.jdbc.partition.engine.parser.table.SubQueryConditionChecker;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by xuji on 2017/7/6.
@@ -26,7 +25,7 @@ public class AtomicTableSource extends PlanedTableSource {
     private final SqlTableColumns sqlTableColumns;
     private final Map<SqlColumn, SQLExpr> columnValueMap;
     private final Map<SqlColumn, SQLInListExpr> columnInValuesMap;
-
+    private final List<SQLExpr> subQuerys;
 
     public AtomicTableSource(LogicDbConfig logicDbConfig, SQLExprTableSource sqlExprTableSource, SqlTable sqlTable, SQLExpr condition, Map<SqlColumn, SQLExpr> columnValueMap,
         Map<SqlColumn, SQLInListExpr> columnInValuesMap) {
@@ -37,9 +36,16 @@ public class AtomicTableSource extends PlanedTableSource {
         this.columnValueMap = columnValueMap;
         this.columnInValuesMap = columnInValuesMap;
 
-        SqlTableColumnsParser parser = new SqlTableColumnsParser(sqlExprTableSource);
+        SqlTableColumnsParser parser = new SqlTableColumnsParser(logicDbConfig, sqlExprTableSource, sqlTable);
         sqlTableColumns = parser.getSqlTableColumns();
-        sqlTable.setAlias(parser.getTableAlias());
+
+        if (condition != null) {
+            SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker(logicDbConfig);
+            condition.accept(conditionChecker);
+            subQuerys = conditionChecker.getSubQueryList();
+        } else {
+            subQuerys = null;
+        }
     }
 
     public SQLExprTableSource getSqlExprTableSource() {
