@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.parser.table;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.ExitsSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.ParserUtils;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;

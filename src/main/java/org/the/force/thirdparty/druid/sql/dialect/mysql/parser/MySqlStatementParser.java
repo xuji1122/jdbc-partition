@@ -3480,7 +3480,7 @@ public class MySqlStatementParser extends SQLStatementParser {
                 continue;
             }
 
-            // update
+            // dml
             if (lexer.token() == (Token.UPDATE)) {
                 statementList.add(parseUpdateStatement());
                 continue;
@@ -4034,7 +4034,7 @@ public class MySqlStatementParser extends SQLStatementParser {
      */
     public SQLStatement parseSpStatement() {
 
-        // update
+        // dml
         if (lexer.token() == (Token.UPDATE)) {
             return parseUpdateStatement();
         }

@@ -32,7 +32,7 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdat
 public enum MySqlStatementType {
 	//select statement
 	SELECT(SQLSelectStatement.class.getName()),
-	//update statement
+	//dml statement
 	UPDATE(MySqlUpdateStatement.class.getName()),
 	//insert statement
 	INSERT(MySqlInsertStatement.class.getName()),

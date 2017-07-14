@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.engine.parser.visitor;
 
-import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.ParallelJoinedTableSource;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.SubQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.UnionQueriedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.ExitsSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 
 /**
  * Created by xuji on 2017/7/14.

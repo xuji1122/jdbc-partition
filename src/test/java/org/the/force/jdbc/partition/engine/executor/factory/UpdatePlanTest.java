@@ -85,7 +85,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
 
     @Test
     public void testUpdate() throws Exception {
-        String sql = "update t_order t set t.status=? ,t.user_id=?  where t.id=? and t.status=? ";
+        String sql = "dml t_order t set t.status=? ,t.user_id=?  where t.id=? and t.status=? ";
         LogicSqlParameterHolder logicLogicSqlParameterHolder = new LogicSqlParameterHolder();
         logicLogicSqlParameterHolder.setParameter(1, new ObjectSqlParameter(0, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(2, new ObjectSqlParameter(1, Types.INTEGER));
@@ -102,7 +102,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
 
     @Test
     public void testInUpdate() throws Exception {
-        String sql = "update t_order t set t.status='ok'  where t.id in (?,?,?,?,?) and t.status='1' and user_id = 0";
+        String sql = "dml t_order t set t.status='ok'  where t.id in (?,?,?,?,?) and t.status='1' and user_id = 0";
         LogicSqlParameterHolder logicLogicSqlParameterHolder = new LogicSqlParameterHolder();
         logicLogicSqlParameterHolder.setParameter(1, new ObjectSqlParameter(0, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(2, new ObjectSqlParameter(8, Types.INTEGER));
@@ -121,7 +121,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
 
     @Test
     public void testInOrUpdate() throws Exception {
-        String sql = "update t_order t set t.status=? ,t.user_id=?  where (t.id in (?,8,?) or t.status=?) and  id=3";
+        String sql = "dml t_order t set t.status=? ,t.user_id=?  where (t.id in (?,8,?) or t.status=?) and  id=3";
         LogicSqlParameterHolder logicLogicSqlParameterHolder = new LogicSqlParameterHolder();
         logicLogicSqlParameterHolder.setParameter(1, new ObjectSqlParameter(0, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(2, new ObjectSqlParameter(1, Types.INTEGER));
@@ -155,7 +155,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
 
     @Test
     public void testBatchParser() throws Exception {
-        String sql = "update t_order t set t.status=? ,t.user_id=?  where t.id=? and t.status=? ";
+        String sql = "dml t_order t set t.status=? ,t.user_id=?  where t.id=? and t.status=? ";
 
         LogicSqlParameterHolder logicLogicSqlParameterHolder = new LogicSqlParameterHolder();
         logicLogicSqlParameterHolder.setParameter(1, new ObjectSqlParameter(0, Types.INTEGER));

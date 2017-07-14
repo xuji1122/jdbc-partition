@@ -1,6 +1,5 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;

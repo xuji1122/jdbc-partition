@@ -106,7 +106,7 @@ public class PGOutputVisitor extends SQLASTOutputVisitor implements PGASTVisitor
     public boolean visit(PGSelectQueryBlock.ForClause x) {
         print0(ucase ? "FOR " : "for ");
         if (PGSelectQueryBlock.ForClause.Option.UPDATE.equals(x.getOption())) {
-            print0(ucase ? "UPDATE " : "update ");
+            print0(ucase ? "UPDATE " : "dml ");
         } else if (PGSelectQueryBlock.ForClause.Option.SHARE.equals(x.getOption())) {
             print0(ucase ? "SHARE " : "share ");
         }
@@ -391,7 +391,7 @@ public class PGOutputVisitor extends SQLASTOutputVisitor implements PGASTVisitor
             println();
         }
 
-        print0(ucase ? "UPDATE " : "update ");
+        print0(ucase ? "UPDATE " : "dml ");
 
         if (x.isOnly()) {
             print0(ucase ? "ONLY " : "only ");

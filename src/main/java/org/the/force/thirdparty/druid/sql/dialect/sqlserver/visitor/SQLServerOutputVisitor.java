@@ -196,7 +196,7 @@ public class SQLServerOutputVisitor extends SQLASTOutputVisitor implements SQLSe
 
     @Override
     public boolean visit(SQLServerUpdateStatement x) {
-        print0(ucase ? "UPDATE " : "update ");
+        print0(ucase ? "UPDATE " : "dml ");
 
         if (x.getTop() != null) {
             x.getTop().setParent(x);

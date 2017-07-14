@@ -52,7 +52,7 @@ public class TestLoadingCache extends TestJdbcPartitionBase {
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
         LogicDbConfig logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
         SqlExecutionPlanManager sqlExecutionPlanManager = new SqlExecutionPlanManager(logicDbConfig);
-        String sql = "update  t_order set status=? where order_id=?";
+        String sql = "dml  t_order set status=? where order_id=?";
         sqlExecutionPlanManager.getSqlExecutionPlan(sql);
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=?";
         sqlExecutionPlanManager.getSqlExecutionPlan(sql);

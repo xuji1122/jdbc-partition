@@ -73,7 +73,7 @@ public class Pair<L, R> {
 
     /**
      * <p>Returns a suitable hash code.
-     * The hash code follows the definition in {@code Map.Entry}.</p>
+     * The hash code follows the ddl in {@code Map.Entry}.</p>
      *
      * @return the hash code
      */

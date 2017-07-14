@@ -323,7 +323,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
         if (x.isForUpdate()) {
             println();
-            print0(ucase ? "FOR UPDATE" : "for update");
+            print0(ucase ? "FOR UPDATE" : "for dml");
             if (x.isNoWait()) {
                 print0(ucase ? " NO_WAIT" : " no_wait");
             } else if (x.getWaitTime() != null) {
@@ -374,7 +374,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (x.getOnUpdate() != null) {
-            print0(ucase ? " ON UPDATE " : " on update ");
+            print0(ucase ? " ON UPDATE " : " on dml ");
 
             x.getOnUpdate().accept(this);
         }
@@ -1040,7 +1040,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
         if (x.getDuplicateKeyUpdate().size() != 0) {
             println();
-            print0(ucase ? "ON DUPLICATE KEY UPDATE " : "on duplicate key update ");
+            print0(ucase ? "ON DUPLICATE KEY UPDATE " : "on duplicate key dml ");
             for (int i = 0, size = x.getDuplicateKeyUpdate().size(); i < size; ++i) {
                 if (i != 0) {
                     if (i % 5 == 0) {
@@ -1702,7 +1702,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? "FROM " : "from ");
         }
 
-        print0(ucase ? "UPDATE " : "update ");
+        print0(ucase ? "UPDATE " : "dml ");
 
         if (x.isLowPriority()) {
             print0(ucase ? "LOW_PRIORITY " : "low_priority ");
@@ -2917,7 +2917,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (x.getOnDelete() != null) {
-            print0(ucase ? " ON UPDATE " : " on update ");
+            print0(ucase ? " ON UPDATE " : " on dml ");
             print0(ucase ? x.getOnDelete().name : x.getOnDelete().name_lcase);
         }
         return false;

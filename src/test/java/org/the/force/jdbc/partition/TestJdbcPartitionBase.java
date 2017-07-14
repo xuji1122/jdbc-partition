@@ -14,7 +14,7 @@ import java.util.Properties;
 
 /**
  * Created by xuji on 2017/7/1.
- * 测试优先级 建表100  配置初始化200  纯测试解析类 300  update 400 查询 500
+ * 测试优先级 建表100  配置初始化200  纯测试解析类 300  dml 400 查询 500
  */
 public class TestJdbcPartitionBase extends TestJdbcBase {
 

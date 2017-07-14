@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.factory;
 
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
-import org.the.force.jdbc.partition.engine.executor.query.QueryReferFilter;
+import org.the.force.jdbc.partition.engine.executor.dql.QueryReferFilter;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;

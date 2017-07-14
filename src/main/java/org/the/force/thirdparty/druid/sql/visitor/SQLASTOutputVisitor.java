@@ -2038,7 +2038,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
     }
 
     public boolean visit(SQLUpdateStatement x) {
-        print0(ucase ? "UPDATE " : "update ");
+        print0(ucase ? "UPDATE " : "dml ");
 
         x.getTableSource().accept(this);
 
@@ -4358,7 +4358,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
 
     @Override
     public boolean visit(MergeUpdateClause x) {
-        print0(ucase ? "WHEN MATCHED THEN UPDATE SET " : "when matched then update set ");
+        print0(ucase ? "WHEN MATCHED THEN UPDATE SET " : "when matched then dml set ");
         printAndAccept(x.getItems(), ", ");
         if (x.getWhere() != null) {
             incrementIndent();

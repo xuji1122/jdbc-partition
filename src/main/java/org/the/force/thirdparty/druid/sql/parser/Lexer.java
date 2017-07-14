@@ -1492,7 +1492,7 @@ public class Lexer {
         if (comment.indexOf("select") != -1 //
             || comment.indexOf("delete") != -1 //
             || comment.indexOf("insert") != -1 //
-            || comment.indexOf("update") != -1 //
+            || comment.indexOf("dml") != -1 //
             || comment.indexOf("into") != -1 //
             || comment.indexOf("where") != -1 //
             || comment.indexOf("or") != -1 //

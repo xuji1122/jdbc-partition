@@ -500,7 +500,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
         if (x.isForUpdate()) {
             println();
-            print0(ucase ? "FOR UPDATE" : "for update");
+            print0(ucase ? "FOR UPDATE" : "for dml");
             if (x.getForUpdateOfSize() > 0) {
                 print('(');
                 printAndAccept(x.getForUpdateOf(), ", ");
@@ -652,7 +652,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
     }
 
     public boolean visit(OracleUpdateStatement x) {
-        print0(ucase ? "UPDATE " : "update ");
+        print0(ucase ? "UPDATE " : "dml ");
 
         if (x.getHints().size() > 0) {
             printAndAccept(x.getHints(), ", ");
@@ -1679,7 +1679,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
         }
         if (x.isUpdateGlobalIndexes()) {
             println();
-            print0(ucase ? "UPDATE GLOABL INDEXES" : "update gloabl indexes");
+            print0(ucase ? "UPDATE GLOABL INDEXES" : "dml gloabl indexes");
         }
         decrementIndent();
         return false;
@@ -1711,7 +1711,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(OracleAlterTableSplitPartition.UpdateIndexesClause x) {
-        print0(ucase ? "UPDATE INDEXES" : "update indexes");
+        print0(ucase ? "UPDATE INDEXES" : "dml indexes");
         if (x.getItems().size() > 0) {
             print('(');
             printAndAccept(x.getItems(), ", ");

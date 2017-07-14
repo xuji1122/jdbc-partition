@@ -1,11 +1,11 @@
 package org.the.force.jdbc.partition.engine.executor.factory;
 
-import org.the.force.jdbc.partition.engine.executor.update.MySqlReplaceIntoExecution;
-import org.the.force.jdbc.partition.engine.executor.update.UpdateExecution;
+import org.the.force.jdbc.partition.engine.executor.dml.MySqlReplaceIntoExecution;
+import org.the.force.jdbc.partition.engine.executor.dml.UpdateExecution;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
-import org.the.force.jdbc.partition.engine.executor.definition.TableDdlExecution;
-import org.the.force.jdbc.partition.engine.executor.update.DeleteExecution;
-import org.the.force.jdbc.partition.engine.executor.update.InsertExecution;
+import org.the.force.jdbc.partition.engine.executor.ddl.TableDdlExecution;
+import org.the.force.jdbc.partition.engine.executor.dml.DeleteExecution;
+import org.the.force.jdbc.partition.engine.executor.dml.InsertExecution;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.sql.SqlExecutionPlan;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;

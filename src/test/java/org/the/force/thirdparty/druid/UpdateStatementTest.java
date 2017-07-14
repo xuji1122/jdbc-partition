@@ -27,7 +27,7 @@ public class UpdateStatementTest {
     }
 
     public void testUpdateStartupVisitor() {
-        String sql = "update t_order set status=1 where id=1;update t_order set status=0 where id=2 ";
+        String sql = "dml t_order set status=1 where id=1;dml t_order set status=0 where id=2 ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SqlExecutionFactory visitor = new SqlExecutionFactory(null);
@@ -36,7 +36,7 @@ public class UpdateStatementTest {
     }
 
     public void testSQLName() {
-        String sql = "update t_order  t set t_order.status=1 where t.id=1 ";
+        String sql = "dml t_order  t set t_order.status=1 where t.id=1 ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
@@ -44,7 +44,7 @@ public class UpdateStatementTest {
     }
 
     public void testAndOr() {
-        String sql = "update t_order  t set t_order.status=1 where t.order_id=1  and  (t.user_id=2 or t.status='3') and t.order_id%3=4 and t.id in (5,6,7)";
+        String sql = "dml t_order  t set t_order.status=1 where t.order_id=1  and  (t.user_id=2 or t.status='3') and t.order_id%3=4 and t.id in (5,6,7)";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
@@ -60,7 +60,7 @@ public class UpdateStatementTest {
     }
 
     public void testUpdate() {
-        String sql = "update t_order set t.status=? ,t.name=?  where t.order_id=3 and t.status='1' ";
+        String sql = "dml t_order set t.status=? ,t.name=?  where t.order_id=3 and t.status='1' ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
