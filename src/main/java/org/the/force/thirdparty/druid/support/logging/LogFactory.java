@@ -38,10 +38,10 @@ public class LogFactory {
                 tryImplementation("java.util.logging.Logger", "Jdk14LoggingImpl");
             }
         }
+        tryImplementation("org.apache.logging.log4j.Logger", packageName + ".Log4j2Impl");
         tryImplementation("org.slf4j.Logger", packageName + ".SLF4JImpl");
         // 优先选择log4j,而非Apache Common Logging. 因为后者无法设置真实Log调用者的信息
         tryImplementation("org.apache.log4j.Logger", packageName + ".logging.Log4jImpl");
-        tryImplementation("org.apache.logging.log4j.Logger", packageName + ".Log4j2Impl");
         tryImplementation("org.apache.commons.logging.LogFactory", packageName + ".JakartaCommonsLoggingImpl");
         tryImplementation("java.util.logging.Logger", packageName + ".Jdk14LoggingImpl");
         if (logConstructor == null) {

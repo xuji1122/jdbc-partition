@@ -91,14 +91,14 @@ public class ExprSqlTable implements SqlTable {
         this.logicTable = logicTable;
     }
 
-    public Set<String> getColumns() {
+    public Set<String> getReferLabels() {
         if (logicDbConfig != null && getLogicTable() == null) {
             LogicTable logicTable = null;
             try {
                 logicTable = logicDbConfig.getLogicTableManager(tableName).getLogicTable();
                 setLogicTable(logicTable);
             } catch (SQLException e) {
-                logger.warn("could not get table meta data,table_name=" + tableName,e);
+                logger.warn("could not get select meta data,table_name=" + tableName,e);
             }
         }
         if (logicTable != null) {

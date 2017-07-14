@@ -84,9 +84,9 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
 
     public boolean visit(OdpsCreateTableStatement x) {
         if (x.isIfNotExiists()) {
-            print0(ucase ? "CREATE TABLE IF NOT EXISTS " : "create table if not exists ");
+            print0(ucase ? "CREATE TABLE IF NOT EXISTS " : "create select if not exists ");
         } else {
-            print0(ucase ? "CREATE TABLE " : "create table ");
+            print0(ucase ? "CREATE TABLE " : "create select ");
         }
 
         x.getName().accept(this);
@@ -235,9 +235,9 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
             printlnComments(x.getBeforeCommentsDirect());
         }
         if (x.isOverwrite()) {
-            print0(ucase ? "INSERT OVERWRITE TABLE " : "insert overwrite table ");
+            print0(ucase ? "INSERT OVERWRITE TABLE " : "insert overwrite select ");
         } else {
-            print0(ucase ? "INSERT INTO TABLE " : "insert into table ");
+            print0(ucase ? "INSERT INTO TABLE " : "insert into select ");
         }
         x.getTableSource().accept(this);
 
@@ -421,7 +421,7 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
             print0(ucase ? "USER " : "user ");
             x.getUser().accept(this);
         } else if (x.getTable() != null) {
-            print0(ucase ? "TABLE " : "table ");
+            print0(ucase ? "TABLE " : "select ");
             x.getTable().accept(this);
             if (x.getColumns().size() > 0) {
                 print('(');
@@ -536,7 +536,7 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
 
     @Override
     public boolean visit(OdpsAnalyzeTableStatement x) {
-        print0(ucase ? "ANALYZE TABLE " : "analyze table ");
+        print0(ucase ? "ANALYZE TABLE " : "analyze select ");
         x.getTable().accept(this);
 
         if (x.getPartition().size() > 0) {

@@ -1432,7 +1432,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(OracleLockTableStatement x) {
-        print0(ucase ? "LOCK TABLE " : "lock table ");
+        print0(ucase ? "LOCK TABLE " : "lock select ");
         x.getTable().accept(this);
         print0(ucase ? " IN " : " in ");
         print0(x.getLockMode().toString());
@@ -1597,7 +1597,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(OracleExplainStatement x) {
-        print0(ucase ? "EXPLAIN PLAN" : "explain plan");
+        print0(ucase ? "EXPLAIN PLAN" : "explain factory");
         incrementIndent();
         println();
         if (x.getStatementId() != null) {
@@ -1670,7 +1670,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
             }
         }
 
-        print0(ucase ? "ALTER TABLE " : "alter table ");
+        print0(ucase ? "ALTER TABLE " : "alter select ");
         printTableSourceExpr(x.getName());
         incrementIndent();
         for (SQLAlterTableItem item : x.getItems()) {
@@ -2473,7 +2473,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(SQLTruncateStatement x) {
-        print0(ucase ? "TRUNCATE TABLE " : "truncate table ");
+        print0(ucase ? "TRUNCATE TABLE " : "truncate select ");
         printAndAccept(x.getTableSources(), ", ");
 
         if (x.isPurgeSnapshotLog()) {

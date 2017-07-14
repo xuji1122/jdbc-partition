@@ -13,6 +13,10 @@ public interface SqlTable {
 
     void setAlias(String alias);
 
-    Set<String> getColumns();
+    /**
+     * 返回可以被引用的列名集合
+     * @return
+     */
+    Set<String> getReferLabels();
 
 }

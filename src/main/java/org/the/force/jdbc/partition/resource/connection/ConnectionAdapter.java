@@ -61,7 +61,6 @@ public class ConnectionAdapter {
         checkClosed();
         physicDbName = physicDbName.toLowerCase();
         if (initDbSet.add(physicDbName)) {
-            logger.info(MessageFormat.format("init connection for {0}", physicDbName));
             doInit(physicDbName);
         }
     }
@@ -78,6 +77,7 @@ public class ConnectionAdapter {
                     url = url + "?" + logicDbConfig.getParamStr();
                 }
             }
+            logger.debug(MessageFormat.format("doInit connection for {0},url={1}", physicDbName,url));
             connection = DriverManager.getConnection(url, logicDbConfig.getInfo());
             connection = new StatementCacheConnection(connection);
             connectionMap.put(physicDbName, connection);

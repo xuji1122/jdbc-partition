@@ -78,7 +78,7 @@ public class SqlValueFunctionMatcher {
             return new LiteralSqlValue(sqlTextLiteralExpr.getText());
         });
 
-        //java.plan.Timestamp sql的date类型 以java.util.Date为父类
+        //java.factory.Timestamp sql的date类型 以java.util.Date为父类
         classMap.put(SQLDateExpr.class, (sqlExpr, logicSqlContext) -> {
             SQLDateExpr sqlDateExpr = (SQLDateExpr) (sqlExpr);
             return new LiteralSqlValue(sqlDateExpr.getLiteral());

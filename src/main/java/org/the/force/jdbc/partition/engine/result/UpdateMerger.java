@@ -27,7 +27,10 @@ public class UpdateMerger {
             //TODO
             return 0;
         }
-        return r.addAndGet(affectRows);
+        if (affectRows > 0) {
+            return r.addAndGet(affectRows);
+        }
+        return r.get();
     }
 
     public void addFailed(int lineNum, int resultCode) {

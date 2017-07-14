@@ -508,9 +508,9 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (SQLCreateTableStatement.Type.GLOBAL_TEMPORARY.equals(x.getType())) {
-            print0(ucase ? "TEMPORARY TABLE " : "temporary table ");
+            print0(ucase ? "TEMPORARY TABLE " : "temporary select ");
         } else {
-            print0(ucase ? "TABLE " : "table ");
+            print0(ucase ? "TABLE " : "select ");
         }
 
         if (x.isIfNotExiists()) {
@@ -1118,7 +1118,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? " IGNORE " : " ignore ");
         }
 
-        print0(ucase ? " INTO TABLE " : " into table ");
+        print0(ucase ? " INTO TABLE " : " into select ");
         x.getTableName().accept(this);
 
         if (x.getColumnsTerminatedBy() != null || x.getColumnsEnclosedBy() != null || x.getColumnsEscaped() != null) {
@@ -1452,7 +1452,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? " IGNORE " : " ignore ");
         }
 
-        print0(ucase ? " INTO TABLE " : " into table ");
+        print0(ucase ? " INTO TABLE " : " into select ");
         x.getTableName().accept(this);
 
         if (x.getCharset() != null) {
@@ -1979,7 +1979,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlShowCreateTableStatement x) {
-        print0(ucase ? "SHOW CREATE TABLE " : "show create table ");
+        print0(ucase ? "SHOW CREATE TABLE " : "show create select ");
         x.getName().accept(this);
         return false;
     }
@@ -2394,7 +2394,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlShowTableStatusStatement x) {
-        print0(ucase ? "SHOW TABLE STATUS" : "show table status");
+        print0(ucase ? "SHOW TABLE STATUS" : "show select status");
         if (x.getDatabase() != null) {
             print0(ucase ? " FROM " : " from ");
             x.getDatabase().accept(this);
@@ -2482,9 +2482,9 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
     @Override
     public boolean visit(SQLAlterTableStatement x) {
         if (x.isIgnore()) {
-            print0(ucase ? "ALTER IGNORE TABLE " : "alter ignore table ");
+            print0(ucase ? "ALTER IGNORE TABLE " : "alter ignore select ");
         } else {
-            print0(ucase ? "ALTER TABLE " : "alter table ");
+            print0(ucase ? "ALTER TABLE " : "alter select ");
         }
         printTableSourceExpr(x.getName());
         incrementIndent();
@@ -2580,7 +2580,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlRenameTableStatement x) {
-        print0(ucase ? "RENAME TABLE " : "rename table ");
+        print0(ucase ? "RENAME TABLE " : "rename select ");
         printAndAccept(x.getItems(), ", ");
         return false;
     }
@@ -3019,7 +3019,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? "LOCAL " : "local ");
         }
 
-        print0(ucase ? "TABLE " : "table ");
+        print0(ucase ? "TABLE " : "select ");
 
         printAndAccept(x.getTableSources(), ", ");
         return false;
@@ -3041,7 +3041,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? "LOCAL " : "local ");
         }
 
-        print0(ucase ? "TABLE " : "table ");
+        print0(ucase ? "TABLE " : "select ");
 
         printAndAccept(x.getTableSources(), ", ");
         return false;

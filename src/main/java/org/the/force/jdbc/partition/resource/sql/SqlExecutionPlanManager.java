@@ -4,8 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.engine.executor.plan.SqlExecutionPlan;
-import org.the.force.jdbc.partition.engine.executor.plan.SqlPlanMatcher;
+import org.the.force.jdbc.partition.engine.executor.factory.SqlExecutionFactory;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
@@ -60,14 +59,14 @@ public class SqlExecutionPlanManager {
             String sql = sqlKey.getSql();
             SqlDialect sqlDialect = logicDbConfig.getSqlDialect();
             List<SQLStatement> stmtList = SQLUtils.parseStatements(sql, sqlDialect.getDruidSqlDialect());
-            SqlPlanMatcher sqlPlanMatcher = new SqlPlanMatcher(logicDbConfig);
+            SqlExecutionFactory sqlExecutionFactory = new SqlExecutionFactory(logicDbConfig);
             SQLStatement sqlStatement = stmtList.get(0);
-            sqlStatement.accept(sqlPlanMatcher);
-            SqlExecutionPlan sqlExecutionPlan = sqlPlanMatcher.getSqlPlan();
-            logger.info(MessageFormat.format("\n\t\t\t\tlogic sql:{0} \n\t\t\t\tsql execution plan:{1}", sql, sqlExecutionPlan.toString()));
+            sqlStatement.accept(sqlExecutionFactory);
+            SqlExecutionPlan sqlExecutionPlan = sqlExecutionFactory.getSqlPlan();
+            logger.info(MessageFormat.format("\n\t\t\t\tlogic sql:{0} \n\t\t\t\tsql execution factory:{1}", sql, sqlExecutionPlan.toString()));
             return sqlExecutionPlan;
         } catch (Exception e) {
-            logger.error("logic plan:" + sqlKey.getSql(), e);
+            logger.error("logic factory:" + sqlKey.getSql(), e);
             if (e.getCause() instanceof SQLException) {
                 throw new SqlParseException(sqlKey.getSql(), e.getCause());
             } else {

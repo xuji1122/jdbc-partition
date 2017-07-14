@@ -81,11 +81,22 @@ public class SelectStatementTest {
         }
     }
 
+
     public void testAggregateQuery4() {
         //SQLSelectItem  ---> SqlExpr <]-- SQLAggregateExpr
         //SQLSelectGroupByClause
         //SQLOrderBy
         String sql = "select distinct user_id,user_name from t_order where user_id in(?,?,?) and id>0  order by user_id limit 20 ";
+        List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+        for (int i = 0; i < stmts.size(); i++) {
+            SQLStatement sqlStatement = stmts.get(i);
+        }
+    }
+    public void testAggregateQuery5() {
+        //SQLSelectItem  ---> SqlExpr <]-- SQLAggregateExpr
+        //SQLSelectGroupByClause
+        //SQLOrderBy
+        String sql = "select count(distinct user_id) from t_order where user_id in(?,?,?) and id>0   limit 20 ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);

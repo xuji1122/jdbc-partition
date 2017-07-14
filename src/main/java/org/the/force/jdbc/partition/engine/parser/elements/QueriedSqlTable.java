@@ -41,6 +41,6 @@ public abstract class QueriedSqlTable implements SqlTable {
 
     }
 
-    public abstract Set<String> getColumns();
+    public abstract Set<String> getReferLabels();
 
 }

@@ -1,6 +1,5 @@
 package org.the.force.jdbc.partition.driver.jdbc;
 
-import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcBase;
 
 import java.sql.Connection;
@@ -26,7 +25,7 @@ public class TestStatement extends TestJdbcBase {
         connection.setAutoCommit(false);
         PreparedStatement preparedStatement = connection.prepareStatement(testSql);
         int startIndex = 0;
-        int total = startIndex + 2000;
+        int total = startIndex + 200;
         for (int i = startIndex; i < total; i++) {
             preparedStatement.setInt(1, i);
             preparedStatement.setInt(2, 0);

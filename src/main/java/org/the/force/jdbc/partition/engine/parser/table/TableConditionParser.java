@@ -2,13 +2,14 @@ package org.the.force.jdbc.partition.engine.parser.table;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.executor.plan.dql.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.plan.dql.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
+import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.ExitsSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.ParserUtils;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlProperty;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
-import org.the.force.jdbc.partition.engine.parser.sqlName.SqlNameParser;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -277,8 +278,8 @@ public class TableConditionParser extends AbstractVisitor {
             if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
                 return false;
             }
-            SqlProperty c1 = SqlNameParser.getSqlProperty(left);
-            SqlProperty c2 = SqlNameParser.getSqlProperty(right);
+            SqlRefer c1 = SqlReferParser.getSqlRefer(left);
+            SqlRefer c2 = SqlReferParser.getSqlRefer(right);
             int index1 = getOwnerFromTables(c1);
             int index2 = getOwnerFromTables(c2);
             if (index1 == index2) {
@@ -310,7 +311,7 @@ public class TableConditionParser extends AbstractVisitor {
             right = lc;
         }
 
-        SqlProperty c = SqlNameParser.getSqlProperty(left);
+        SqlRefer c = SqlReferParser.getSqlRefer(left);
         if (c == null) {
             //TODO check 异常
             return true;
@@ -343,7 +344,7 @@ public class TableConditionParser extends AbstractVisitor {
     }
 
     /**
-     * plan between 表达式
+     * factory between 表达式
      *
      * @param x
      * @return
@@ -356,7 +357,7 @@ public class TableConditionParser extends AbstractVisitor {
         if (!(sqlExpr instanceof SQLName)) {
             return true;
         }
-        SqlProperty c = SqlNameParser.getSqlProperty(sqlExpr);
+        SqlRefer c = SqlReferParser.getSqlRefer(sqlExpr);
         if (c == null) {
             //TODO check 异常
             return true;
@@ -380,8 +381,8 @@ public class TableConditionParser extends AbstractVisitor {
 
 
     /**
-     * plan in 条件表达式
-     *
+     * factory in 条件表达式
+     * TODO 表达式是多列的情况
      * @param x
      * @return
      */
@@ -391,10 +392,10 @@ public class TableConditionParser extends AbstractVisitor {
         if (!(sqlExpr instanceof SQLName)) {
             return false;
         }
-        SqlProperty c = SqlNameParser.getSqlProperty(sqlExpr);
+        SqlRefer c = SqlReferParser.getSqlRefer(sqlExpr);
         if (c == null) {
             //TODO check 异常
-            throw new ParserException("parse SqlProperty return null:" + sqlExpr.getClass().getName());
+            throw new ParserException("parse SqlRefer return null:" + sqlExpr.getClass().getName());
         }
         if (!checkOwner(c)) {
             return false;
@@ -430,7 +431,7 @@ public class TableConditionParser extends AbstractVisitor {
     }
 
     /**
-     * plan in 子查询表达式  in not in
+     * factory in 子查询表达式  in not in
      * TODO 归属的column是分库分表位的情况，延迟分库分表
      *
      * @param x
@@ -501,7 +502,7 @@ public class TableConditionParser extends AbstractVisitor {
         return parent;
     }
 
-    //=========sqlName check相关======
+    //=========sqlrefer check相关======
 
     public boolean visit(SQLIdentifierExpr x) {
         hasSqlNameInValue = true;
@@ -524,13 +525,13 @@ public class TableConditionParser extends AbstractVisitor {
      * @param c
      * @return
      */
-    private boolean checkOwner(SqlProperty c) {
+    private boolean checkOwner(SqlRefer c) {
         //前缀匹配
         //表格配置信息
         if (orderedSqlTables.size() == 1) {
             return true;
         }
-        return SqlTableColumnsParser.checkOwner(currentSqlTable, c);
+        return SqlTableReferParser.checkOwner(currentSqlTable, c);
     }
 
     /**
@@ -539,7 +540,7 @@ public class TableConditionParser extends AbstractVisitor {
      * @param c
      * @return
      */
-    private int getOwnerFromTables(SqlProperty c) {
+    private int getOwnerFromTables(SqlRefer c) {
         //前缀匹配
         if (orderedSqlTables.size() == 1) {
             return 0;
@@ -547,7 +548,7 @@ public class TableConditionParser extends AbstractVisitor {
         String ownerName = c.getOwnerName();
         for (int i = 0; i < orderedSqlTables.size(); i++) {
             SqlTable sqlTable = orderedSqlTables.get(i);
-            if (SqlTableColumnsParser.checkOwner(sqlTable, c)) {
+            if (SqlTableReferParser.checkOwner(sqlTable, c)) {
                 return i;
             }
         }

@@ -253,7 +253,7 @@ public class PGOutputVisitor extends SQLASTOutputVisitor implements PGASTVisitor
 
     @Override
     public boolean visit(SQLTruncateStatement x) {
-        print0(ucase ? "TRUNCATE TABLE " : "truncate table ");
+        print0(ucase ? "TRUNCATE TABLE " : "truncate select ");
         if (x.isOnly()) {
             print0(ucase ? "ONLY " : "only ");
         }

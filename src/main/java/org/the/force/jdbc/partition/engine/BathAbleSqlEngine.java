@@ -4,7 +4,7 @@ import org.the.force.jdbc.partition.driver.JdbcPartitionConnection;
 import org.the.force.jdbc.partition.engine.executor.ExecutorConfig;
 import org.the.force.jdbc.partition.engine.executor.WriteCommand;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
-import org.the.force.jdbc.partition.engine.executor.plan.BatchAbleSqlPlan;
+import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
 import org.the.force.jdbc.partition.engine.result.UpdateMerger;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
@@ -28,7 +28,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
 
     protected final JdbcPartitionConnection jdbcPartitionConnection;
 
-    protected final BatchAbleSqlPlan batchAbleSqlPlan;
+    protected final BatchAbleSqlExecution batchAbleSqlExecution;
 
     private boolean retrierveGeneratedKeys = false;
 
@@ -38,16 +38,16 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
 
     private final PhysicDbExecutor physicDbExecutor = new PhysicDbExecutor();
 
-    public BathAbleSqlEngine(JdbcPartitionConnection jdbcPartitionConnection, BatchAbleSqlPlan batchAbleSqlPlan) throws SQLException {
+    public BathAbleSqlEngine(JdbcPartitionConnection jdbcPartitionConnection, BatchAbleSqlExecution batchAbleSqlExecution) throws SQLException {
         super();
         this.jdbcPartitionConnection = jdbcPartitionConnection;
-        this.batchAbleSqlPlan = batchAbleSqlPlan;
+        this.batchAbleSqlExecution = batchAbleSqlExecution;
     }
 
-    public BathAbleSqlEngine(JdbcPartitionConnection jdbcPartitionConnection, BatchAbleSqlPlan batchAbleSqlPlan, boolean retrierveGeneratedKeys) throws SQLException {
+    public BathAbleSqlEngine(JdbcPartitionConnection jdbcPartitionConnection, BatchAbleSqlExecution batchAbleSqlExecution, boolean retrierveGeneratedKeys) throws SQLException {
         super();
         this.jdbcPartitionConnection = jdbcPartitionConnection;
-        this.batchAbleSqlPlan = batchAbleSqlPlan;
+        this.batchAbleSqlExecution = batchAbleSqlExecution;
         this.retrierveGeneratedKeys = retrierveGeneratedKeys;
     }
 
@@ -77,7 +77,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
     public int executeUpdate() throws SQLException {
         boolean forceTransaction = false;
         try {
-            batchAbleSqlPlan.addSqlLine(physicDbExecutor, logicSqlParameterHolder);
+            batchAbleSqlExecution.addSqlLine(physicDbExecutor, logicSqlParameterHolder);
             if (logger.isDebugEnabled()) {
                 logger.debug(MessageFormat.format("sql解析结果:{0}", physicDbExecutor.toString()));
             }
@@ -114,7 +114,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
     public void addBatch() throws SQLException {
 
         try {
-            batchAbleSqlPlan.addSqlLine(physicDbExecutor, logicSqlParameterHolder);
+            batchAbleSqlExecution.addSqlLine(physicDbExecutor, logicSqlParameterHolder);
             logicSqlParameterHolder.addLineNumber();
         } catch (Exception e) {
             if (e instanceof SQLException) {
@@ -135,13 +135,13 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
                 forceTransaction = true;
                 jdbcPartitionConnection.setAutoCommit(false);
             }
-            //java.plan.BatchUpdateException 异常切换匹配
+            //java.factory.BatchUpdateException 异常切换匹配
             ExecutorConfig executorConfig = new ExecutorConfig();
             UpdateMerger updateMerger = new UpdateMerger(logicSqlParameterHolder.getLineNumber());
             WriteCommand template = buildWriteCommand(executorConfig, updateMerger);
             logicSqlParameterHolder.resetLineNumber();
             if (logger.isDebugEnabled()) {
-                //logger.debug("sql解析结果:{}", batchAbleSqlPlan.getTableExecutorRouter().toString());
+                //logger.debug("sql解析结果:{}", batchAbleSqlExecution.getTableExecutorRouter().toString());
             }
             physicDbExecutor.executeWrite(template);
             if (forceTransaction) {
@@ -169,7 +169,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
     public boolean execute() throws SQLException {
         boolean forceTransaction = false;
         try {
-            batchAbleSqlPlan.addSqlLine(physicDbExecutor, logicSqlParameterHolder);
+            batchAbleSqlExecution.addSqlLine(physicDbExecutor, logicSqlParameterHolder);
             if (logger.isDebugEnabled()) {
                 logger.debug(MessageFormat.format("sql解析结果:{0}", physicDbExecutor.toString()));
             }
