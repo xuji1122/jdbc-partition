@@ -32,19 +32,12 @@ public abstract class QueriedSqlTable implements SqlTable {
     }
 
     public final boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        QueriedSqlTable that = (QueriedSqlTable) o;
-
-        return getAlias().equals(that.getAlias());
+        return sqlTableSource.equals(o);
 
     }
 
     public final int hashCode() {
-        return getAlias().hashCode();
+        return sqlTableSource.hashCode();
     }
 
     public final void setAlias(String alias) {

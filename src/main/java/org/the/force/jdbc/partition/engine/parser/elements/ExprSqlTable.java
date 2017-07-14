@@ -69,23 +69,11 @@ public class ExprSqlTable implements SqlTable {
     }
 
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        ExprSqlTable that = (ExprSqlTable) o;
-
-        if (!getSchema().equalsIgnoreCase(that.getSchema()))
-            return false;
-        return getTableName().equalsIgnoreCase(that.getTableName());
-
+        return sqlExprTableSource.equals(o);
     }
 
     public int hashCode() {
-        int result = getSchema().toLowerCase().hashCode();
-        result = 31 * result + getTableName().toLowerCase().hashCode();
-        return result;
+        return sqlExprTableSource.hashCode();
     }
 
 
