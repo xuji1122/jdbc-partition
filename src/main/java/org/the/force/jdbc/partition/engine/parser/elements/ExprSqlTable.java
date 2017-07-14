@@ -39,7 +39,11 @@ public class ExprSqlTable implements SqlTable {
             if (sqlRefer == null) {
                 throw new SqlParseException("sqlRefer == null");
             }
-            this.schema = sqlRefer.getOwnerName();
+            if (sqlRefer.getOwnerName() == null) {
+                this.schema = PartitionJdbcConstants.EMPTY_NAME;
+            } else {
+                this.schema = sqlRefer.getOwnerName();
+            }
             this.tableName = sqlRefer.getName();
         } else {
             this.alias = null;

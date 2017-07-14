@@ -12,7 +12,9 @@ import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
@@ -39,54 +41,63 @@ public class TableConditionParserTest extends AbstractVisitor {
 
     public void testTableConditionParser1() {
         String sql = "select id,name from t_order where user_id in (?,?,?) and name=?  and id=2  and (time>? or status=?) and  1=1 order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", null));
+        SQLExprTableSource sqlExprTableSource = new SQLExprTableSource();
+        sqlExprTableSource.setExpr(new SQLIdentifierExpr("t_order"));
+
+        printResult(sql, new ExprSqlTable(null,sqlExprTableSource));
     }
 
     public void testTableConditionParser2() {
         String sql = "select id,name from t_order where  id>0  and ( (time>? or status=?) or (type=? and from_id=? )) order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", null));
+        SQLExprTableSource sqlExprTableSource = new SQLExprTableSource();
+        sqlExprTableSource.setExpr(new SQLIdentifierExpr("t_order"));
+        printResult(sql, new ExprSqlTable(null, sqlExprTableSource));
     }
 
     public void testTableConditionParser3() {
         String sql = "select id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  o.test1=4+i.test2  and i.pid=?   order by id limit 20 ";
         logger.info("sql:\n" + sql);
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        SQLExprTableSource sqlExprTableSource = new SQLExprTableSource();
+        sqlExprTableSource.setExpr(new SQLIdentifierExpr("t_order"));
+        sqlExprTableSource.setAlias("o");
+
+        printResult(sql, new ExprSqlTable(null,  new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser4() {
         String sql =
             "select id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        printResult(sql, new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser5() {
         String sql = "select id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        printResult(sql, new ExprSqlTable(null,new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser6() {
         String sql =
             "select id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  o.f1 is null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=?  and o.test1=4+i.test2  and o.f2 is not null order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        printResult(sql, new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser7() {
         String sql =
             "select id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and  o.f1 is null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=?  and o.f2 is not null order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        printResult(sql, new ExprSqlTable(null,new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser8() {
         String sql =
             "select id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and i.f1 is null and  o.f1 is null and o.f2 is not null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=? and o.user_id in (select id from user) and exits (select 1 from temp) and not exits (select 1 from temp_2 )  order by id limit 20 ";
         logger.info("sql:\n" + sql);
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        printResult(sql, new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser9() {
         String sql =
             "select id,name from t_order o , t_order_item i  where o.id=i.order_id  and o.user_id in (select id from user) and exits (select 1 from temp) and not exits (select 1 from temp_2 )  order by id limit 20 ";
-        printResult(sql, new ExprSqlTable(null, null, "t_order", "o"), new ExprSqlTable(null, null, "t_order_item", "i"));
+        printResult(sql, new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     private void printResult(String sql, SqlTable... sqlTable) {
