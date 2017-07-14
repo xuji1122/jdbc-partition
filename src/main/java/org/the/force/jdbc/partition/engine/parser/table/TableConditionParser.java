@@ -2,15 +2,15 @@ package org.the.force.jdbc.partition.engine.parser.table;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.ExitsSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.ParserUtils;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
-import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionAbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -41,7 +41,7 @@ import java.util.Map;
  * 6, 判断sql重写时是否需要强制指定tableSource的alias(不保证ok，除了where条件还有其他sql子句影响)
  * <p>
  */
-public class TableConditionParser extends AbstractVisitor {
+public class TableConditionParser extends PartitionAbstractVisitor {
 
     /**
      * 输入项
@@ -389,6 +389,7 @@ public class TableConditionParser extends AbstractVisitor {
     public boolean visit(SQLInListExpr x) {
         SQLExpr sqlExpr = x.getExpr();
         backupOtherCondition(x);
+        //TODO 表达式是多列的情况
         if (!(sqlExpr instanceof SQLName)) {
             return false;
         }

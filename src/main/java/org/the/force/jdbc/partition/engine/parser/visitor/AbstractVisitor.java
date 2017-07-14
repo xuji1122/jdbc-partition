@@ -1,8 +1,5 @@
 package org.the.force.jdbc.partition.engine.parser.visitor;
 
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.JoinedTableSource;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.SubQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.UnionQueriedTableSource;
 import org.the.force.thirdparty.druid.sql.dialect.db2.ast.stmt.DB2SelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.dialect.db2.ast.stmt.DB2ValuesStatement;
 import org.the.force.thirdparty.druid.sql.dialect.db2.visitor.DB2ASTVisitor;
@@ -113,37 +110,15 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdat
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdateTableSource;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MysqlDeallocatePrepareStatement;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlASTVisitor;
-import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.SQLInSubQueriedExpr;
 
 /**
  * Created by xuji on 2017/5/17.
  */
-public abstract class AbstractVisitor extends GeneralVisitor implements MySqlASTVisitor, DB2ASTVisitor,PartitionSqlASTVisitor {
+public abstract class AbstractVisitor extends GeneralVisitor implements MySqlASTVisitor, DB2ASTVisitor {
 
 
     protected boolean isContinue() {
         return true;
-    }
-
-    public boolean visit(ExitsSubQueriedExpr x) {
-        return isContinue();
-    }
-
-    public boolean visit(SQLInSubQueriedExpr x) {
-        return isContinue();
-    }
-
-    public boolean visit(JoinedTableSource joinedTableSource){
-        return isContinue();
-    }
-
-    public boolean visit(SubQueriedTableSource subQueriedTableSource){
-        return isContinue();
-    }
-
-    public boolean visit(UnionQueriedTableSource unionQueriedTableSource){
-        return isContinue();
     }
 
     //=============mysql=======
@@ -156,8 +131,6 @@ public abstract class AbstractVisitor extends GeneralVisitor implements MySqlAST
     public void endVisit(MySqlTableIndex mySqlTableIndex) {
 
     }
-
-
 
     public boolean visit(MySqlKey mySqlKey) {
         return isContinue();

@@ -1,5 +1,7 @@
 package org.the.force.jdbc.partition.engine.parser.elements;
 
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+
 import java.util.Set;
 
 /**
@@ -18,5 +20,7 @@ public interface SqlTable {
      * @return
      */
     Set<String> getReferLabels();
+
+    SQLTableSource getSQLTableSource();
 
 }

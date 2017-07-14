@@ -1,16 +1,18 @@
 package org.the.force.jdbc.partition.engine.executor.query.tablesource;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.executor.query.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.executor.query.ExecutableTableSource;
-import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
+import org.the.force.jdbc.partition.engine.executor.query.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.parser.elements.JoinConnector;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
+import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -26,33 +28,50 @@ import org.the.force.thirdparty.druid.sql.parser.ParserException;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Created by xuji on 2017/6/4.
+ * 平铺的JoinedTableSource 非嵌套
  */
-public class JoinedTableSource extends ExecutableTableSource {
+public class ParallelJoinedTableSource extends SQLJoinTableSource implements ExecutableTableSource {
+
+    private LogicDbConfig logicDbConfig;
+
+    //输入
+
+    private SQLJoinTableSource sqlJoinTableSource;
+
+    //临时变量
 
     private final List<SQLTableSource> originalTableSources = new ArrayList<>();
 
     private final List<SqlTable> sqlTables = new ArrayList<>();
 
-    private final Map<Pair<Integer, Integer>, JoinConnector> joinConnectorMap = new LinkedHashMap<>();
-
-    private final Map<Integer, ExecutableTableSource> planedTableSourceMap = new HashMap<>();
-
+    /**
+     * 此条件会被设置到外部的selectQuery中去，JoinedTableSource不必实际的查询
+     */
     private SQLExpr otherCondition;
 
-    private Set<SQLExpr> conditionSet = new HashSet<>();
+    //输出
+
+    private final Map<Pair<Integer, Integer>, JoinConnector> joinConnectorMap = new LinkedHashMap<>();
+
+    private final Map<Integer, ExecutableTableSource> planedTableSourceMap = new LinkedHashMap<>();
+
+    private Set<SQLExpr> conditionSet = new LinkedHashSet<>();
 
 
-    public JoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
-        super(logicDbConfig);
+    public ParallelJoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
+        this.logicDbConfig = logicDbConfig;
+        this.sqlJoinTableSource = sqlJoinTableSource;
+        super.alias = sqlJoinTableSource.getAlias();
+        super.hints = sqlJoinTableSource.getHints();
+        super.setFlashback(sqlJoinTableSource.getFlashback());
         super.setParent(sqlJoinTableSource.getParent());
         this.otherCondition = originalWhere;
         parseTableSource(sqlJoinTableSource);
@@ -65,12 +84,12 @@ public class JoinedTableSource extends ExecutableTableSource {
         if (left instanceof SQLJoinTableSource) {
             parseTableSource((SQLJoinTableSource) left);
         } else {
-            left.setParent(this.getParent());
+            left.setParent(this);
             SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
             sqlTables.add(sqlTable);
             originalTableSources.add(left);
         }
-        right.setParent(this.getParent());
+        right.setParent(this);
         SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
         sqlTables.add(sqlTable);
         originalTableSources.add(right);
@@ -118,22 +137,22 @@ public class JoinedTableSource extends ExecutableTableSource {
             if (joinConnector == null || joinConnector.getJoinCondition() == null) {
                 throw new SqlParseException("表格拼接必须制定join的条件");
             }
-            List<SqlRefer> sqlProperties = new SqlReferParser(joinConnector.getJoinCondition(), sqlTable).getSqlReferList();
-            if (sqlProperties.isEmpty()) {
+            List<SqlRefer> sqlOrderByItemForJoin = new SqlReferParser(joinConnector.getJoinCondition(), sqlTable).getSqlReferList();
+            if (sqlOrderByItemForJoin.isEmpty()) {
                 throw new SqlParseException("join的条件sqlProperties.isEmpty()");
             }
             QueryReferFilter queryReferFilter = new QueryReferFilter(logicDbConfig, sqlTable, tableOwnCondition);
-            queryReferFilter.getOrderBySqlRefers().addAll(sqlProperties);
+            queryReferFilter.getOrderBySqlRefers().addAll(sqlOrderByItemForJoin);
             ExecutableTableSource executableTableSource;
             if (sqlTableSource instanceof SQLExprTableSource) {
-                executableTableSource =
-                    new AtomicTableSource(logicDbConfig, (SQLExprTableSource) sqlTableSource, currentTableColumnValueMap, currentTableColumnInValuesMap, queryReferFilter);
+                SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlJoinTableSource.getParent(), sqlTable).getSqlTableRefers();
+                executableTableSource = new AtomicTableSource(logicDbConfig, queryReferFilter, sqlTableRefers, currentTableColumnValueMap, currentTableColumnInValuesMap);
             } else if (sqlTableSource instanceof SQLJoinTableSource) {
                 throw new ParserException("SQLJoinTableSource 不应出现");
             } else if (sqlTableSource instanceof SQLSubqueryTableSource) {
-                executableTableSource = new SubQueriedTableSource(logicDbConfig, (SQLSubqueryTableSource) sqlTableSource, queryReferFilter);
+                executableTableSource = new SubQueriedTableSource(logicDbConfig, queryReferFilter);
             } else if (sqlTableSource instanceof SQLUnionQueryTableSource) {
-                executableTableSource = new UnionQueriedTableSource(logicDbConfig, (SQLUnionQueryTableSource) sqlTableSource, queryReferFilter);
+                executableTableSource = new UnionQueriedTableSource(logicDbConfig, queryReferFilter);
             } else {
                 //TODO
                 throw new SqlParseException("无法识别的tableSource类型" + sqlTableSource.getClass().getName());
@@ -160,14 +179,86 @@ public class JoinedTableSource extends ExecutableTableSource {
 
     protected void accept0(SQLASTVisitor visitor) {
         if (visitor instanceof PartitionSqlASTVisitor) {
-            ((PartitionSqlASTVisitor) visitor).visit(this);
+            PartitionSqlASTVisitor partitionSqlASTVisitor = (PartitionSqlASTVisitor) visitor;
+            if (partitionSqlASTVisitor.visit(this)) {
+                planedTableSourceMap.values().forEach(executableTableSource -> executableTableSource.accept(visitor));
+                conditionSet.forEach(sqlExpr -> sqlExpr.accept(visitor));
+            }
+
         } else {
-            throw new SqlParseException("visitor not match");
+            visitor.visit(sqlJoinTableSource);
         }
     }
 
+    public Set<SQLExpr> getConditionSet() {
+        return conditionSet;
+    }
+
+    public Map<Integer, ExecutableTableSource> getPlanedTableSourceMap() {
+        return planedTableSourceMap;
+    }
+
+
+
     public SQLExpr getOtherCondition() {
         return otherCondition;
+    }
+
+
+    public JoinType getJoinType() {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public void setJoinType(JoinType joinType) {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public SQLTableSource getLeft() {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public void setLeft(SQLTableSource left) {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public SQLTableSource getRight() {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public void setRight(SQLTableSource right) {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public SQLExpr getCondition() {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public void setCondition(SQLExpr condition) {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public List<SQLExpr> getUsing() {
+        return sqlJoinTableSource.getUsing();
+    }
+
+    public boolean isNatural() {
+        return sqlJoinTableSource.isNatural();
+    }
+
+    public void setNatural(boolean natural) {
+        throw new UnsupportedOperationException(this.getClass().getName());
+    }
+
+    public void output(StringBuffer buf) {
+        sqlJoinTableSource.output(buf);
+    }
+
+    public boolean equals(Object o) {
+        return sqlJoinTableSource.equals(o);
+    }
+
+    public boolean replace(SQLExpr expr, SQLExpr target) {
+        throw new UnsupportedOperationException(this.getClass().getName());
     }
 
 

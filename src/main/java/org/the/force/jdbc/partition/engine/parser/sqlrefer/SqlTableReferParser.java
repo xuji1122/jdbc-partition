@@ -1,10 +1,11 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
+import org.the.force.jdbc.partition.engine.executor.query.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
-import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLAllColumnExpr;
@@ -22,10 +23,9 @@ import java.util.stream.Collectors;
 
 /**
  * Created by xuji on 2017/7/8.
- *
+ * <p>
  * 1，检查某个sqlTable被引用到的列的范围  不管是否rowQuery还是聚合还是row函数
  * 2，确保SqlTable的alias被正确设置 (当logicSql使用逻辑表名为前缀引用属性时)
- *
  */
 public class SqlTableReferParser extends AbstractVisitor {
 
@@ -50,22 +50,14 @@ public class SqlTableReferParser extends AbstractVisitor {
     //输出
     private final SqlTableRefers sqlTableRefers;
 
-
-    public SqlTableReferParser(LogicDbConfig logicDbConfig, SQLTableSource originTableSource) {
-        this(logicDbConfig, originTableSource, new SqlTableParser(logicDbConfig).getSqlTable(originTableSource));
-    }
-
-    public SqlTableReferParser(LogicDbConfig logicDbConfig, SQLTableSource originTableSource, SqlTable sqlTable) {
+    public SqlTableReferParser(LogicDbConfig logicDbConfig, SQLObject parent, SqlTable sqlTable) {
         this.logicDbConfig = logicDbConfig;
         this.sqlTable = sqlTable;
         this.sqlTableRefers = new SqlTableRefers();
-        this.originTableSource = originTableSource;
-        //        if (!(originTableSource.getParent() instanceof SQLSelectQuery)) {
-        //            throw new ParserException("originTableSource.getParent() is not a SQLSelectQuery instance");
-        //        }
-        this.parent = originTableSource.getParent();
+        this.originTableSource = sqlTable.getSQLTableSource();
+        this.parent = parent;
         if (this.parent instanceof SQLUnionQuery) {
-            //TODO 不支持
+            throw new SqlParseException("SQLUnionQuery 不支持SqlTableReferParser");
         }
         this.parent.accept(this);
     }
@@ -80,15 +72,7 @@ public class SqlTableReferParser extends AbstractVisitor {
             return;
         }
         if (sqlObject instanceof SQLTableSource) {
-            SQLTableSource sqlTableSource = (SQLTableSource) sqlObject;
-            if (sqlTableSource.getAlias() != null && sqlTableSource.getAlias().equals(sqlTable.getAlias())) {
-                throw new ParserException("tableSource 别称重复");
-            }
-            SqlTable otherSqlTable = new SqlTableParser(logicDbConfig).getSqlTable(sqlTableSource);
-            if (sqlTableSource.getAlias() == null && (otherSqlTable.getTableName().equals(sqlTable.getTableName()) || otherSqlTable.getTableName().equals(sqlTable.getAlias()))) {
-                throw new ParserException("tableSource 名称重复复重复");
-            }
-            visitingTableSource = sqlTableSource;
+            visitingTableSource = (SQLTableSource) sqlObject;
         }
         //判断是否处于子查询中  判断第一级子查询即可
         if (sqlObject instanceof SQLSelectQuery) {
@@ -97,6 +81,19 @@ public class SqlTableReferParser extends AbstractVisitor {
                     subQuery = (SQLSelectQuery) sqlObject;
                 }
             }
+        }
+    }
+
+    public boolean visit(SQLJoinTableSource sqlJoinTableSource) {
+        if (sqlJoinTableSource.getCondition() != null) {
+            //判断join条件中的 sqlTable有没有被正确重置alias
+            sqlJoinTableSource.getCondition().accept(this);
+            sqlJoinTableSource.getLeft().accept(this);
+            sqlJoinTableSource.getRight().accept(this);
+            sqlJoinTableSource.getFlashback().accept(this);
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -114,15 +111,6 @@ public class SqlTableReferParser extends AbstractVisitor {
         if (visitingTableSource != null && sqlObject == visitingTableSource) {
             visitingTableSource = null;
         }
-    }
-
-    public boolean visit(SQLJoinTableSource sqlJoinTableSource) {
-        sqlJoinTableSource.getLeft().accept(this);
-        if (sqlJoinTableSource.getCondition() != null) {
-            sqlJoinTableSource.getCondition().accept(this);
-        }
-        sqlJoinTableSource.getRight().accept(this);
-        return false;
     }
 
     public boolean visit(SQLAllColumnExpr x) {
@@ -162,7 +150,7 @@ public class SqlTableReferParser extends AbstractVisitor {
         } else {
             Boolean b = checkByOwnerOnly(sqlTable, sqlRefer);
             if (b != null && b) {
-                throw new ParserException("不支持在子查询中引用父select的from子句定义的table");
+                throw new SqlParseException("不支持在子查询中引用父select的from子句定义的table");
             }
         }
         return false;

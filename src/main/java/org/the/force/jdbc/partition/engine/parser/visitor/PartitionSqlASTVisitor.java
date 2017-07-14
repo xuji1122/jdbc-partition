@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.visitor;
 
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.query.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.query.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.query.tablesource.UnionQueriedTableSource;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlASTVisitor;
@@ -17,7 +17,7 @@ public interface PartitionSqlASTVisitor extends MySqlASTVisitor {
 
     boolean visit(SQLInSubQueriedExpr x);
 
-    boolean visit(JoinedTableSource joinedTableSource);
+    boolean visit(ParallelJoinedTableSource parallelJoinedTableSource);
 
     boolean visit(SubQueriedTableSource subQueriedTableSource);
 

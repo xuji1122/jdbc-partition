@@ -1,5 +1,9 @@
 package org.the.force.jdbc.partition.engine.parser.elements;
 
+import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+
 import java.util.Set;
 
 /**
@@ -9,8 +13,14 @@ public abstract class QueriedSqlTable implements SqlTable {
 
     private final String alias;
 
-    public QueriedSqlTable(String alias) {
-        this.alias = alias;
+    private final SQLTableSource sqlTableSource;
+
+    public QueriedSqlTable(SQLTableSource sqlTableSource) {
+        if (sqlTableSource instanceof SQLExprTableSource) {
+            throw new SqlParseException("sqlTableSource instanceof SQLExprTableSource");
+        }
+        this.sqlTableSource = sqlTableSource;
+        this.alias = sqlTableSource.getAlias();
     }
 
     public String getAlias() {
@@ -43,4 +53,7 @@ public abstract class QueriedSqlTable implements SqlTable {
 
     public abstract Set<String> getReferLabels();
 
+    public SQLTableSource getSQLTableSource() {
+        return sqlTableSource;
+    }
 }

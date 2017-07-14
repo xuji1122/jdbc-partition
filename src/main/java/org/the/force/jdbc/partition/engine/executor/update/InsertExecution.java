@@ -54,11 +54,8 @@ public class InsertExecution implements BatchAbleSqlExecution {
         if (originStatement.getQuery() != null) {
             throw new UnsupportedSqlClauseException("originStatement.getQuery() != null");
         }
-        sqlTable = SqlTableParser.getSQLExprTable(originStatement.getTableSource(), logicDbConfig);
-        if (sqlTable == null) {
-            throw new RuntimeException("exprSqlTable == null");
-        }
-        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, originStatement.getTableSource());
+        sqlTable = new ExprSqlTable(logicDbConfig,originStatement.getTableSource());
+        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, originStatement,sqlTable);
         sqlTable.setAlias(parser.getTableAlias());
         tableRouter = new DefaultTableRouter(logicDbConfig, sqlTable);
     }

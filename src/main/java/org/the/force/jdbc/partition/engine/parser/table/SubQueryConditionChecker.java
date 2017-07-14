@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
-import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.ExitsSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.executor.query.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionAbstractVisitor;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by xuji on 2017/6/14.
  */
-public class SubQueryConditionChecker extends AbstractVisitor {
+public class SubQueryConditionChecker extends PartitionAbstractVisitor {
 
     private final LogicDbConfig logicDbConfig;
 
@@ -46,8 +46,6 @@ public class SubQueryConditionChecker extends AbstractVisitor {
             }
         }
     }
-
-
     // ======子查询 check相关====
 
     public SQLExpr checkSubExpr(SQLExpr x) {

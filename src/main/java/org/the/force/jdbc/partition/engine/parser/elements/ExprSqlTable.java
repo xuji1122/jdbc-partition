@@ -1,8 +1,12 @@
 package org.the.force.jdbc.partition.engine.parser.elements;
 
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.model.LogicTable;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -17,6 +21,8 @@ public class ExprSqlTable implements SqlTable {
 
     private Log logger = LogFactory.getLog(ExprSqlTable.class);
 
+    private final SQLExprTableSource sqlExprTableSource;
+
     private final LogicDbConfig logicDbConfig;
     private final String schema;
     private final String tableName;
@@ -24,17 +30,22 @@ public class ExprSqlTable implements SqlTable {
     //关联的table的定义
     private LogicTable logicTable;
 
-    public ExprSqlTable(LogicDbConfig logicDbConfig, String schema, String tableName, String alias) {
+    public ExprSqlTable(LogicDbConfig logicDbConfig, SQLExprTableSource sqlExprTableSource) {
         this.logicDbConfig = logicDbConfig;
-        if (schema == null || schema.length() < 1) {
-            schema = PartitionJdbcConstants.EMPTY_NAME;
+        this.sqlExprTableSource = sqlExprTableSource;
+        if (sqlExprTableSource != null) {
+            this.alias = sqlExprTableSource.getAlias();//大小写敏感
+            SqlRefer sqlRefer = SqlReferParser.getSqlRefer(sqlExprTableSource.getExpr());
+            if (sqlRefer == null) {
+                throw new SqlParseException("sqlRefer == null");
+            }
+            this.schema = sqlRefer.getOwnerName();
+            this.tableName = sqlRefer.getName();
+        } else {
+            this.alias = null;
+            this.schema = PartitionJdbcConstants.EMPTY_NAME;
+            this.tableName = PartitionJdbcConstants.EMPTY_NAME;
         }
-        this.schema = schema;
-        if (tableName == null || tableName.length() < 1) {
-            tableName = PartitionJdbcConstants.EMPTY_NAME;
-        }
-        this.tableName = tableName;
-        this.alias = alias;
     }
 
     public String getSchema() {
@@ -93,12 +104,12 @@ public class ExprSqlTable implements SqlTable {
 
     public Set<String> getReferLabels() {
         if (logicDbConfig != null && getLogicTable() == null) {
-            LogicTable logicTable = null;
+            LogicTable logicTable;
             try {
                 logicTable = logicDbConfig.getLogicTableManager(tableName).getLogicTable();
                 setLogicTable(logicTable);
             } catch (SQLException e) {
-                logger.warn("could not get select meta data,table_name=" + tableName,e);
+                logger.warn("could not get select meta data,table_name=" + tableName, e);
             }
         }
         if (logicTable != null) {
@@ -106,6 +117,10 @@ public class ExprSqlTable implements SqlTable {
         }
         return new HashSet<>();
 
+    }
+
+    public SQLTableSource getSQLTableSource() {
+        return sqlExprTableSource;
     }
 
     public LogicDbConfig getLogicDbConfig() {

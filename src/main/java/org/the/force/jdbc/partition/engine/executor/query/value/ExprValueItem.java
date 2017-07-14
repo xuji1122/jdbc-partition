@@ -3,38 +3,21 @@ package org.the.force.jdbc.partition.engine.executor.query.value;
 import org.the.force.jdbc.partition.engine.executor.query.elements.ValueItem;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLAggregateExpr;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by xuji on 2017/7/14.
+ * Created by xuji on 2017/7/13.
  */
-public abstract class AggregateBase extends ValueItem implements SQLExpr, SelfAggregateFunction, ReferAggregateFunction {
+public class ExprValueItem extends ValueItem implements SQLExpr, ReferRowValueFunction {
 
-    protected final SQLAggregateExpr sqlExpr;
+    private SQLExpr sqlExpr;
 
-    private List<SQLExpr> arguments = null;
-
-
-    public AggregateBase(SQLAggregateExpr sqlExpr, int index, String label) {
+    public ExprValueItem(SQLExpr sqlExpr, int index, String label) {
         super(index, label);
         this.sqlExpr = sqlExpr;
-    }
-
-    public List<SQLExpr> getArguments() {
-        if (arguments == null) {
-            arguments = new ArrayList<>();
-        }
-        return arguments;
-    }
-
-    public  void accept(SQLASTVisitor visitor) {
-        sqlExpr.accept(visitor);
     }
 
     public boolean equals(Object o) {
@@ -43,7 +26,7 @@ public abstract class AggregateBase extends ValueItem implements SQLExpr, SelfAg
         if (o == null || getClass() != o.getClass())
             return false;
 
-        AggregateBase that = (AggregateBase) o;
+        ExprValueItem that = (ExprValueItem) o;
 
         return sqlExpr.equals(that.sqlExpr);
 
@@ -56,7 +39,9 @@ public abstract class AggregateBase extends ValueItem implements SQLExpr, SelfAg
     public SQLExpr clone() {
         throw new UnsupportedOperationException(this.getClass().getName());
     }
-
+    public final void accept(SQLASTVisitor visitor) {
+        sqlExpr.accept(visitor);
+    }
 
     public SQLObject getParent() {
         return sqlExpr.getParent();
@@ -122,7 +107,4 @@ public abstract class AggregateBase extends ValueItem implements SQLExpr, SelfAg
     public void output(StringBuffer buf) {
         sqlExpr.output(buf);
     }
-
-
-
 }

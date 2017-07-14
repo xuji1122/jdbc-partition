@@ -52,12 +52,12 @@ public class UpdateDelParser {
         this.logicDbConfig = logicDbConfig;
         this.updateDelParserAdapter = updateDelParserAdapter;
         this.eventType = updateDelParserAdapter.getEventType();
-        exprSqlTable = SqlTableParser.getSQLExprTable(updateDelParserAdapter.getSQLExprTableSource(), logicDbConfig);
+        exprSqlTable = new ExprSqlTable(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
         TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprSqlTable, updateDelParserAdapter.getCondition());
         this.where = tableConditionParser.getSubQueryResetWhere();
         columnValueMap = tableConditionParser.getCurrentTableColumnValueMap();
         sqlInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
-        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLExprTableSource());
+        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLStatement(),exprSqlTable);
         exprSqlTable.setAlias(parser.getTableAlias());
         tableRouter = new DefaultTableRouter(logicDbConfig, exprSqlTable);
     }

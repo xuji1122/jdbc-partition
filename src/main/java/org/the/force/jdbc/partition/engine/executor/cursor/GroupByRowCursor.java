@@ -1,11 +1,8 @@
 package org.the.force.jdbc.partition.engine.executor.cursor;
 
-import org.the.force.jdbc.partition.engine.executor.elements.rowKey.RowKeyComparator;
-import org.the.force.jdbc.partition.engine.executor.elements.rowKey.RowKeyFunction;
+import org.the.force.jdbc.partition.engine.result.DataItemRow;
 import org.the.force.jdbc.partition.engine.result.DataItemRowComparator;
 import org.the.force.jdbc.partition.engine.result.RowCursor;
-import org.the.force.jdbc.partition.engine.executor.elements.item.RowQueryItems;
-import org.the.force.jdbc.partition.engine.result.DataItemRow;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -14,12 +11,6 @@ import java.sql.SQLException;
  * Created by xuji on 2017/6/6.
  */
 public class GroupByRowCursor extends ComparableRowCursor {
-
-    private RowQueryItems queryItems;
-
-    private RowKeyFunction rowKeyFunction;
-
-    private RowKeyComparator rowKeyComparator;
 
     private final DataItemRow[] temp = new DataItemRow[] {DataItemRow.EMPTY_DATA_ROW, DataItemRow.EMPTY_DATA_ROW};
 

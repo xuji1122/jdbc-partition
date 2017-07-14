@@ -55,8 +55,6 @@ public class PartitionRowQuery implements QueryExecution {
         this.currentTableColumnInValuesMap = currentTableColumnInValuesMap;
         SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) inputQueryBlock.getFrom();
         sqlTable = (ExprSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(sqlExprTableSource);
-        //判断sqlTable是否需要强制alias
-        new SqlTableReferParser(logicDbConfig, sqlExprTableSource, sqlTable);
         tableRouter = new DefaultTableRouter(logicDbConfig, sqlTable);
 
         //parse group by type

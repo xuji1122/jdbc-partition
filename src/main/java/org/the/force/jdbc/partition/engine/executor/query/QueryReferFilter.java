@@ -28,6 +28,7 @@ public class QueryReferFilter {
     //当 selectReferFilterCondition包含子查询时
     private final SubQueryFilter subQueryFilter;
 
+    //join的时候最后依据join的列排序，提高join效率用
     private Set<SqlRefer> orderBySqlRefers;
 
 

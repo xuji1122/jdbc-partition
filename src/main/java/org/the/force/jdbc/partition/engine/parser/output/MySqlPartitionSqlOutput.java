@@ -4,7 +4,7 @@ import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
 import org.the.force.jdbc.partition.engine.parser.SqlValueEvalContext;
 import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.query.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.query.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.query.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.exception.SqlParseException;
@@ -263,7 +263,7 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
     }
 
 
-    public boolean visit(JoinedTableSource joinedTableSource) {
+    public boolean visit(ParallelJoinedTableSource parallelJoinedTableSource) {
         return false;
     }
 

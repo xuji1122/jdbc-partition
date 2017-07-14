@@ -11,7 +11,7 @@ public class PartitionJdbcConstants {
 
     public static final String EMPTY_NAME = "unKnow";
 
-    public static final ExprSqlTable EMPTY_TABLE = new ExprSqlTable(null, null, null, null);
+    public static final ExprSqlTable EMPTY_TABLE = new ExprSqlTable(null, null);
 
 
 }

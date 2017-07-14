@@ -3,9 +3,11 @@ package org.the.force.jdbc.partition.engine.executor.factory;
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
 import org.the.force.jdbc.partition.engine.executor.query.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.executor.query.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.query.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.query.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.query.tablesource.UnionQueriedTableSource;
+import org.the.force.jdbc.partition.engine.executor.query.tablesource.WrappedSQLExprTableSource;
+import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
@@ -49,22 +51,24 @@ public class BlockQueryExecutionFactory implements QueryExecutionFactory {
     /**
      * @param logicDbConfig
      * @param selectQuery
+     * @param queryReferFilter 这个参数是对selectQuery的查询结果集的过滤 表示的是SQLSelectQueryBlock来自于一个子查询
      */
     public BlockQueryExecutionFactory(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery, QueryReferFilter queryReferFilter) {
         List<SQLExpr> subQueries = null;
         SQLTableSource from = selectQuery.getFrom();
         if (from instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) from;
-            SqlTable sqlTable = SqlTableParser.getSQLExprTable(sqlExprTableSource, logicDbConfig);
+            SqlTable sqlTable = new ExprSqlTable(logicDbConfig, sqlExprTableSource);
             TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, sqlTable, selectQuery.getWhere());
             Map<SqlColumn, SQLExpr> currentTableColumnValueMap = tableConditionParser.getCurrentTableColumnValueMap();
             Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
+            WrappedSQLExprTableSource wrappedSQLExprTableSource = new WrappedSQLExprTableSource(sqlTable, currentTableColumnValueMap, currentTableColumnInValuesMap);
+            selectQuery.setFrom(wrappedSQLExprTableSource);
             //先做掉子查询，然后转为数据库的sql语句到数据库执行sql
             subQueries = tableConditionParser.getSubQueryList();
             SQLExpr newWhere = tableConditionParser.getSubQueryResetWhere();
             selectQuery.setWhere(newWhere);
             //确保sqlTable被正确设置
-            new SqlTableReferParser(logicDbConfig, sqlExprTableSource, sqlTable);
             //group by 涉及的排序问题  没有group by 但是列有聚合查询也包括在内
             //order by 涉及的问题
             //limit涉及的问题
@@ -72,16 +76,17 @@ public class BlockQueryExecutionFactory implements QueryExecutionFactory {
             //tableSource先执行，再根据tableSource的结果生成查询结果集
             if (from instanceof SQLJoinTableSource) {
                 //tableSource先执行，再根据tableSource的结果生成查询结果集
-                JoinedTableSource joinedTableSource = new JoinedTableSource(logicDbConfig, (SQLJoinTableSource) from, selectQuery.getWhere());
-                SQLExpr newWhere = joinedTableSource.getOtherCondition(); //tableSource特有的条件过滤掉之后剩余的条件
+                ParallelJoinedTableSource parallelJoinedTableSource = new ParallelJoinedTableSource(logicDbConfig, (SQLJoinTableSource) from, selectQuery.getWhere());
+                SQLExpr newWhere = parallelJoinedTableSource.getOtherCondition(); //tableSource特有的条件过滤掉之后剩余的条件
                 //剩余的where条件是否有子查询
                 if (newWhere != null) {
                     SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker(logicDbConfig);
                     newWhere.accept(conditionChecker);
                     subQueries = conditionChecker.getSubQueryList();
                 }
-                selectQuery.setFrom(joinedTableSource);
+                selectQuery.setFrom(parallelJoinedTableSource);
                 selectQuery.setWhere(newWhere);
+                //
             } else {
                 //子查询的场景  from 是子查询
                 SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(from);
@@ -95,17 +100,15 @@ public class BlockQueryExecutionFactory implements QueryExecutionFactory {
                 selectQuery.setWhere(newWhere);
                 //确保sqlTable的alias被正确设置
                 if (from instanceof SQLSubqueryTableSource) {
-
-                    SubQueriedTableSource sqlTableSource = new SubQueriedTableSource(logicDbConfig, (SQLSubqueryTableSource) from, new QueryReferFilter(logicDbConfig,sqlTable, parser.getCurrentTableOwnCondition()));
+                    SubQueriedTableSource sqlTableSource =
+                        new SubQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable, parser.getCurrentTableOwnCondition()));
                     selectQuery.setFrom(sqlTableSource);
                     //确保sqlTable被正确设置
-                    new SqlTableReferParser(logicDbConfig, sqlTableSource, sqlTable);
                 } else if (from instanceof SQLUnionQueryTableSource) {
                     UnionQueriedTableSource sqlTableSource =
-                        new UnionQueriedTableSource(logicDbConfig, (SQLUnionQueryTableSource) from, new QueryReferFilter(logicDbConfig,sqlTable, parser.getCurrentTableOwnCondition()));
+                        new UnionQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable, parser.getCurrentTableOwnCondition()));
                     selectQuery.setFrom(sqlTableSource);
                     //确保sqlTable被正确设置
-                    new SqlTableReferParser(logicDbConfig, sqlTableSource, sqlTable);
                 } else {
                     //TODO
                     throw new ParserException("无法识别的tableSource:" + PartitionSqlUtils.toSql(selectQuery, logicDbConfig.getSqlDialect()) + " : from=" + from.getClass().getName());

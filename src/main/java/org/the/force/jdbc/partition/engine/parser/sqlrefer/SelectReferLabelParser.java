@@ -29,6 +29,7 @@ import java.util.Set;
 /**
  * Created by xuji on 2017/6/14.
  * 解析select查询结果集中可以被引用的列
+ * 只操作原始的SQLTableSource 不包括ExecutableTableSource的实例
  */
 public class SelectReferLabelParser {
 
@@ -108,7 +109,7 @@ public class SelectReferLabelParser {
     public Set<String> getAllColumns(SQLTableSource sqlTableSource, String targetTableName) throws SQLException {
         if (sqlTableSource instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) sqlTableSource;
-            ExprSqlTable exprSqlTable = SqlTableParser.getSQLExprTable(sqlExprTableSource, logicDbConfig);
+            ExprSqlTable exprSqlTable = new ExprSqlTable(logicDbConfig,sqlExprTableSource);
             if (targetTableName == null || targetTableName.equals(exprSqlTable.getAlias()) || targetTableName.equalsIgnoreCase(exprSqlTable.getTableName())) {
                 return exprSqlTable.getReferLabels();
             } else {

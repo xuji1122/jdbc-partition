@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.executor.elements.rowKey;
+package org.the.force.jdbc.partition.engine.executor.query.value;
 
 import java.util.Arrays;
 

@@ -45,7 +45,7 @@ public class TableDdlExecution implements BatchAbleSqlExecution {
         this.logicDbConfig = logicDbConfig;
         this.sqlStatement = sqlStatement;
         this.tableSource = tableSource;
-        exprSqlTable = SqlTableParser.getSQLExprTable(this.tableSource, logicDbConfig);
+        exprSqlTable = new ExprSqlTable(logicDbConfig, this.tableSource);
         logicTableConfig = logicDbConfig.getLogicTableManager(exprSqlTable.getTableName()).getLogicTableConfig()[0];
     }
 

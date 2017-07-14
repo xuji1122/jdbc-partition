@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.query.value;
 
 import org.the.force.jdbc.partition.engine.result.DataItemRow;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLAggregateExpr;
 
 import java.util.List;
 
@@ -10,7 +10,8 @@ import java.util.List;
  */
 public class SumAggregate extends AggregateBase implements SelfAggregateFunction {
 
-    public SumAggregate(SQLExpr sqlExpr, int index, String label) {
+
+    public SumAggregate(SQLAggregateExpr sqlExpr, int index, String label) {
         super(sqlExpr, index, label);
     }
 

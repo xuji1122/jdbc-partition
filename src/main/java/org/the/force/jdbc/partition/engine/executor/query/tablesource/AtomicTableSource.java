@@ -17,8 +17,8 @@ import java.util.Map;
 /**
  * Created by xuji on 2017/7/6.
  */
-public class AtomicTableSource extends ExecutableTableSource {
-
+public class AtomicTableSource extends SQLExprTableSource implements ExecutableTableSource {
+    private final LogicDbConfig logicDbConfig;
     private final SQLExprTableSource sqlExprTableSource;
     private final Map<SqlColumn, SQLExpr> columnValueMap;
     private final Map<SqlColumn, SQLInListExpr> columnInValuesMap;
@@ -26,18 +26,23 @@ public class AtomicTableSource extends ExecutableTableSource {
     private final SqlTable sqlTable;
     private final SqlTableRefers sqlTableRefers;
 
-    public AtomicTableSource(LogicDbConfig logicDbConfig, SQLExprTableSource sqlExprTableSource, Map<SqlColumn, SQLExpr> columnValueMap,
-        Map<SqlColumn, SQLInListExpr> columnInValuesMap, QueryReferFilter queryReferFilter) {
-        super(logicDbConfig);
-        this.sqlExprTableSource = sqlExprTableSource;
+    public AtomicTableSource(LogicDbConfig logicDbConfig, QueryReferFilter queryReferFilter,SqlTableRefers sqlTableRefers,Map<SqlColumn, SQLExpr> columnValueMap,
+        Map<SqlColumn, SQLInListExpr> columnInValuesMap) {
+        this.logicDbConfig = logicDbConfig;
+        this.sqlExprTableSource = (SQLExprTableSource)queryReferFilter.getReferTable().getSQLTableSource();
+        this.sqlTableRefers = sqlTableRefers;
+        super.alias = sqlExprTableSource.getAlias();
+        super.hints = sqlExprTableSource.getHints();
+        super.setFlashback(sqlExprTableSource.getFlashback());
+        super.setExpr(sqlExprTableSource.getExpr());
+        super.getPartitions().addAll(sqlExprTableSource.getPartitions());
+        super.setSchemaObject(sqlExprTableSource.getSchemaObject());
         this.sqlTable = queryReferFilter.getReferTable();
         this.columnValueMap = columnValueMap;
         this.columnInValuesMap = columnInValuesMap;
-        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, sqlExprTableSource, sqlTable);
-        sqlTableRefers = parser.getSqlTableRefers();
         this.queryReferFilter = queryReferFilter;
-
     }
+
 
     public SQLExprTableSource getSqlExprTableSource() {
         return sqlExprTableSource;
@@ -60,12 +65,11 @@ public class AtomicTableSource extends ExecutableTableSource {
         return columnInValuesMap;
     }
 
-
     public QueryReferFilter getQueryReferFilter() {
         return queryReferFilter;
     }
 
     protected void accept0(SQLASTVisitor visitor) {
-
+        visitor.visit(sqlExprTableSource);
     }
 }
