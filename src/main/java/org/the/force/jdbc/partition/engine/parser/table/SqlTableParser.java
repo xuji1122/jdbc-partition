@@ -16,7 +16,7 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
 
 import java.sql.SQLException;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/7/5.
@@ -48,8 +48,8 @@ public class SqlTableParser {
             SQLSubqueryTableSource sqlSubqueryTableSource = (SQLSubqueryTableSource) tableSource;
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
             return new QueriedSqlTable(tableSource) {
-                public Set<String> getReferLabels() {
-                    Set<String> columns;
+                public List<String> getReferLabels() {
+                    List<String> columns;
                     try {
                         columns = new SelectReferLabelParser(logicDbConfig).parseSelectLabels(sqlSelectQuery);
                     } catch (SQLException e) {
@@ -61,8 +61,8 @@ public class SqlTableParser {
         } else if (tableSource instanceof SQLUnionQueryTableSource) {
             SQLUnionQueryTableSource sqlUnionQueryTableSource = (SQLUnionQueryTableSource) tableSource;
             return new QueriedSqlTable(tableSource) {
-                public Set<String> getReferLabels() {
-                    Set<String> columns;
+                public List<String> getReferLabels() {
+                    List<String> columns;
                     try {
                         columns = new SelectReferLabelParser(logicDbConfig).parseSelectLabels(sqlUnionQueryTableSource.getUnion());
                     } catch (SQLException e) {

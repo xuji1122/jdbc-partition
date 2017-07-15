@@ -1,15 +1,23 @@
 package org.the.force.jdbc.partition.engine.parser.output;
 
-import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
-import org.the.force.jdbc.partition.engine.parser.SqlValueEvalContext;
-import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
+import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
+import org.the.force.jdbc.partition.common.tuple.Pair;
+import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.ExitsSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
+import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlValueEvalContext;
+import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlExprEvalFunctionFactory;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
-import org.the.force.jdbc.partition.exception.UnsupportedExprException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLCharExpr;
@@ -21,16 +29,8 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlInser
 import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
 import org.the.force.thirdparty.druid.sql.visitor.ExportParameterVisitor;
 import org.the.force.thirdparty.druid.sql.visitor.ExportParameterVisitorUtils;
-import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
-import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
-import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.rule.Partition;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -218,23 +218,23 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
             return super.visit(x);
         }
         print0(ucase ? "LIMIT " : "limit ");
-        SqlValueEvalContext sqlValueEvalContext = new SqlValueEvalContext(logicDbConfig, routeEvent.getLogicSqlParameterHolder());
-        SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
+        SqlValueEvalContext sqlValueEvalContext = new SqlValueEvalContext(logicDbConfig);
+        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
         int from = 1;
         int rowCount;
 
         if (x.getOffset() != null) {
             try {
-                Object v = sqlValueFunctionMatcher.matchSqlValueFunction(x.getOffset(), sqlValueEvalContext).getSqlValue(x.getOffset(), sqlValueEvalContext).getValue();
+                Object v = sqlExprEvalFunctionFactory.matchSqlValueFunction(x.getOffset()).getValue(sqlValueEvalContext, routeEvent.getLogicSqlParameterHolder(), null);
                 from = Integer.parseInt(v.toString());
-            } catch (UnsupportedExprException e) {
+            } catch (SQLException e) {
                 throw new SqlParseException("limit不是数字不正确", e);
             }
         }
         try {
-            Object v = sqlValueFunctionMatcher.matchSqlValueFunction(x.getRowCount(), sqlValueEvalContext).getSqlValue(x.getRowCount(), sqlValueEvalContext).getValue();
+            Object v = sqlExprEvalFunctionFactory.matchSqlValueFunction(x.getRowCount()).getValue(sqlValueEvalContext, routeEvent.getLogicSqlParameterHolder(), null);
             rowCount = Integer.parseInt(v.toString());
-        } catch (UnsupportedExprException e) {
+        } catch (SQLException e) {
             throw new SqlParseException("limit不是数字不正确", e);
         }
         rowCount = (from - 1 + rowCount) * sqlTablePartition.getTotalPartitions() + 1;
@@ -244,12 +244,9 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    @Override
     public boolean visit(ExitsSubQueriedExpr x) {
         return false;
     }
-
-    @Override
     public boolean visit(SQLInSubQueriedExpr x) {
         return false;
     }

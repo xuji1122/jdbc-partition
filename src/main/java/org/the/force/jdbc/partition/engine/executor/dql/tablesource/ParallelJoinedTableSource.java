@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.QueryReferFilter;
+import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.parser.elements.JoinConnector;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
@@ -48,8 +48,6 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
 
     //临时变量
 
-    private final List<SQLTableSource> originalTableSources = new ArrayList<>();
-
     private final List<SqlTable> sqlTables = new ArrayList<>();
 
     /**
@@ -87,14 +85,12 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
             left.setParent(this);
             SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
             sqlTables.add(sqlTable);
-            originalTableSources.add(left);
         }
         right.setParent(this);
         SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
         sqlTables.add(sqlTable);
-        originalTableSources.add(right);
         JoinConnector joinConnector = new JoinConnector(sqlJoinTableSource.getJoinType(), sqlJoinTableSource.getCondition());
-        Pair<Integer, Integer> pair = new Pair<>(originalTableSources.size() - 2, originalTableSources.size() - 1);
+        Pair<Integer, Integer> pair = new Pair<>(sqlTables.size() - 2, sqlTables.size() - 1);
         if (joinConnector.getJoinCondition() != null) {
             conditionSet.add(joinConnector.getJoinCondition());
         }
@@ -104,8 +100,8 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
     private void parseTableCondition() {
         int size = sqlTables.size();
         for (int i = 0; i < size; i++) {
-            SQLTableSource sqlTableSource = originalTableSources.get(i);
             SqlTable sqlTable = sqlTables.get(i);
+            SQLTableSource sqlTableSource = sqlTable.getSQLTableSource();
             TableConditionParser parser = new TableConditionParser(logicDbConfig, this.otherCondition, i, sqlTables);
             this.otherCondition = parser.getOtherCondition();
             SQLExpr tableOwnCondition = parser.getCurrentTableOwnCondition();
@@ -184,7 +180,6 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
                 planedTableSourceMap.values().forEach(executableTableSource -> executableTableSource.accept(visitor));
                 conditionSet.forEach(sqlExpr -> sqlExpr.accept(visitor));
             }
-
         } else {
             visitor.visit(sqlJoinTableSource);
         }
@@ -198,7 +193,9 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
         return planedTableSourceMap;
     }
 
-
+    public List<SqlTable> getSqlTables() {
+        return sqlTables;
+    }
 
     public SQLExpr getOtherCondition() {
         return otherCondition;

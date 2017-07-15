@@ -1,18 +1,19 @@
 package org.the.force.jdbc.partition.engine.executor.dql.elements;
 
-import org.the.force.jdbc.partition.engine.executor.dql.value.SelfRowValueFunction;
 import org.the.force.jdbc.partition.engine.result.DataItemRow;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
 /**
  * Created by xuji on 2017/7/14.
  */
-public class ValueItem implements SelfRowValueFunction {
+public class ValueExprItem extends ValueExpr{
 
     private final int index;
 
     private final String label;
 
-    public ValueItem(int index, String label) {
+    public ValueExprItem(SQLExpr sqlExpr, int index, String label) {
+        super(sqlExpr);
         this.index = index;
         this.label = label;
     }
@@ -28,4 +29,6 @@ public class ValueItem implements SelfRowValueFunction {
     public Object getValue(DataItemRow rows) {
         return rows.getValue(getIndex());
     }
+
+
 }

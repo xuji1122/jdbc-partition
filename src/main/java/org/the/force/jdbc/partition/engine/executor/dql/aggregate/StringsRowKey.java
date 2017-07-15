@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.executor.dql.value;
+package org.the.force.jdbc.partition.engine.executor.dql.aggregate;
 
 import java.util.Arrays;
 
@@ -30,7 +30,7 @@ public class StringsRowKey{
     }
 
     public String toString() {
-        return "StringsRowKey{" + "value=" + Arrays.toString(value) + '}';
+        return "StringsRowKey{" + "eval=" + Arrays.toString(value) + '}';
     }
 
     public String[] getValue() {

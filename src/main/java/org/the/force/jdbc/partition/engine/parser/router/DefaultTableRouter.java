@@ -1,17 +1,16 @@
 package org.the.force.jdbc.partition.engine.parser.router;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlExprEvalFunction;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.parser.SqlValueEvalContext;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlValueEvalContext;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;
 import org.the.force.jdbc.partition.engine.parser.output.MySqlPartitionSqlOutput;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValue;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunction;
-import org.the.force.jdbc.partition.engine.parser.value.SqlValueFunctionMatcher;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlExprEvalFunctionFactory;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
@@ -19,7 +18,6 @@ import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
 import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
@@ -44,9 +42,12 @@ public class DefaultTableRouter implements TableRouter {
 
     protected final ExprSqlTable exprSqlTable;
 
-    public DefaultTableRouter(LogicDbConfig logicDbConfig, ExprSqlTable exprSqlTable) {
+    private final SqlValueEvalContext sqlValueEvalContext;
+
+    public DefaultTableRouter(LogicDbConfig logicDbConfig, ExprSqlTable exprSqlTable, SqlValueEvalContext sqlValueEvalContext) {
         this.logicDbConfig = logicDbConfig;
         this.exprSqlTable = exprSqlTable;
+        this.sqlValueEvalContext = sqlValueEvalContext;
     }
 
     public Map<Partition, SqlTablePartitionSql> route(RouteEvent routeEvent) throws SQLException {
@@ -92,8 +93,7 @@ public class DefaultTableRouter implements TableRouter {
      */
     protected Map<Partition, SqlTablePartitionSql> insertIntoRoute(RouteEvent routeEvent, Map<Integer, SqlColumnValue> partitionColumnMap,
         List<SQLInsertStatement.ValuesClause> valuesClauseList) throws SQLException {
-        SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
-        SqlValueEvalContext sqlValueEvalContext = new SqlValueEvalContext(logicDbConfig, routeEvent.getLogicSqlParameterHolder());
+        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
 
         PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), routeEvent.getEventType(), logicTableConfig.getPartitionSortType(),
@@ -108,17 +108,16 @@ public class DefaultTableRouter implements TableRouter {
                 SQLExpr sqlExpr = sqlExprList.get(i);
                 SqlColumnValue sqlColumnValue = partitionColumnMap.get(i);
                 if (sqlColumnValue != null) {
-                    SqlValueFunction sqlValueFunction = sqlValueFunctionMatcher.matchSqlValueFunction(sqlExpr, sqlValueEvalContext);
+                    SqlExprEvalFunction sqlValueFunction = sqlExprEvalFunctionFactory.matchSqlValueFunction(sqlExpr);
                     if (sqlValueFunction == null) {
                         //TODO 异常处理
                         continue;
                     }
-                    SqlValue sqlValue = sqlValueFunction.getSqlValue(sqlExpr, sqlValueEvalContext);
-                    if (sqlValue == null) {
+                    Object value = sqlValueFunction.getValue(sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
+                    if (value == null) {
                         //TODO 异常处理
                         continue;
                     }
-                    Object value = sqlValue.getValue();
                     if (SQLEvalVisitor.EVAL_VALUE_NULL == value) {
                         sqlColumnValue.setValue(null);
                     } else {
@@ -146,7 +145,7 @@ public class DefaultTableRouter implements TableRouter {
         Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
         for (Map.Entry<Partition, SqlTablePartition> entry : subsMap.entrySet()) {
             StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb,logicDbConfig, routeEvent, entry.getValue());
+            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, entry.getValue());
             routeEvent.getSqlStatement().accept(mySqlPartitionSqlOutput);
             List<SqlParameter> list = mySqlPartitionSqlOutput.getSqlParameterList();
             String sql = sqlSb.toString();
@@ -166,8 +165,7 @@ public class DefaultTableRouter implements TableRouter {
     protected Map<Partition, SqlTablePartitionSql> columnInListPartition(RouteEvent routeEvent, Map<SqlColumn, SQLExpr> partitionColumnValueMap,
         Map<SqlColumn, SQLInListExpr> partitionColumnSqlInValuesMap) throws SQLException {
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
-        SqlValueEvalContext sqlValueEvalContext = new SqlValueEvalContext(logicDbConfig, routeEvent.getLogicSqlParameterHolder());
-        SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
+        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
         /**
          * 根据每个in表达式的column 分别做分区  Column-->Partition
@@ -188,12 +186,12 @@ public class DefaultTableRouter implements TableRouter {
             for (SQLExpr sqlExpr : sqlExprList) {// in的每一个选项
                 TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
                 SqlColumnValue columnValueOuter = new SqlColumnValue(entry1.getKey().getColumnName());
-                Object value = sqlValueFunctionMatcher.matchSqlValueFunction(sqlExpr, sqlValueEvalContext).getSqlValue(sqlExpr, sqlValueEvalContext).getValue();
+                Object value = sqlExprEvalFunctionFactory.matchSqlValueFunction(sqlExpr).getValue(sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
                 columnValueOuter.setValue(value);
                 partitionColumnValueTreeSet.add(columnValueOuter);
                 for (Map.Entry<SqlColumn, SQLExpr> entry2 : partitionColumnValueMap.entrySet()) {//等于的选项全部拿出来
                     SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getColumnName());
-                    value = sqlValueFunctionMatcher.matchSqlValueFunction(entry2.getValue(), sqlValueEvalContext).getSqlValue(entry2.getValue(), sqlValueEvalContext).getValue();
+                    value = sqlExprEvalFunctionFactory.matchSqlValueFunction(entry2.getValue()).getValue( sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
                     columnValueInner.setValue(value);
                     partitionColumnValueTreeSet.add(columnValueInner);
                 }
@@ -256,7 +254,7 @@ public class DefaultTableRouter implements TableRouter {
             sqlTablePartition.getSubInListExpr().addAll(entry.getValue());
 
             StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig,routeEvent, sqlTablePartition);
+            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
             routeEvent.getSqlStatement().accept(mySqlPartitionSqlOutput);
             List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
             String sql = sqlSb.toString();
@@ -274,8 +272,7 @@ public class DefaultTableRouter implements TableRouter {
      */
     protected Map<Partition, SqlTablePartitionSql> columnEqualsPartition(RouteEvent routeEvent, Map<SqlColumn, SQLExpr> partitionColumnValueMap) throws SQLException {
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
-        SqlValueEvalContext sqlValueEvalContext = new SqlValueEvalContext(logicDbConfig, routeEvent.getLogicSqlParameterHolder());
-        SqlValueFunctionMatcher sqlValueFunctionMatcher = SqlValueFunctionMatcher.getSingleton();
+        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
         TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
         //TODO 数据迁移时老区新区 周新区 update时策略 新区老区双写，表格主键的获取
@@ -285,7 +282,7 @@ public class DefaultTableRouter implements TableRouter {
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
         for (Map.Entry<SqlColumn, SQLExpr> entry2 : partitionColumnValueMap.entrySet()) {
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getColumnName());
-            Object value = sqlValueFunctionMatcher.matchSqlValueFunction(entry2.getValue(), sqlValueEvalContext).getSqlValue(entry2.getValue(), sqlValueEvalContext).getValue();
+            Object value = sqlExprEvalFunctionFactory.matchSqlValueFunction(entry2.getValue()).getValue( sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
             columnValueInner.setValue(value);
             partitionColumnValueTreeSet.add(columnValueInner);
         }
@@ -298,7 +295,7 @@ public class DefaultTableRouter implements TableRouter {
             SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
             sqlTablePartition.setTotalPartitions(partitions.size());
             StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig,routeEvent, sqlTablePartition);
+            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
             routeEvent.getSqlStatement().accept(mySqlPartitionSqlOutput);
             List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
             String sql = sqlSb.toString();

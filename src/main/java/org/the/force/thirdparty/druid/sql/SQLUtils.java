@@ -418,9 +418,9 @@ public class SQLUtils {
      * @author owenludong.lud
      * @param columnName
      * @param tableAlias
-     * @param pattern if pattern is null,it will be set {%Y-%m-%d %H:%i:%s} as mysql default value and set {yyyy-mm-dd
-     * hh24:mi:ss} as oracle default value
-     * @param dbType {@link JdbcConstants} if dbType is null ,it will be set the mysql as a default value
+     * @param pattern if pattern is null,it will be set {%Y-%m-%d %H:%i:%s} as mysql default eval and set {yyyy-mm-dd
+     * hh24:mi:ss} as oracle default eval
+     * @param dbType {@link JdbcConstants} if dbType is null ,it will be set the mysql as a default eval
      */
     public static String buildToDate(String columnName, String tableAlias, String pattern, String dbType) {
         StringBuilder sql = new StringBuilder();

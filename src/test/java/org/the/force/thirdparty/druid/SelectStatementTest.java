@@ -49,6 +49,13 @@ public class SelectStatementTest {
             SQLStatement sqlStatement = stmts.get(i);
         }
     }
+    public void testCaseWhenQuery3() {
+        String sql = "select t.id,case  when t.type=1 then 1 else 0 end from t_order t where user_id in (?,?,?) and name=?  and id>0 and (time>? or status=?) order by id limit 20 ";
+        List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+        for (int i = 0; i < stmts.size(); i++) {
+            SQLStatement sqlStatement = stmts.get(i);
+        }
+    }
 
     public void testAggregateQuery1() {
         //SQLSelectItem  ---> SqlExpr <]-- SQLAggregateExpr
@@ -92,6 +99,7 @@ public class SelectStatementTest {
             SQLStatement sqlStatement = stmts.get(i);
         }
     }
+
     public void testAggregateQuery5() {
         //SQLSelectItem  ---> SqlExpr <]-- SQLAggregateExpr
         //SQLSelectGroupByClause

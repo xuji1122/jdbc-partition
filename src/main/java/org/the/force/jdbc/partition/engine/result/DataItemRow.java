@@ -1,8 +1,10 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import org.the.force.jdbc.partition.engine.executor.eval.TypedSqlValue;
+import org.the.force.jdbc.partition.exception.SqlParseException;
+
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/6.
@@ -11,42 +13,28 @@ public class DataItemRow {
 
     private final Object[] cellValues;
 
-    private final ResultSetMetaData resultSetMetaData;
+    private int[] sqlTypes;
 
-    public static final DataItemRow EMPTY_DATA_ROW = new DataItemRow();
+    private final Map<String, Integer> labelIndexMap;
 
-    private DataItemRow() {
-        resultSetMetaData = null;
-        cellValues = new Object[] {};
+    public static final DataItemRow EMPTY_DATA_ROW = new DataItemRow(null, null, null);
+
+    public DataItemRow(Object[] cellValues, int[] sqlTypes, Map<String, Integer> labelIndexMap) {
+        this.cellValues = cellValues;
+        this.sqlTypes = sqlTypes;
+        this.labelIndexMap = labelIndexMap;
     }
 
-    public DataItemRow(ResultSet rs, ResultSetMetaData resultSetMetaData) throws SQLException {
-        this.resultSetMetaData = resultSetMetaData;
-        int columnCount = resultSetMetaData.getColumnCount();
-        cellValues = new Object[columnCount];
-        for (int i = 0; i < columnCount; i++) {
-            cellValues[i] = rs.getObject(i + 1);
+    public Object getValue(int columnIndex) {
+        return new TypedSqlValue(cellValues[columnIndex], sqlTypes[columnIndex]);
+    }
+
+    public Object getValue(String key) throws SQLException {
+        Integer index = labelIndexMap.get(key.toLowerCase());
+        if (index == null) {
+            throw new SqlParseException("key" + key + " 不存在");
         }
+        return new TypedSqlValue(cellValues[index], sqlTypes[index]);
     }
 
-    //从0开始
-    public Object getValue(int columnIndex){
-        return cellValues[columnIndex];
-    }
-
-//    public Object getValue(String tableName, String label) throws SQLException {
-//        int columnCount = resultSetMetaData.getColumnCount();
-//        for (int i = 0; i < columnCount; i++) {
-//            String tableName2 = resultSetMetaData.getTableName(i + 1);
-//            String label2 = resultSetMetaData.getColumnLabel(i + 1);
-//            if (tableName.equalsIgnoreCase(tableName2) && label.equalsIgnoreCase(label2)) {
-//                return cellValues[i];
-//            }
-//        }
-//        return null;
-//    }
-
-    public ResultSetMetaData getResultSetMetaData() {
-        return resultSetMetaData;
-    }
 }

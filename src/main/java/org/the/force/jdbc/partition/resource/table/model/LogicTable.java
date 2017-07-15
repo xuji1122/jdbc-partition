@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,13 +63,13 @@ public class LogicTable {
         }
     }
 
-    public Set<String> getColumns() {
+    public List<String> getColumns() {
 
-        return columns.values().stream().map(LogicColumn::getColumnName).collect(Collectors.toSet());
+        return columns.values().stream().map(LogicColumn::getColumnName).collect(Collectors.toList());
     }
 
-    public Set<String> getPkColumns() {
-        return pkColumns.values().stream().map(LogicColumn::getColumnName).collect(Collectors.toSet());
+    public List<String> getPkColumns() {
+        return pkColumns.values().stream().map(LogicColumn::getColumnName).collect(Collectors.toList());
     }
 
     public Map<String, Set<LogicColumn>> getUniqueColumns() {

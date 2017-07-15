@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.engine.result.RowCursor;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/6.
@@ -17,8 +18,8 @@ public class GroupByRowCursor extends ComparableRowCursor {
     protected final DataItemRowComparator dataItemRowComparator;
 
     // SQLAggregateExpr
-    public GroupByRowCursor(RowCursor left, RowCursor right, ResultSetMetaData resultSetMetaData, DataItemRowComparator dataItemRowComparator) {
-        super(left, right, resultSetMetaData);
+    public GroupByRowCursor(RowCursor left, RowCursor right,int[] sqlTypes, Map<String,Integer> resultSetMetaData, DataItemRowComparator dataItemRowComparator) {
+        super(left, right,sqlTypes, resultSetMetaData);
         this.dataItemRowComparator = dataItemRowComparator;
     }
 

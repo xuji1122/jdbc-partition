@@ -25,7 +25,7 @@ public class ConditionValue {
 	// type for condition   SQLSTATE | SELF | SYSTEM | mysql_error_code
 	private ConditionType type;
 	
-	//value for condition  condition_name | sqlstate | SQLWARNING | NOT FOUND | SQLEXCEPTION | mysql_error_code
+	//eval for condition  condition_name | sqlstate | SQLWARNING | NOT FOUND | SQLEXCEPTION | mysql_error_code
 	private String value;
 	public ConditionType getType() {
 		return type;

@@ -17,6 +17,7 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -180,7 +181,7 @@ public class SqlTableReferParser extends AbstractVisitor {
                 return b;
             }
         }
-        Set<String> columns = sqlTable.getReferLabels();
+        List<String> columns = sqlTable.getReferLabels();
         if (columns == null || columns.isEmpty()) {
             throw new ParserException("sqlTable columns can not init:" + sqlTable.toString());
         }

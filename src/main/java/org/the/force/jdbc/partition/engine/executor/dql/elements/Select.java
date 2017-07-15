@@ -1,5 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.elements;
 
+import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,20 +10,24 @@ import java.util.List;
  */
 public class Select {
 
+    //被引用的立场
+    private final SqlTable sqlTable;
+
     private final boolean distinctAll;
 
-    private List<ValueItem> valueItems = new ArrayList<>();
+    private List<ValueExprItem> valueExprItems = new ArrayList<>();
 
     private int queryBound;
 
     private int extendBound;
 
-    public Select(boolean distinctAll) {
+    public Select(SqlTable sqlTable,boolean distinctAll) {
+        this.sqlTable = sqlTable;
         this.distinctAll = distinctAll;
     }
 
-    public List<ValueItem> getValueItems() {
-        return valueItems;
+    public List<ValueExprItem> getValueExprItems() {
+        return valueExprItems;
     }
 
     public int getQueryBound() {
@@ -40,7 +46,15 @@ public class Select {
         this.extendBound = extendBound;
     }
 
+
+    public SqlTable getSqlTable() {
+        return sqlTable;
+    }
+
     public boolean isDistinctAll() {
         return distinctAll;
     }
+
+
+
 }

@@ -2,12 +2,11 @@ package org.the.force.jdbc.partition.engine.executor.dql.select;
 
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.dql.QueryReferFilter;
+import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
-import org.the.force.jdbc.partition.engine.executor.dql.SubQueryFilter;
+import org.the.force.jdbc.partition.engine.executor.dql.filter.SubQueryFilter;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
-import org.the.force.jdbc.partition.engine.parser.router.DefaultTableRouter;
 import org.the.force.jdbc.partition.engine.parser.router.TableRouter;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -46,7 +45,7 @@ public class PartitionRowQuery implements QueryExecution {
     private QueryReferFilter queryReferFilter;
 
 
-    public PartitionRowQuery(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputQueryBlock,  Map<SqlColumn, SQLExpr> currentTableColumnValueMap,
+    public PartitionRowQuery(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputQueryBlock, Map<SqlColumn, SQLExpr> currentTableColumnValueMap,
         Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap) {
         this.logicDbConfig = logicDbConfig;
         this.inputQueryBlock = inputQueryBlock;
@@ -54,8 +53,7 @@ public class PartitionRowQuery implements QueryExecution {
         this.currentTableColumnInValuesMap = currentTableColumnInValuesMap;
         SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) inputQueryBlock.getFrom();
         sqlTable = (ExprSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(sqlExprTableSource);
-        tableRouter = new DefaultTableRouter(logicDbConfig, sqlTable);
-
+        tableRouter = null;
         //parse group by type
 
         //parse limit  实际上什么也不用做

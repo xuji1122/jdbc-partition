@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.parser.elements;
 
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/6/14.
@@ -15,11 +15,13 @@ public interface SqlTable {
 
     void setAlias(String alias);
 
+    String getRelativeKey();
+
     /**
      * 返回可以被引用的列名集合
      * @return
      */
-    Set<String> getReferLabels();
+    List<String> getReferLabels();
 
     SQLTableSource getSQLTableSource();
 

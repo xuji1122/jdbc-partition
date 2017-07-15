@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlValueEvalContext;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;
@@ -58,7 +59,7 @@ public class UpdateDelParser {
         sqlInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
         SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLStatement(),exprSqlTable);
         exprSqlTable.setAlias(parser.getTableAlias());
-        tableRouter = new DefaultTableRouter(logicDbConfig, exprSqlTable);
+        tableRouter = new DefaultTableRouter(logicDbConfig, exprSqlTable,new SqlValueEvalContext(logicDbConfig));
     }
 
 

@@ -1,7 +1,5 @@
 package org.the.force.jdbc.partition.engine.parameter;
 
-import org.the.force.jdbc.partition.engine.parser.value.SqlValue;
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 

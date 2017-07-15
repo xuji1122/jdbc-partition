@@ -4,7 +4,7 @@ import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/6/14.
@@ -28,7 +28,7 @@ public abstract class QueriedSqlTable implements SqlTable {
     }
 
     public String getTableName() {
-        return alias;
+        return null;
     }
 
     public final boolean equals(Object o) {
@@ -44,9 +44,13 @@ public abstract class QueriedSqlTable implements SqlTable {
 
     }
 
-    public abstract Set<String> getReferLabels();
+    public abstract List<String> getReferLabels();
 
     public SQLTableSource getSQLTableSource() {
         return sqlTableSource;
+    }
+
+    public String getRelativeKey() {
+        return alias;
     }
 }

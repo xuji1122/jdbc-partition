@@ -12,7 +12,7 @@ import org.the.force.thirdparty.druid.support.logging.LogFactory;
 /**
  * Created by xuji on 2017/5/20.
  */
-@Test(priority = 300)
+//@Test(priority = 300)
 public class SelectPlanTest extends TestJdbcPartitionBase {
 
     private static Log logger = LogFactory.getLog(SelectPlanTest.class);

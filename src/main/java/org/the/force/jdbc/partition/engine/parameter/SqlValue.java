@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.parser.value;
+package org.the.force.jdbc.partition.engine.parameter;
 
 /**
  * Created by xuji on 2017/5/17.

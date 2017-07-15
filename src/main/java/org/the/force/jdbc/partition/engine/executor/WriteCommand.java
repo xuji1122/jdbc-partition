@@ -32,7 +32,6 @@ public abstract class WriteCommand extends Command {
     public abstract int[] invokeWrite(Statement statement, String sql, List<Integer> lineNumMap) throws SQLException;
 
     public void collectResult(List<Integer> lineNumMap, int[] result, Statement statement) {
-        logger.debug("result:" + lineNumMap + "：" + Arrays.toString(result));
         for (int i = 0; i < result.length; i++) {
             if (result[i] < 0) {
                 updateMerger.addFailed(lineNumMap.get(i), result[i]);

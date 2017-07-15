@@ -25,8 +25,6 @@ public class TestLRUCache {
         cache.put("3", new MyResoure("4"));
         cache.put("1", new MyResoure("1"));
         logger.info(MessageFormat.format("map:{0}", cache.keySet()));
-        ExitsSubQueriedExpr exitsSubQueriedExpr = new ExitsSubQueriedExpr(null, null, null, false);
-        logger.info("" + exitsSubQueriedExpr.hashCode());
 
     }
 

@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.engine.result.DataItemRow;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/6.
@@ -14,8 +15,8 @@ public class OrderByRowCursor extends ComparableRowCursor {
 
     protected final DataItemRowComparator dataItemRowComparator;
 
-    public OrderByRowCursor(RowCursor left, RowCursor right, ResultSetMetaData resultSetMetaData, DataItemRowComparator dataItemRowComparator) {
-        super(left, right, resultSetMetaData);
+    public OrderByRowCursor(RowCursor left, RowCursor right,int[] sqlTypes, Map<String,Integer> resultSetMetaData, DataItemRowComparator dataItemRowComparator) {
+        super(left, right,sqlTypes, resultSetMetaData);
         this.dataItemRowComparator = dataItemRowComparator;
     }
 

@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
-import org.the.force.jdbc.partition.engine.executor.dql.QueryReferFilter;
+import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;

@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
+import org.the.force.jdbc.partition.engine.executor.eval.SqlValueEvalContext;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;
@@ -56,7 +57,7 @@ public class InsertExecution implements BatchAbleSqlExecution {
         sqlTable = new ExprSqlTable(logicDbConfig,originStatement.getTableSource());
         SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, originStatement,sqlTable);
         sqlTable.setAlias(parser.getTableAlias());
-        tableRouter = new DefaultTableRouter(logicDbConfig, sqlTable);
+        tableRouter = new DefaultTableRouter(logicDbConfig, sqlTable,new SqlValueEvalContext(logicDbConfig));
     }
 
     protected Map<Integer, SqlColumnValue> visitColumns(LogicTableConfig logicTableConfig, List<SQLExpr> columnExprs) throws SQLException {

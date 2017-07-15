@@ -1339,7 +1339,7 @@ public class Lexer {
     }
 
     /**
-     * The value of a literal token, recorded as a string. For integers, leading 0x and 'l' suffixes are suppressed.
+     * The eval of a literal token, recorded as a string. For integers, leading 0x and 'l' suffixes are suppressed.
      */
     public final String stringVal() {
         return stringVal;

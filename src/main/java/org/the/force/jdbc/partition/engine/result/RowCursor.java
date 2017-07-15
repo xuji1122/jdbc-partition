@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/6.
@@ -21,7 +21,9 @@ public interface RowCursor {
      *
      * @return
      */
-    ResultSetMetaData getResultSetMetaData();
+    Map<String,Integer> getResultSetMetaMap();
+
+    int[] getSqlTypes();
 
     void close() throws SQLException;
 

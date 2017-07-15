@@ -11,8 +11,11 @@ import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by xuji on 2017/5/23.
@@ -94,7 +97,7 @@ public class ExprSqlTable implements SqlTable {
         this.logicTable = logicTable;
     }
 
-    public Set<String> getReferLabels() {
+    public List<String> getReferLabels() {
         if (logicDbConfig != null && getLogicTable() == null) {
             LogicTable logicTable;
             try {
@@ -107,7 +110,7 @@ public class ExprSqlTable implements SqlTable {
         if (logicTable != null) {
             return logicTable.getColumns();
         }
-        return new HashSet<>();
+        return new ArrayList<>();
 
     }
 
@@ -119,5 +122,10 @@ public class ExprSqlTable implements SqlTable {
         return logicDbConfig;
     }
 
-
+    public String getRelativeKey() {
+        if (alias != null) {
+            return alias;
+        }
+        return tableName;
+    }
 }

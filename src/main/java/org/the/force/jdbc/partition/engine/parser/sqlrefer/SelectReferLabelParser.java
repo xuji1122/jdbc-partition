@@ -22,6 +22,7 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,16 +40,16 @@ public class SelectReferLabelParser {
         this.logicDbConfig = logicDbConfig;
     }
 
-    public Set<String> parseSelectLabels(SQLUnionQuery sqlUnionQuery) throws SQLException {
+    public List<String> parseSelectLabels(SQLUnionQuery sqlUnionQuery) throws SQLException {
         SQLSelectQuery rightSqlSelectQuery = sqlUnionQuery.getRight();
-        Set<String> ls = parseSelectLabels(rightSqlSelectQuery);
+        List<String> ls = parseSelectLabels(rightSqlSelectQuery);
         if (ls == null || ls.isEmpty()) {
             return parseSelectLabels(sqlUnionQuery.getLeft());
         }
-        return new LinkedHashSet<>();
+        return new ArrayList<>();
     }
 
-    public Set<String> parseSelectLabels(SQLSelectQuery sqlSelectQuery) throws SQLException {
+    public List<String> parseSelectLabels(SQLSelectQuery sqlSelectQuery) throws SQLException {
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
             return parseSelectLabels((SQLSelectQueryBlock) sqlSelectQuery);
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
@@ -63,9 +64,9 @@ public class SelectReferLabelParser {
      * @param sqlSelectQueryBlock
      * @return
      */
-    public Set<String> parseSelectLabels(SQLSelectQueryBlock sqlSelectQueryBlock) throws SQLException {
+    public List<String> parseSelectLabels(SQLSelectQueryBlock sqlSelectQueryBlock) throws SQLException {
         List<SQLSelectItem> selectList = sqlSelectQueryBlock.getSelectList();
-        Set<String> columns = new LinkedHashSet<>();
+        List<String> columns = new ArrayList<>();
         for (SQLSelectItem item : selectList) {
             if (item.getAlias() != null) {
                 //大小写敏感
@@ -84,10 +85,10 @@ public class SelectReferLabelParser {
                 if (sqlRefer == null) {
                     throw new SqlParseException("无法识别select的item的label");
                 }
-                Set<String> set = getAllColumns(sqlSelectQueryBlock.getFrom(), sqlRefer.getOwnerName());
+                List<String> set = getAllColumns(sqlSelectQueryBlock.getFrom(), sqlRefer.getOwnerName());
                 columns.addAll(set);
             } else if (expr instanceof SQLAllColumnExpr) {
-                Set<String> set = getAllColumns(sqlSelectQueryBlock.getFrom(), null);
+                List<String> set = getAllColumns(sqlSelectQueryBlock.getFrom(), null);
                 columns.addAll(set);
             } else if (expr instanceof SQLName) {
                 SQLName sqlName = (SQLName) expr;
@@ -106,20 +107,20 @@ public class SelectReferLabelParser {
      * @return
      * @throws SQLException
      */
-    public Set<String> getAllColumns(SQLTableSource sqlTableSource, String targetTableName) throws SQLException {
+    public List<String> getAllColumns(SQLTableSource sqlTableSource, String targetTableName) throws SQLException {
         if (sqlTableSource instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) sqlTableSource;
-            ExprSqlTable exprSqlTable = new ExprSqlTable(logicDbConfig,sqlExprTableSource);
+            ExprSqlTable exprSqlTable = new ExprSqlTable(logicDbConfig, sqlExprTableSource);
             if (targetTableName == null || targetTableName.equals(exprSqlTable.getAlias()) || targetTableName.equalsIgnoreCase(exprSqlTable.getTableName())) {
                 return exprSqlTable.getReferLabels();
             } else {
-                return new LinkedHashSet<>();
+                return new ArrayList<>();
             }
         } else if (sqlTableSource instanceof SQLJoinTableSource) {
             //从多个中选择一个，必须指定targetTableName
             SQLJoinTableSource joinTableSource = (SQLJoinTableSource) sqlTableSource;
 
-            Set<String> ls = getAllColumns(joinTableSource.getLeft(), targetTableName);
+            List<String> ls = getAllColumns(joinTableSource.getLeft(), targetTableName);
             if (targetTableName != null && !ls.isEmpty()) {
                 return ls;
             }
@@ -127,7 +128,7 @@ public class SelectReferLabelParser {
              * 1，获取所有tableSource的所有列时继续取right的table的列
              * 2，targetTableName不为空但是left的tableName没有匹配上
              */
-            Set<String> rs = getAllColumns(joinTableSource.getRight(), targetTableName);
+            List<String> rs = getAllColumns(joinTableSource.getRight(), targetTableName);
             if (targetTableName == null) {
                 ls.addAll(rs);
                 return ls;
@@ -144,20 +145,20 @@ public class SelectReferLabelParser {
             if (sqlSelectQuery == null) {
                 throw new UnsupportedSqlOperatorException("sqlSelectQuery == null");
             }
-            Set<String> sets = parseSelectLabels(sqlSelectQuery);
+            List<String> sets = parseSelectLabels(sqlSelectQuery);
             if (targetTableName == null || targetTableName.equals(sqlTableSource.getAlias())) {
                 return sets;
             } else {
-                return new LinkedHashSet<>();
+                return new ArrayList<>();
             }
 
         } else if (sqlTableSource instanceof SQLUnionQueryTableSource) {
             SQLUnionQueryTableSource unionQueryTableSource = (SQLUnionQueryTableSource) sqlTableSource;
-            Set<String> sets = parseSelectLabels(unionQueryTableSource.getUnion());
+            List<String> sets = parseSelectLabels(unionQueryTableSource.getUnion());
             if (targetTableName == null || targetTableName.equals(sqlTableSource.getAlias())) {
                 return sets;
             } else {
-                return new LinkedHashSet<>();
+                return new ArrayList<>();
             }
         } else {
             throw new SqlParseException("无法识别的tableSource类型" + sqlTableSource.getClass().getName());

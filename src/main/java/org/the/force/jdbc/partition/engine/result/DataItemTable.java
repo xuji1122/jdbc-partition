@@ -1,25 +1,27 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/6.
  */
 public class DataItemTable implements RowCursor {
 
-    private final ResultSetMetaData resultSetMetaData;
+    private final Map<String, Integer> resultSetMetaMap;
+
     private final RowCursor rowCursor;
+
     private final LinkedList<DataItemRow> rows = new LinkedList<>();
+
     private volatile boolean end = false;
 
     public DataItemTable(RowCursor rowCursor) {
-        this.resultSetMetaData = rowCursor.getResultSetMetaData();
+        this.resultSetMetaMap = rowCursor.getResultSetMetaMap();
         this.rowCursor = rowCursor;
-
     }
 
     public DataItemTable loadData(int fetchSize) throws SQLException {
@@ -58,10 +60,13 @@ public class DataItemTable implements RowCursor {
         return null;
     }
 
-    public ResultSetMetaData getResultSetMetaData() {
-        return resultSetMetaData;
+    public Map<String, Integer> getResultSetMetaMap() {
+        return resultSetMetaMap;
     }
 
+    public int[] getSqlTypes() {
+        return rowCursor.getSqlTypes();
+    }
 
     public void close() throws SQLException {
         rows.clear();
