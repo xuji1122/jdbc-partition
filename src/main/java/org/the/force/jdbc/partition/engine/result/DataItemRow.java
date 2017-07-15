@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import org.the.force.jdbc.partition.engine.executor.eval.TypedSqlValue;
+import org.the.force.jdbc.partition.engine.eval.TypedSqlValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 
 import java.sql.SQLException;

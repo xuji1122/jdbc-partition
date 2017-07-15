@@ -6,7 +6,7 @@ import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
-import org.the.force.jdbc.partition.engine.executor.eval.SqlValueEvalContext;
+import org.the.force.jdbc.partition.engine.eval.SqlValueEvalContext;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;

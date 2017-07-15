@@ -1,7 +1,6 @@
-package org.the.force.jdbc.partition.engine.executor.eval;
+package org.the.force.jdbc.partition.engine.eval;
 
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
-import org.the.force.jdbc.partition.engine.result.DataItemRow;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
