@@ -1,4 +1,4 @@
-package org.the.force.jdbc.partition.engine.evaluator.subfactory;
+package org.the.force.jdbc.partition.engine.evaluator.factory;
 
 import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.evaluator.row.SqlValueEvaluator;
