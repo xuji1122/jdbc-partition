@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
@@ -17,10 +17,10 @@ import java.util.Map;
  */
 public class WrappedSQLExprTableSource extends SQLExprTableSource {
 
-    private final ConditionPartitionSqlTable sqlTable;
+    private final ExprConditionalSqlTable sqlTable;
     private final SQLExprTableSource sqlExprTableSource;
 
-    public WrappedSQLExprTableSource(ConditionPartitionSqlTable sqlTable) {
+    public WrappedSQLExprTableSource(ExprConditionalSqlTable sqlTable) {
         this.sqlTable = sqlTable;
         this.sqlExprTableSource = (SQLExprTableSource) sqlTable.getSQLTableSource();
         this.setParent(sqlExprTableSource.getParent());
@@ -41,7 +41,7 @@ public class WrappedSQLExprTableSource extends SQLExprTableSource {
     }
 
 
-    public ConditionPartitionSqlTable getSqlTable() {
+    public ExprConditionalSqlTable getSqlTable() {
         return sqlTable;
     }
 

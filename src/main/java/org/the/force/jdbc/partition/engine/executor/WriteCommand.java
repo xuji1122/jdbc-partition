@@ -1,13 +1,12 @@
 package org.the.force.jdbc.partition.engine.executor;
 
-import org.the.force.jdbc.partition.engine.result.UpdateMerger;
+import org.the.force.jdbc.partition.engine.executor.result.UpdateMerger;
 import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 

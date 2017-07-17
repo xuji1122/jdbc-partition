@@ -1009,7 +1009,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(ModelClause x) {
-        print0(ucase ? "MODEL" : "elements");
+        print0(ucase ? "MODEL" : "sqlelements");
 
         incrementIndent();
         for (ModelClause.CellReferenceOption opt : x.getCellReferenceOptions()) {

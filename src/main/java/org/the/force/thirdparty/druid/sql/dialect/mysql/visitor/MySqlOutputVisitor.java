@@ -1494,7 +1494,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         if (MySqlKillStatement.Type.CONNECTION.equals(x.getType())) {
             print0(ucase ? "KILL CONNECTION " : "kill connection ");
         } else if (MySqlKillStatement.Type.QUERY.equals(x.getType())) {
-            print0(ucase ? "KILL QUERY " : "kill elements ");
+            print0(ucase ? "KILL QUERY " : "kill sqlelements ");
         } else {
             print0(ucase ? "KILL " : "kill ");
         }
@@ -2316,7 +2316,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (x.getForQuery() != null) {
-            print0(ucase ? " FOR QUERY " : " for elements ");
+            print0(ucase ? " FOR QUERY " : " for sqlelements ");
             x.getForQuery().accept(this);
         }
 
@@ -3617,23 +3617,23 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
         if (x.isContainsSql()) {
             println();
-            print0(ucase ? "CONTAINS SQL" : "contains sql");
+            print0(ucase ? "CONTAINS SQL" : "contains executor");
         }
 
         if (x.isNoSql()) {
             println();
-            print(ucase ? "NO SQL" : "no sql");
+            print(ucase ? "NO SQL" : "no executor");
         }
 
         if (x.isModifiesSqlData()) {
             println();
-            print(ucase ? "MODIFIES SQL DATA" : "modifies sql data");
+            print(ucase ? "MODIFIES SQL DATA" : "modifies executor data");
         }
 
         SQLName authid = x.getAuthid();
         if (authid != null) {
             println();
-            print(ucase ? "SQL SECURITY " : "sql security ");
+            print(ucase ? "SQL SECURITY " : "executor security ");
             authid.accept(this);
         }
 

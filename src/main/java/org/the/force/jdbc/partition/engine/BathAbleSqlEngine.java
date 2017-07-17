@@ -5,7 +5,7 @@ import org.the.force.jdbc.partition.engine.executor.ExecutorConfig;
 import org.the.force.jdbc.partition.engine.executor.WriteCommand;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
-import org.the.force.jdbc.partition.engine.result.UpdateMerger;
+import org.the.force.jdbc.partition.engine.executor.result.UpdateMerger;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.statement.AbstractPreparedStatement;

@@ -6,15 +6,14 @@ import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.ParserUtils;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionAbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLAllColumnExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBetweenExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
@@ -29,11 +28,11 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/5/21.
- * 对where子句的column value条件进行访问、筛选，以单表的路由判断为目的，是sql改写核心实现类之一，主要功能如下
- * 1，判断指定的sqlTable的分库分表列的条件（通过currentTableColumnValueConditionStack实现）输出currentTableColumnValueMap  currentTableColumnsInValuesMap
- * 2，归集sqlTable的查询条件（通过tableOwnConditionStack实现）,输出currentTableCondition
- * 3, 搜集可能出现在where条件中的join条件  输出joinConditionMap
- * 4，从原始的where条件中 去除已经归集到tableSource的条件和join的条件，拼装新的where条件 输出otherCondition
+ * 对where子句的column value条件进行访问、筛选，主要功能如下
+ * 1，判断指定的sqlTable的分库分表列的条件（通过{@link columnConditionStack}实现) 写入currentSqlTable
+ * 2，归集sqlTable的查询条件（通过{@link tableOwnConditionStack}实现）,写入{@link currentSqlTable}
+ * 3, 搜集可能出现在where条件中的join条件  写入{@link currentSqlTable}和{@link currentTableOwnCondition}
+ * 4，从原始的where条件中 去除已经归集到tableSource的条件和join的条件，拼装新的where条件 输出{@link otherCondition}
  * 5，借助SubQueryResetParser 重置where表达式中的子查询为可以执行的子查询表达式
  * <p>
  */
@@ -48,9 +47,9 @@ public class TableConditionParser extends PartitionAbstractVisitor {
     /**
      * 仅仅作为中间状态的
      */
-    private final StackArray currentTableColumnValueConditionStack;//表格列的取值是否是全局有效的
+    private final StackArray columnConditionStack;//表格列的取值是否是全局有效的
 
-    private final StackArray tableOwnConditionStack;//条件归集到当前表的条件
+    private final StackArray tableOwnConditionStack;//归集到当前表的条件
 
     private boolean hasSqlNameInValue = false;
     /**
@@ -81,10 +80,10 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         //先重置子查询
         subQueryResetParser = new SubQueryResetParser(logicDbConfig, originalWhere);
         subQueryResetWhere = (SQLExpr) subQueryResetParser.getSubQueryResetExprObj();
-        currentTableColumnValueConditionStack = new StackArray(16);
+        columnConditionStack = new StackArray(16);
         tableOwnConditionStack = new StackArray(16);
         this.subQueryResetWhere.accept(this);
-        currentSqlTable.setCurrentTableOwnCondition(currentTableOwnCondition);
+        currentSqlTable.setTableOwnCondition(currentTableOwnCondition);
 
     }
 
@@ -102,7 +101,6 @@ public class TableConditionParser extends PartitionAbstractVisitor {
 
     /**
      * 逻辑关系表达式
-     *
      * @param x
      * @return
      */
@@ -111,7 +109,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         SQLExpr left = x.getLeft();
         SQLExpr right = x.getRight();
         if (operator == SQLBinaryOperator.BooleanOr || operator == SQLBinaryOperator.BooleanXor) {
-            currentTableColumnValueConditionStack.push(false);//当前设置为or语义下
+            columnConditionStack.push(false);//当前设置为or语义下
 
             SQLExpr parent = this.currentTableOwnCondition;//保留parent节点的引用
             SQLExpr otherConditionParent = this.otherCondition;//保留parent节点的引用
@@ -124,7 +122,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
                 tableOwnConditionStack.push(false);//推入false
                 this.otherCondition = null;
                 right.accept(this);
-                currentTableColumnValueConditionStack.pop();
+                columnConditionStack.pop();
 
                 SQLExpr rightOther = this.otherCondition;
                 tableOwnConditionStack.pop();
@@ -135,7 +133,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
                 this.currentTableOwnCondition = null;
                 this.otherCondition = null;
                 right.accept(this);
-                currentTableColumnValueConditionStack.pop();
+                columnConditionStack.pop();
                 tableOwnConditionStack.pop();
                 SQLExpr rightGuiJi = this.currentTableOwnCondition;
                 SQLExpr rightOther = this.otherCondition;
@@ -148,7 +146,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
                 return false;
             }
         } else if (operator == SQLBinaryOperator.BooleanAnd) {
-            currentTableColumnValueConditionStack.push(true);
+            columnConditionStack.push(true);
 
             SQLExpr parent = this.currentTableOwnCondition;//保留parent节点的引用
             SQLExpr otherConditionParent = this.otherCondition;//保留parent节点的引用
@@ -162,7 +160,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             this.currentTableOwnCondition = null;
             this.otherCondition = null;
             right.accept(this);
-            currentTableColumnValueConditionStack.pop();
+            columnConditionStack.pop();
             tableOwnConditionStack.pop();
             SQLExpr rightGuiJi = this.currentTableOwnCondition;
             SQLExpr rightOther = this.otherCondition;
@@ -190,20 +188,18 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             return true;
         }
         if (l && r) {
-            //TODO 如果是join表达式则 newWhere不需要保留此条件，因此需要确定是否是join 条件 表达式
-            //TODO join的条件
             //join的条件必须是两个都满足
-            if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
+            if (!columnConditionStack.isAllTrue()) {//不在and语义下
                 return false;
             }
             SqlRefer c1 = new SqlRefer((SQLName) left);
             SqlRefer c2 = new SqlRefer((SQLName) right);
-            int index1 = getOwnerFromTables(c1);
-            int index2 = getOwnerFromTables(c2);
+            int index1 = getOwnerTableIndex(c1);
+            int index2 = getOwnerTableIndex(c2);
             if (index1 == index2) {
                 //同一个表
                 if (currentSqlTable == orderedSqlTables.get(index1)) {
-                    if (currentTableColumnValueConditionStack.isAllTrue()) {
+                    if (columnConditionStack.isAllTrue()) {
                         //按照表名 归集sql条件，只归集明确有表格归属的sql条件
                         this.currentTableOwnCondition = x;
                         this.otherCondition = null;
@@ -229,8 +225,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             right = lc;
         }
 
-        SqlRefer c = new SqlRefer((SQLName) left);
-        if (!checkOwner(c)) {
+        SqlRefer sqlRefer = new SqlRefer((SQLName) left);
+        if (!checkCurrentSqlTableOwn(sqlRefer)) {
             right.accept(this);
             return false;
         }
@@ -249,16 +245,15 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         if (operator != SQLBinaryOperator.Equality) {
             return false;
         }
-        if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
+        if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-        currentSqlTable.getColumnValueMap().put(c, logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(right));
+        currentSqlTable.getColumnValueMap().put(sqlRefer, logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(right));
         return false;
     }
 
     /**
-     * factory between 表达式
-     *
+     * between 表达式
      * @param x
      * @return
      */
@@ -271,7 +266,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             return true;
         }
         SqlRefer c = new SqlRefer((SQLName) sqlExpr);
-        if (!checkOwner(c)) {
+        if (!checkCurrentSqlTableOwn(c)) {
             return false;
         }
         boolean copyStatus = hasSqlNameInValue;
@@ -290,17 +285,23 @@ public class TableConditionParser extends PartitionAbstractVisitor {
 
 
     /**
-     * factory in 条件表达式
+     * in 条件表达式 支持的类别
+     * c1 in (1,2,3)
+     * (c1,c2) in ((1,2),(3,4))
+     * c1 in (select id from xxx)
+     * (c1,c2) in (select id,type from xxx)
+     * 子查询的处理借助where条件重置{@link SubQueryResetParser}和{@link SQLInSubQueriedExpr}实现
      * @param x
      * @return
      */
     public boolean visit(SQLInListExpr x) {
         SQLExpr sqlExpr = x.getExpr();
         backupOtherCondition(x);
-        //TODO 表达式是多列的情况
+
         List<SQLExpr> listKey = new ArrayList<>();
 
         if (sqlExpr instanceof SQLListExpr) {
+            //表达式是多列的情况
             SQLListExpr sqlListExpr = (SQLListExpr) sqlExpr;
             boolean match = false;
             for (SQLExpr expr : sqlListExpr.getItems()) {
@@ -320,21 +321,21 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             }
             listKey.add(new SqlRefer((SQLName) sqlExpr));
         }
-        boolean tableOwnMatch = true;
-        boolean match = false;
+        boolean tableOwnConditionMatch = true;//list key的多列是否都归属currentSqlTable
+        boolean partitionColumnMatch = false;
         for (SQLExpr expr : listKey) {
             if (expr instanceof SqlRefer) {
                 SqlRefer c = (SqlRefer) expr;
-                if (checkOwner(c)) {
-                    match = true;
+                if (checkCurrentSqlTableOwn(c)) {
+                    partitionColumnMatch = true;
                 }else{
-                    tableOwnMatch = false;
+                    tableOwnConditionMatch = false;
                 }
             } else {
-                tableOwnMatch = false;
+                tableOwnConditionMatch = false;
             }
         }
-        if (!match) {
+        if (!partitionColumnMatch) {
             return false;
         }
         //检查取值表达式中有无sqlName变量
@@ -350,13 +351,13 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             return false;
         }
 
-        if(tableOwnMatch){
+        if(tableOwnConditionMatch){
             resetTableOwnCondition(x);
         }
         if (x.isNot()) {
             return false;
         }
-        if (!currentTableColumnValueConditionStack.isAllTrue()) {//不在and语义下
+        if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
 
@@ -435,7 +436,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         return parent;
     }
 
-    //=========sqlrefer check相关======
+    //=========sqlRefer check相关======
 
     public boolean visit(SQLIdentifierExpr x) {
         hasSqlNameInValue = true;
@@ -447,10 +448,6 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         return false;
     }
 
-    public boolean visit(SQLAllColumnExpr x) {
-        hasSqlNameInValue = true;
-        return false;
-    }
 
     /**
      * 检查某一个SqlProperty是否归属于某一个表，并判断sql改写时是否需要增加tableSource的简称
@@ -458,7 +455,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * @param c
      * @return
      */
-    private boolean checkOwner(SqlRefer c) {
+    private boolean checkCurrentSqlTableOwn(SqlRefer c) {
         //前缀匹配
         //表格配置信息
         if (orderedSqlTables.size() == 1) {
@@ -468,12 +465,11 @@ public class TableConditionParser extends PartitionAbstractVisitor {
     }
 
     /**
-     * 检查某一个SqlProperty是否归属于某一个表，并判断sql改写时是否需要增加tableSource的简称
-     *
+     * 检查某一个SqlRefer是否归属于某一个表，并判断sql改写时是否需要增加tableSource的简称
      * @param c
      * @return
      */
-    private int getOwnerFromTables(SqlRefer c) {
+    private int getOwnerTableIndex(SqlRefer c) {
         //前缀匹配
         if (orderedSqlTables.size() == 1) {
             return 0;
@@ -490,8 +486,10 @@ public class TableConditionParser extends PartitionAbstractVisitor {
 
 
     /**
-     * and or等column value条件 必须在and的语境下才能生效，为了在遍历sql条件时判断当前是否在and的语义下
-     * 使用栈保存and条件 从栈底部到栈顶全部是and的语义范围才能成立
+     * 保留and语义的布尔类型的栈
+     * 语法树从从左往右，从叶子节点到往上的顺序递归遍历的，
+     * 因此只要碰见and节点就是往栈顶推入一个true,and节点结束就从栈顶推出一个true，碰见or就推入false,or节点结束就从栈顶推出一个false，
+     * 那么当遍历到分库分表的条件或者任何你想提取的有效的条件时，你只要判断当前栈是否全部为true就可以了
      */
     public static class StackArray {
         private boolean[] array;//用数组实现

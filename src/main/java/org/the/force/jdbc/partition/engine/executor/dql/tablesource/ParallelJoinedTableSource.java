@@ -3,11 +3,10 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.JoinConnector;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.JoinConnector;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlTableRefers;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
@@ -18,7 +17,6 @@ import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
@@ -104,7 +102,7 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
             SQLTableSource sqlTableSource = sqlTable.getSQLTableSource();
             TableConditionParser parser = new TableConditionParser(logicDbConfig, this.otherCondition, i, sqlTables);
             this.otherCondition = parser.getOtherCondition();
-            SQLExpr tableOwnCondition = sqlTable.getCurrentTableOwnCondition();
+            SQLExpr tableOwnCondition = sqlTable.getTableOwnCondition();
 
             Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap = sqlTable.getJoinConditionMap();
             conditionTableMap.forEach((pair, list) -> {

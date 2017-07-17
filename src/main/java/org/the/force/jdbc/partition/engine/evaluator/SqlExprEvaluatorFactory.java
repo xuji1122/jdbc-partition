@@ -14,7 +14,7 @@ import org.the.force.jdbc.partition.engine.evaluator.subfactory.SqlMethodEvaluat
 import org.the.force.jdbc.partition.engine.evaluator.subfactory.SqlValueEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;

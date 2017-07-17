@@ -67,7 +67,7 @@ public class SQLServerExecStatement extends SQLServerStatementImpl implements SQ
     public static class SQLServerParameter extends SQLServerObjectImpl
     {
     	private SQLExpr expr;
-    	private boolean type;//sql server 支持参数只有input 和 output 两种
+    	private boolean type;//executor server 支持参数只有input 和 output 两种
 		public SQLExpr getExpr() {
 			return expr;
 		}

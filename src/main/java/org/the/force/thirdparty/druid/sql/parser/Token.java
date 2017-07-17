@@ -238,7 +238,7 @@ public enum Token {
     ANALYZE("ANALYZE"),
     OPTIMIZE("OPTIMIZE"),
     
-    // transact-sql
+    // transact-executor
     TOP("TOP"),
     
     ARRAY("ARRAY"),

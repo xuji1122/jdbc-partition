@@ -31,7 +31,7 @@ import java.util.List;
 public class MSSQLServerExportParameterVisitor extends SQLServerOutputVisitor implements ExportParameterVisitor {
 
     /**
-     * true= if require parameterized sql output
+     * true= if require parameterized executor output
      */
     private final boolean requireParameterizedOutput;
 

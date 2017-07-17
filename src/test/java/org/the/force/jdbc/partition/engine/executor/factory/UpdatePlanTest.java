@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.engine.executor.factory;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.parameter.ObjectSqlParameter;
@@ -43,7 +43,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(7, new ObjectSqlParameter(8, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(8, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((BatchAbleSqlExecution) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
@@ -60,10 +60,10 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter(8, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(5, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
-        //        visitor.getSqlExecutionPlan().addSqlLine(logicLogicSqlParameterHolder);
-        //        logger.info("解析结果：{}" + visitor.getSqlExecutionPlan().getdbExecutorRouter());
+        //        visitor.getSqlExecutor().addSqlLine(logicLogicSqlParameterHolder);
+        //        logger.info("解析结果：{}" + visitor.getSqlExecutor().getdbExecutorRouter());
     }
 
     @Test
@@ -76,7 +76,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter(3, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(5, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((BatchAbleSqlExecution) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
@@ -92,7 +92,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(3, new ObjectSqlParameter(0, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((BatchAbleSqlExecution) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
@@ -111,7 +111,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(5, new ObjectSqlParameter(2, Types.INTEGER));
         //logicLogicSqlParameterHolder.setParameter(5, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((BatchAbleSqlExecution) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
@@ -129,7 +129,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter(1, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(5, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         ((BatchAbleSqlExecution) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
@@ -145,7 +145,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(3, new ObjectSqlParameter(8, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
 
@@ -163,7 +163,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         logicLogicSqlParameterHolder.setParameter(3, new ObjectSqlParameter(0, Types.INTEGER));
         logicLogicSqlParameterHolder.setParameter(4, new ObjectSqlParameter("ok", Types.VARCHAR));
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
-        SqlExecutionFactory visitor = new SqlExecutionFactory(logicDbConfig);
+        SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         BatchAbleSqlExecution batchAbleSqlExecution = (BatchAbleSqlExecution) visitor.getSqlPlan();
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();

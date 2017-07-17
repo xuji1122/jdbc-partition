@@ -4,9 +4,9 @@ import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutionFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutionFactory;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -42,11 +42,11 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
             throw new ParserException("sqlSelectQuery == null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            queryExecution = new BlockQueryExecutionFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery, queryReferFilter).getQueryExecution();
+            queryExecution = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery, queryReferFilter).getQueryExecution();
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
-            queryExecution = new UnionQueryExecutionFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery, queryReferFilter).getQueryExecution();
+            queryExecution = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery, queryReferFilter).getQueryExecution();
         } else {
-            throw new ParserException("un supported sql elements:" + PartitionSqlUtils.toSql(sqlSelectQuery, logicDbConfig.getSqlDialect()));
+            throw new ParserException("un supported executor sqlelements:" + PartitionSqlUtils.toSql(sqlSelectQuery, logicDbConfig.getSqlDialect()));
         }
     }
 

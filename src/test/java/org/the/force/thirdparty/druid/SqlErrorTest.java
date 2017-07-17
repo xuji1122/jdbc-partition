@@ -51,7 +51,7 @@ public class SqlErrorTest extends TestJdbcBase {
         OracleStatementParser parser = new OracleStatementParser(sql);
         List<SQLStatement> stmtList = parser.parseStatementList();
         for (SQLStatement stmt : stmtList) {
-            System.out.println("druid parse sql is:" + SQLUtils.toOracleString(stmt));
+            System.out.println("druid parse executor is:" + SQLUtils.toOracleString(stmt));
         }
     }
 }

@@ -37,6 +37,6 @@ public class ParserException extends RuntimeException implements Serializable {
     }
 
     public ParserException(Throwable ex, String ksql){
-        super("parse error. detail message is :\n" + ex.getMessage() + "\nsource sql is : \n" + ksql, ex);
+        super("parse error. detail message is :\n" + ex.getMessage() + "\nsource executor is : \n" + ksql, ex);
     }
 }

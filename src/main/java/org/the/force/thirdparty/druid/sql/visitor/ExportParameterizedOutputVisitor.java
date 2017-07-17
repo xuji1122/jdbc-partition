@@ -21,7 +21,7 @@ import java.util.List;
 public class ExportParameterizedOutputVisitor extends SQLASTOutputVisitor implements ExportParameterVisitor {
 
     /**
-     * true= if require parameterized sql output
+     * true= if require parameterized executor output
      */
     private final boolean requireParameterizedOutput;
 

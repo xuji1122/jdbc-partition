@@ -20,7 +20,7 @@ public class TestDbInit extends TestJdbcBase {
         String[] tableNames = new String[] {"user/t_user", "order/t_order", "order/t_order_sku", "product/t_spu", "test/test"};
         Statement statement = connection.createStatement();
         for (int i = 0; i < tableNames.length; i++) {
-            String path = tableNames[i] + ".sql";
+            String path = tableNames[i] + ".executor";
             String[] sqls = loadSqlFromFile(path);
             for (int k = 0; k < sqls.length; k++) {
                 statement.execute(sqls[k]);

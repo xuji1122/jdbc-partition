@@ -184,7 +184,7 @@ public class SQLUtils {
         SQLExpr expr = parser.expr();
 
         if (parser.getLexer().token() != Token.EOF) {
-            throw new ParserException("illegal sql expr : " + sql);
+            throw new ParserException("illegal executor expr : " + sql);
         }
 
         return expr;
@@ -195,7 +195,7 @@ public class SQLUtils {
         SQLSelectOrderByItem orderByItem = parser.parseSelectOrderByItem();
 
         if (parser.getLexer().token() != Token.EOF) {
-            throw new ParserException("illegal sql expr : " + sql);
+            throw new ParserException("illegal executor expr : " + sql);
         }
 
         return orderByItem;
@@ -206,7 +206,7 @@ public class SQLUtils {
         SQLUpdateSetItem updateSetItem = parser.parseUpdateSetItem();
 
         if (parser.getLexer().token() != Token.EOF) {
-            throw new ParserException("illegal sql expr : " + sql);
+            throw new ParserException("illegal executor expr : " + sql);
         }
 
         return updateSetItem;
@@ -217,7 +217,7 @@ public class SQLUtils {
         SQLSelectItem selectItem = parser.parseSelectItem();
 
         if (parser.getLexer().token() != Token.EOF) {
-            throw new ParserException("illegal sql expr : " + sql);
+            throw new ParserException("illegal executor expr : " + sql);
         }
 
         return selectItem;
@@ -471,7 +471,7 @@ public class SQLUtils {
 
     public static String addCondition(String sql, String condition, SQLBinaryOperator op, boolean left, String dbType) {
         if (sql == null) {
-            throw new IllegalArgumentException("sql is null");
+            throw new IllegalArgumentException("executor is null");
         }
 
         if (condition == null) {

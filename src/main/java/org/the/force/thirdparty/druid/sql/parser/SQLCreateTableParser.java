@@ -114,7 +114,7 @@ public class SQLCreateTableParser extends SQLDDLParser {
                 if (lexer.token() == Token.COMMA) {
                     lexer.nextToken();
 
-                    if (lexer.token() == Token.RPAREN) { // compatible for sql server
+                    if (lexer.token() == Token.RPAREN) { // compatible for executor server
                         break;
                     }
                     continue;

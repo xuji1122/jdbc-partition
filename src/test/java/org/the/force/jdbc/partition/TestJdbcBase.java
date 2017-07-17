@@ -37,7 +37,7 @@ public class TestJdbcBase {
     }
 
     protected void init() {
-        sqlDialectName = System.getProperty("sql.dialect", "mysql");
+        sqlDialectName = System.getProperty("executor.dialect", "mysql");
         sqlDialect = SqlDialect.getByName(sqlDialectName);
         defaultPhysicDbHost = System.getProperty("defaultPhysicDbHost", "localhost:3306");
         user = System.getProperty("db.user", "root");

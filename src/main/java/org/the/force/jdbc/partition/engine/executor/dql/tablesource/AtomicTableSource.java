@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlTableRefers;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;

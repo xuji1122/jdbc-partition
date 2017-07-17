@@ -31,7 +31,7 @@ public class SQLCommitStatement extends SQLStatementImpl {
     private Boolean chain;
     private Boolean release;
 
-    // sql server
+    // executor server
     private SQLExpr transactionName;
     private SQLExpr delayedDurability;
 
@@ -93,7 +93,7 @@ public class SQLCommitStatement extends SQLStatementImpl {
         this.work = work;
     }
 
-    // sql server
+    // executor server
     public SQLExpr getTransactionName() {
         return transactionName;
     }

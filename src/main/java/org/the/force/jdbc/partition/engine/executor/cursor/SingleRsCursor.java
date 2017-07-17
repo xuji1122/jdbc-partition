@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.cursor;
 
-import org.the.force.jdbc.partition.engine.result.DataItemRow;
-import org.the.force.jdbc.partition.engine.result.RowCursor;
+import org.the.force.jdbc.partition.engine.executor.result.DataItemRow;
+import org.the.force.jdbc.partition.engine.executor.result.RowCursor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
-import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;

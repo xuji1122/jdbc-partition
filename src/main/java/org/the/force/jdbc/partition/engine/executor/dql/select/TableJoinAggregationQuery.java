@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.dql.select;
 
-import org.the.force.jdbc.partition.engine.parser.router.TableRouter;
+import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;

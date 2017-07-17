@@ -1,8 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.filter;
 
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -34,10 +33,10 @@ public class QueryReferFilter {
     public QueryReferFilter(LogicDbConfig logicDbConfig, ConditionalSqlTable referTable) {
         this.logicDbConfig = logicDbConfig;
         this.referTable = referTable;
-        if (referTable.getCurrentTableOwnCondition() == null) {
+        if (referTable.getTableOwnCondition() == null) {
             subQueryFilter = null;
         } else {
-            SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,referTable.getCurrentTableOwnCondition());
+            SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,referTable.getTableOwnCondition());
             List<SQLExpr> subQueries = conditionChecker.getSubQueryList();
             if (subQueries != null && !subQueries.isEmpty()) {
                 subQueryFilter = new SubQueryFilter(logicDbConfig, subQueries);
@@ -56,7 +55,7 @@ public class QueryReferFilter {
     }
 
     public SQLExpr getSelectReferFilterCondition() {
-        return referTable.getCurrentTableOwnCondition();
+        return referTable.getTableOwnCondition();
     }
 
     public SubQueryFilter getSubQueryFilter() {

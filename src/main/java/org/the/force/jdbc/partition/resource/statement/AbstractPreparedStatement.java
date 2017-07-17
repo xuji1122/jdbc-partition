@@ -10,7 +10,7 @@ import org.the.force.jdbc.partition.engine.parameter.ShortSqlParameter;
 import org.the.force.jdbc.partition.engine.parameter.StringSqlParameter;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 
-import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.parameter.DateSqlParameter;
 import org.the.force.jdbc.partition.engine.parameter.NullSqlParameter;
 import org.the.force.jdbc.partition.engine.parameter.ObjectSqlParameter;

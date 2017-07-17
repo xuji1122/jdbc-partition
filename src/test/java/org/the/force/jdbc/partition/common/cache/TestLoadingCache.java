@@ -11,7 +11,7 @@ import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
-import org.the.force.jdbc.partition.resource.sql.SqlExecutionPlanManager;
+import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
@@ -51,14 +51,14 @@ public class TestLoadingCache extends TestJdbcPartitionBase {
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
         LogicDbConfig logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
-        SqlExecutionPlanManager sqlExecutionPlanManager = new SqlExecutionPlanManager(logicDbConfig);
+        SqlExecutorManager sqlExecutorManager = new SqlExecutorManager(logicDbConfig);
         String sql = "update  t_order set status=? where order_id=?";
-        sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        sqlExecutorManager.getSqlExecutor(sql);
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=?";
-        sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        sqlExecutorManager.getSqlExecutor(sql);
 
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=? and status=? ";
-        sqlExecutionPlanManager.getSqlExecutionPlan(sql);
+        sqlExecutorManager.getSqlExecutor(sql);
     }
 
 

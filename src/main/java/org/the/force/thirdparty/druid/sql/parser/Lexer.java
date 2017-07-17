@@ -53,7 +53,7 @@ public class Lexer {
     private SavePoint      savePoint    = null;
 
     /*
-     * anti sql injection
+     * anti executor injection
      */
     private boolean          allowComment = true;
 

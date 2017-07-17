@@ -32,7 +32,7 @@ public class DB2ExportParameterVisitor extends DB2OutputVisitor implements Expor
 
 
     /**
-     * true= if require parameterized sql output
+     * true= if require parameterized executor output
      */
     private final boolean requireParameterizedOutput;
 

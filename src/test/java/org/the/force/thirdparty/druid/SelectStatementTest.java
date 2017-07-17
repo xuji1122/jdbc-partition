@@ -3,7 +3,7 @@ package org.the.force.thirdparty.druid;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestJdbcPartitionBase;
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.resource.sql.SqlKey;
+import org.the.force.jdbc.partition.resource.executor.SqlKey;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.support.logging.Log;

@@ -32,7 +32,7 @@ import java.util.List;
 public class MySqlExportParameterVisitor extends MySqlOutputVisitor implements ExportParameterVisitor {
 
     /**
-     * true= if require parameterized sql output
+     * true= if require parameterized executor output
      */
     private boolean requireParameterizedOutput;
 

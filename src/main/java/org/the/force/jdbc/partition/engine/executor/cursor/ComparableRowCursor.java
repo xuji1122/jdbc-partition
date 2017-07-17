@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.cursor;
 
-import org.the.force.jdbc.partition.engine.result.RowCursor;
+import org.the.force.jdbc.partition.engine.executor.result.RowCursor;
 
 import java.sql.SQLException;
 import java.util.Map;

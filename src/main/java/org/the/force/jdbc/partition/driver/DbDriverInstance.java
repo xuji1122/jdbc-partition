@@ -6,7 +6,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.the.force.jdbc.partition.common.BeanUtils;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
-import org.the.force.jdbc.partition.resource.sql.SqlExecutionPlanManager;
+import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
 import org.the.force.jdbc.partition.rule.config.DataNode;
 import org.the.force.jdbc.partition.rule.config.ZKDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
@@ -42,7 +42,7 @@ public class DbDriverInstance {
     /**
      * sql执行计划缓存
      */
-    private SqlExecutionPlanManager sqlExecutionPlanManager;
+    private SqlExecutorManager sqlExecutorManager;
     /**
      * 如果一个逻辑sql的分区结果是需要在n个物理db上执行，那么前面n-1将会交给sqlExecutorPool异步执行，最后一个由当前线程执行并等待前面n-1个结果返回
      */
@@ -75,10 +75,10 @@ public class DbDriverInstance {
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, jdbcPartitionUrl.getLogicDbName(), curatorFramework);
         LogicDbManager logicDbManager = new LogicDbManager(zkDataNode, jdbcPartitionUrl.getSqlDialect(), jdbcPartitionUrl.getParamStr(), info);
-        sqlExecutionPlanManager = new SqlExecutionPlanManager(logicDbManager);
+        sqlExecutorManager = new SqlExecutorManager(logicDbManager);
         sqlExecutorPool =
-            new ThreadPoolExecutor(Integer.parseInt(info.getProperty("sql.executor.pool.coreSize", "32")), Integer.parseInt(info.getProperty("sql.executor.pool.maxSize", "256")),
-                60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(Integer.parseInt(info.getProperty("sql.executor.pool.queueCapacity", "2560"))));
+            new ThreadPoolExecutor(Integer.parseInt(info.getProperty("executor.executor.pool.coreSize", "32")), Integer.parseInt(info.getProperty("executor.executor.pool.maxSize", "256")),
+                60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(Integer.parseInt(info.getProperty("executor.executor.pool.queueCapacity", "2560"))));
         sqlExecutorPool.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         sqlExecutorPool.setThreadFactory(r -> {
             Thread t = new Thread(r);
@@ -96,6 +96,6 @@ public class DbDriverInstance {
     }
 
     public Connection newConnection() {
-        return new JdbcPartitionConnection(logicDdConfig, sqlExecutionPlanManager, sqlExecutorPool);
+        return new JdbcPartitionConnection(logicDdConfig, sqlExecutorManager, sqlExecutorPool);
     }
 }

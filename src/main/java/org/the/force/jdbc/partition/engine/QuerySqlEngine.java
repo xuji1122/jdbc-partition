@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine;
 
 import org.the.force.jdbc.partition.driver.JdbcPartitionConnection;
-import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutionFactory;
+import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
 import org.the.force.jdbc.partition.resource.statement.AbstractPreparedStatement;
 
 /**
@@ -11,9 +11,9 @@ public class QuerySqlEngine extends AbstractPreparedStatement {
 
     protected final JdbcPartitionConnection jdbcPartitionConnection;
 
-    protected final QueryExecutionFactory queryCompiler;
+    protected final QueryExecutorFactory queryCompiler;
 
-    public QuerySqlEngine(JdbcPartitionConnection jdbcPartitionConnection, QueryExecutionFactory queryCompiler) {
+    public QuerySqlEngine(JdbcPartitionConnection jdbcPartitionConnection, QueryExecutorFactory queryCompiler) {
         this.jdbcPartitionConnection = jdbcPartitionConnection;
         this.queryCompiler = queryCompiler;
     }

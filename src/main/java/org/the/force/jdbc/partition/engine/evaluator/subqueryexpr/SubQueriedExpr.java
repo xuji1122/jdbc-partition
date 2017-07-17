@@ -3,9 +3,9 @@ package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutionFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutionFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutionFactory;
+import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -29,7 +29,7 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     private final SQLQueryExpr sqlQueryExpr;
 
-    private final QueryExecutionFactory queryExecutionFactory;
+    private final QueryExecutorFactory queryExecutorFactory;
 
     public SubQueriedExpr(LogicDbConfig logicDbConfig, SQLQueryExpr sqlQueryExpr) {
         this.logicDbConfig = logicDbConfig;
@@ -43,9 +43,9 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
             throw new ParserException("sqlSelect.getQuery()==null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            this.queryExecutionFactory = new BlockQueryExecutionFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery);
+            this.queryExecutorFactory = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery);
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
-            this.queryExecutionFactory = new UnionQueryExecutionFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery);
+            this.queryExecutorFactory = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery);
         } else {
             throw new ParserException("不受支持的sqlSelectQuery类型" + sqlSelectQuery.getClass());
         }

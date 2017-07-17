@@ -1,16 +1,15 @@
 package org.the.force.jdbc.partition.engine.parser.select;
 
-import org.the.force.jdbc.partition.engine.executor.dql.elements.AllColumnItem;
-import org.the.force.jdbc.partition.engine.executor.dql.elements.Select;
-import org.the.force.jdbc.partition.engine.executor.dql.elements.ValueExprItem;
+import org.the.force.jdbc.partition.engine.sqlelements.query.AllColumnItem;
+import org.the.force.jdbc.partition.engine.sqlelements.query.Select;
+import org.the.force.jdbc.partition.engine.sqlelements.query.ValueExprItem;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlTableRefers;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;

@@ -1,16 +1,16 @@
 package org.the.force.jdbc.partition.engine.executor.dml;
 
-import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;
-import org.the.force.jdbc.partition.engine.parser.router.DefaultTableRouter;
-import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
-import org.the.force.jdbc.partition.engine.parser.router.TableRouter;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.router.DefaultTableRouter;
+import org.the.force.jdbc.partition.engine.router.RouteEvent;
+import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -32,7 +32,7 @@ public class UpdateDelParser {
 
     protected final LogicDbConfig logicDbConfig;
 
-    protected ConditionPartitionSqlTable exprSqlTable;
+    protected ExprConditionalSqlTable exprSqlTable;
 
     private final PartitionEvent.EventType eventType;
 
@@ -45,7 +45,7 @@ public class UpdateDelParser {
         this.logicDbConfig = logicDbConfig;
         this.updateDelParserAdapter = updateDelParserAdapter;
         this.eventType = updateDelParserAdapter.getEventType();
-        exprSqlTable = new ConditionPartitionSqlTable(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
+        exprSqlTable = new ExprConditionalSqlTable(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
         TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprSqlTable, updateDelParserAdapter.getCondition());
         this.where = tableConditionParser.getSubQueryResetWhere();
         SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLStatement(),exprSqlTable);

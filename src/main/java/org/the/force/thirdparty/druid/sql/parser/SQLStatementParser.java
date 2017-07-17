@@ -610,7 +610,7 @@ public class SQLStatementParser extends SQLParser {
             }
 
             if (stmt.getObjectType() != null && lexer.token() == Token.COLONCOLON) {
-                lexer.nextToken(); // sql server
+                lexer.nextToken(); // executor server
             }
 
             SQLExpr expr = this.exprParser.expr();
@@ -1845,7 +1845,7 @@ public class SQLStatementParser extends SQLParser {
             return stmt;
         } else if (token == Token.INDEX //
                    || token == Token.UNIQUE //
-                   || identifierEquals("NONCLUSTERED") // sql server
+                   || identifierEquals("NONCLUSTERED") // executor server
         ) {
             return parseCreateIndex(false);
         } else if (lexer.token() == Token.SEQUENCE) {
@@ -2297,7 +2297,7 @@ public class SQLStatementParser extends SQLParser {
         this.parseStatementList(list, 1);
         if (tryBest) {
             if (lexer.token() != Token.EOF) {
-                throw new ParserException("sql syntax error, no terminated. " + lexer.token());
+                throw new ParserException("executor syntax error, no terminated. " + lexer.token());
             }
         }
         return list.get(0);

@@ -1,8 +1,7 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;

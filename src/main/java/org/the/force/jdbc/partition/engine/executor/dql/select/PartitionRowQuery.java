@@ -1,13 +1,13 @@
 package org.the.force.jdbc.partition.engine.executor.dql.select;
 
-import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.SubQueryFilter;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.parser.router.TableRouter;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 

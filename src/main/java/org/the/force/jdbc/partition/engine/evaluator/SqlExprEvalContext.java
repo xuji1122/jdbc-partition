@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.evaluator;
 
-import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.Command;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
 import java.util.List;
@@ -11,13 +11,13 @@ import java.util.Map;
 
 /**
  * Created by xuji on 2017/5/18.
- * sql expr求值运算期间可选的参数
+ * executor expr求值运算期间可选的参数
  */
 public class SqlExprEvalContext {
 
     private final LogicSqlParameterHolder logicSqlParameterHolder;
 
-    private Map<String, ConditionPartitionSqlTable> sqlTableMap;//ownerName和tableName的匹配关系
+    private Map<String, ExprConditionalSqlTable> sqlTableMap;//ownerName和tableName的匹配关系
 
     private Map<SqlRefer, Integer> sqlReferIntegerMap;//当index 为-1时使用结果集的columnName匹配
 
@@ -41,11 +41,11 @@ public class SqlExprEvalContext {
         this.sqlReferIntegerMap = sqlReferIntegerMap;
     }
 
-    public Map<String, ConditionPartitionSqlTable> getSqlTableMap() {
+    public Map<String, ExprConditionalSqlTable> getSqlTableMap() {
         return sqlTableMap;
     }
 
-    public void setSqlTableMap(Map<String, ConditionPartitionSqlTable> sqlTableMap) {
+    public void setSqlTableMap(Map<String, ExprConditionalSqlTable> sqlTableMap) {
         this.sqlTableMap = sqlTableMap;
     }
 

@@ -22,7 +22,7 @@ public class TestDdl extends TestJdbcPartitionBase {
         String[] tableNames = new String[] {"user/t_user", "order/t_order", "order/t_order_sku"};
         for (int i = 0; i < tableNames.length; i++) {
             String tableName = tableNames[i].substring(tableNames[i].lastIndexOf('/') + 1);
-            String path = tableNames[i] + ".sql";
+            String path = tableNames[i] + ".executor";
             String[] sqls = super.loadSqlFromFile(path);
             PreparedStatement preparedStatement = connection.prepareStatement(sqls[0]);
             int result = preparedStatement.executeUpdate();

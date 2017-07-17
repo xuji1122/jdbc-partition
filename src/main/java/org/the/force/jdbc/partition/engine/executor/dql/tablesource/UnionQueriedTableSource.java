@@ -3,8 +3,8 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutionFactory;
-import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -36,7 +36,7 @@ public class UnionQueriedTableSource extends SQLUnionQueryTableSource implements
         this.logicDbConfig = logicDbConfig;
         this.sqlTable = queryReferFilter.getReferTable();
         this.sqlUnionQueryTableSource = (SQLUnionQueryTableSource) sqlTable.getSQLTableSource();
-        queryExecution = new UnionQueryExecutionFactory(logicDbConfig, sqlUnionQueryTableSource.getUnion(), queryReferFilter).getQueryExecution();
+        queryExecution = new UnionQueryExecutorFactory(logicDbConfig, sqlUnionQueryTableSource.getUnion(), queryReferFilter).getQueryExecution();
     }
 
     protected void accept0(SQLASTVisitor visitor) {
