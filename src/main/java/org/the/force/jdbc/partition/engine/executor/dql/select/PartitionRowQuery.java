@@ -2,22 +2,17 @@ package org.the.force.jdbc.partition.engine.executor.dql.select;
 
 import org.the.force.jdbc.partition.engine.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
+import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.SubQueryFilter;
-import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.router.TableRouter;
-import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 /**
  * Created by xuji on 2017/7/12.
@@ -32,11 +27,7 @@ public class PartitionRowQuery implements QueryExecution {
     //condition在inputQueryBlock中
     private final SQLSelectQueryBlock inputQueryBlock;
 
-    private final ExprSqlTable sqlTable;
-
-    private final Map<SqlColumn, SQLExpr> currentTableColumnValueMap;
-
-    private final Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap;
+    private final ConditionalSqlTable sqlTable;
 
     private final TableRouter tableRouter;
 
@@ -45,14 +36,11 @@ public class PartitionRowQuery implements QueryExecution {
     private QueryReferFilter queryReferFilter;
 
 
-    public PartitionRowQuery(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputQueryBlock, Map<SqlColumn, SQLExpr> currentTableColumnValueMap,
-        Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap) {
+    public PartitionRowQuery(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputQueryBlock) {
         this.logicDbConfig = logicDbConfig;
         this.inputQueryBlock = inputQueryBlock;
-        this.currentTableColumnValueMap = currentTableColumnValueMap;
-        this.currentTableColumnInValuesMap = currentTableColumnInValuesMap;
-        SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) inputQueryBlock.getFrom();
-        sqlTable = (ExprSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(sqlExprTableSource);
+        WrappedSQLExprTableSource sqlExprTableSource = (WrappedSQLExprTableSource) inputQueryBlock.getFrom();
+        sqlTable = sqlExprTableSource.getSqlTable();
         tableRouter = null;
         //parse group by type
 

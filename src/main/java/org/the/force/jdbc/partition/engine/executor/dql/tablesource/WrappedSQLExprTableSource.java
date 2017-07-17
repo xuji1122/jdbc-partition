@@ -1,12 +1,10 @@
 package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
-import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.repository.SchemaObject;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
@@ -19,22 +17,18 @@ import java.util.Map;
  */
 public class WrappedSQLExprTableSource extends SQLExprTableSource {
 
-    private final SqlTable sqlTable;
+    private final ConditionPartitionSqlTable sqlTable;
     private final SQLExprTableSource sqlExprTableSource;
-    private final Map<SqlColumn, SQLExpr> columnValueMap;
-    private final Map<SqlColumn, SQLInListExpr> columnInValuesMap;
 
-    public WrappedSQLExprTableSource(SqlTable sqlTable, Map<SqlColumn, SQLExpr> columnValueMap, Map<SqlColumn, SQLInListExpr> columnInValuesMap) {
+    public WrappedSQLExprTableSource(ConditionPartitionSqlTable sqlTable) {
         this.sqlTable = sqlTable;
         this.sqlExprTableSource = (SQLExprTableSource) sqlTable.getSQLTableSource();
         this.setParent(sqlExprTableSource.getParent());
-        this.columnValueMap = columnValueMap;
-        this.columnInValuesMap = columnInValuesMap;
     }
 
 
     protected void accept0(SQLASTVisitor visitor) {
-        visitor.visit(sqlExprTableSource);
+        sqlExprTableSource.accept(visitor);
     }
 
     public void setAlias(String alias) {
@@ -47,22 +41,13 @@ public class WrappedSQLExprTableSource extends SQLExprTableSource {
     }
 
 
-    public SqlTable getSqlTable() {
+    public ConditionPartitionSqlTable getSqlTable() {
         return sqlTable;
     }
 
     public SQLExprTableSource getSqlExprTableSource() {
         return sqlExprTableSource;
     }
-
-    public Map<SqlColumn, SQLExpr> getColumnValueMap() {
-        return columnValueMap;
-    }
-
-    public Map<SqlColumn, SQLInListExpr> getColumnInValuesMap() {
-        return columnInValuesMap;
-    }
-
 
 
 

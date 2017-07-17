@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.resource.db;
 
 import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.driver.SqlDialect;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.table.impl.LogicTableManagerImpl;
@@ -45,6 +46,7 @@ public class LogicDbManager implements LogicDbConfig {
 
     private final ConcurrentSkipListMap<String, LogicTableManagerImpl> logicTableManagerMap;
 
+    private SqlExprEvaluatorFactory sqlExprEvaluatorFactory;
 
     public LogicDbManager(DataNode logicDbNode, SqlDialect sqlDialect, String paramStr, Properties info) throws SQLException {
         this.logicDbNode = logicDbNode;
@@ -55,9 +57,10 @@ public class LogicDbManager implements LogicDbConfig {
         physicDbConfigMap = new ConcurrentSkipListMap<>(NameComparator.getSingleton());
         logicTableManagerMap = new ConcurrentSkipListMap<>(NameComparator.getSingleton());
         init();
+        sqlExprEvaluatorFactory = new SqlExprEvaluatorFactory(this);
     }
 
-    private void init() throws SQLException  {
+    private void init() throws SQLException {
         try {
             String json = logicDbNode.getData();
             JsonParser parser = new JsonParser(json);
@@ -174,6 +177,9 @@ public class LogicDbManager implements LogicDbConfig {
         return logicTableManagerMap;
     }
 
+    public SqlExprEvaluatorFactory getSqlExprEvaluatorFactory() {
+        return sqlExprEvaluatorFactory;
+    }
 
     public boolean equals(Object o) {
         if (this == o)

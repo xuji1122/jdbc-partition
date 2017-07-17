@@ -1,39 +1,35 @@
 package org.the.force.jdbc.partition.engine.parser.output;
 
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
-import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.ExitsSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
+import org.the.force.jdbc.partition.engine.parameter.ObjectSqlParameter;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.eval.SqlValueEvalContext;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
-import org.the.force.jdbc.partition.engine.eval.SqlExprEvalFunctionFactory;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.rule.Partition;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLCharExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
-import org.the.force.thirdparty.druid.sql.visitor.ExportParameterVisitor;
-import org.the.force.thirdparty.druid.sql.visitor.ExportParameterVisitorUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/9.
@@ -114,57 +110,19 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         if (sqlTablePartition.getSubInListExpr() == null || sqlTablePartition.getSubInListExpr().isEmpty()) {
             return super.visit(x);
         }
-        if (x instanceof SQLInSubQueriedExpr) {
-            //TODO 子查询的结果集
-        }
-        Iterator<Pair<SQLInListExpr, List<SQLExpr>>> inListExprListPairIte = sqlTablePartition.getSubInListExpr().iterator();
-        List<SQLExpr> targetList = null;
-        while (inListExprListPairIte.hasNext()) {
-            Pair<SQLInListExpr, List<SQLExpr>> pair = inListExprListPairIte.next();
-            if (pair.getLeft() == x) {
-                inListExprListPairIte.remove();
-                targetList = pair.getRight();
-            }
-        }
+        //        if (x instanceof SQLInSubQueriedExpr) {
+        //            //TODO 子查询的结果集
+        //        }
+        Map<SQLInListExpr, List<Object[]>> map = sqlTablePartition.getSubInListExpr();
+        List<Object[]> targetList = map.get(x);
+
         if (targetList == null) {
-            return super.visit(x);
+            if(x instanceof SQLInSubQueriedExpr){
+                //TODO 触发子查询
+            }else{
+                return super.visit(x);
+            }
         }
-        if (this.parameterized) {
-            boolean changed = true;
-            if (targetList.size() == 1 && targetList.get(0) instanceof SQLVariantRefExpr) {
-                changed = false;
-            }
-
-            x.getExpr().accept(this);
-
-            if (x.isNot()) {
-                print(isUppCase() ? " NOT IN (?)" : " not in (?)");
-            } else {
-                print(isUppCase() ? " IN (?)" : " in (?)");
-            }
-
-            if (changed) {
-                incrementReplaceCunt();
-                if (this instanceof ExportParameterVisitor || this.parameters != null) {
-                    if (parameterizedMergeInList) {
-                        List<Object> subList = new ArrayList<Object>(x.getTargetList().size());
-                        for (SQLExpr target : x.getTargetList()) {
-                            ExportParameterVisitorUtils.exportParameter(subList, target);
-                        }
-                        if (subList != null) {
-                            parameters.add(subList);
-                        }
-                    } else {
-                        for (SQLExpr target : x.getTargetList()) {
-                            ExportParameterVisitorUtils.exportParameter(this.parameters, target);
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
         x.getExpr().accept(this);
 
         if (x.isNot()) {
@@ -173,33 +131,27 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
             print0(ucase ? " IN (" : " in (");
         }
 
-        final List<SQLExpr> list = targetList;
+        final List<Object[]> list = targetList;
+        int rowSize = list.size();
 
-        boolean printLn = false;
-        if (list.size() > 5) {
-            printLn = true;
-            for (int i = 0, size = list.size(); i < size; ++i) {
-                if (!(list.get(i) instanceof SQLCharExpr)) {
-                    printLn = false;
-                    break;
-                }
+        for (int rowCount = 0; rowCount < rowSize; rowCount++) {
+            if(rowCount>0){
+                print0(",");
             }
-        }
-
-        if (printLn) {
-            incrementIndent();
-            println();
-            for (int i = 0, size = list.size(); i < size; ++i) {
-                if (i != 0) {
-                    print0(", ");
-                    println();
-                }
-                list.get(i).accept(this);
+            Object[] columnArray = list.get(rowCount);
+            if (rowSize > 1) {
+                print0("(");
             }
-            decrementIndent();
-            println();
-        } else {
-            printAndAccept(list, ", ");
+            for (int columnCount = 0; columnCount < columnArray.length; columnCount++) {
+                if (columnCount > 0) {
+                    print0(",");
+                }
+                print0("?");
+                sqlParameterList.add(new ObjectSqlParameter(columnArray[columnCount]));
+            }
+            if (rowSize > 1) {
+                print0(")");
+            }
         }
 
         print(')');
@@ -218,21 +170,21 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
             return super.visit(x);
         }
         print0(ucase ? "LIMIT " : "limit ");
-        SqlValueEvalContext sqlValueEvalContext = new SqlValueEvalContext(logicDbConfig);
-        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
+        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
+        SqlExprEvaluatorFactory sqlExprEvaluatorFactory = logicDbConfig.getSqlExprEvaluatorFactory();
         int from = 1;
         int rowCount;
 
         if (x.getOffset() != null) {
             try {
-                Object v = sqlExprEvalFunctionFactory.matchSqlValueFunction(x.getOffset()).getValue(sqlValueEvalContext, routeEvent.getLogicSqlParameterHolder(), null);
+                Object v = sqlExprEvaluatorFactory.matchSqlExprEvaluator(x.getOffset()).eval(sqlExprEvalContext, null);
                 from = Integer.parseInt(v.toString());
             } catch (SQLException e) {
                 throw new SqlParseException("limit不是数字不正确", e);
             }
         }
         try {
-            Object v = sqlExprEvalFunctionFactory.matchSqlValueFunction(x.getRowCount()).getValue(sqlValueEvalContext, routeEvent.getLogicSqlParameterHolder(), null);
+            Object v = sqlExprEvaluatorFactory.matchSqlExprEvaluator(x.getRowCount()).eval(sqlExprEvalContext, null);
             rowCount = Integer.parseInt(v.toString());
         } catch (SQLException e) {
             throw new SqlParseException("limit不是数字不正确", e);
@@ -244,9 +196,10 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    public boolean visit(ExitsSubQueriedExpr x) {
+    public boolean visit(SubQueriedExpr x) {
         return false;
     }
+
     public boolean visit(SQLInSubQueriedExpr x) {
         return false;
     }

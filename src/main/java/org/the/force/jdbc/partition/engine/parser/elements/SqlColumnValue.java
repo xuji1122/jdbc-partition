@@ -2,9 +2,6 @@ package org.the.force.jdbc.partition.engine.parser.elements;
 
 import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by xuji on 2017/5/14.
  */
@@ -12,20 +9,13 @@ public class SqlColumnValue implements PartitionColumnValue {
 
     private final String columnName;
 
-    private List<Object> values = new ArrayList<>();
-
-    private int currentIndex = -1;
-
-
-    public SqlColumnValue(String columnName) {
-        this.columnName = columnName;
-    }
+    private final Object value;
 
 
 
     public SqlColumnValue(String columnName, Object value) {
         this.columnName = columnName.toLowerCase();
-        setValue(value);
+        this.value = value;
     }
 
 
@@ -35,25 +25,9 @@ public class SqlColumnValue implements PartitionColumnValue {
     }
 
     public Object getValue() {
-        if (values.isEmpty()) {
-            return null;
-        }
-        return values.get(currentIndex);
+        return value;
     }
 
-    public void setValue(Object value) {
-        values.clear();
-        values.add(value);
-        currentIndex = 0;
-    }
-
-    public void addValue(Object value) {
-        values.add(value);
-    }
-
-    public void addIndex() {
-        currentIndex++;
-    }
 
     public final int compareTo(PartitionColumnValue o) {
         return this.getColumnName().compareTo(o.getColumnName());
@@ -77,16 +51,7 @@ public class SqlColumnValue implements PartitionColumnValue {
         return getColumnName().hashCode();
     }
 
-
-    public List<Object> getValues() {
-        return values;
-    }
-
-    public int getCurrentIndex() {
-        return currentIndex;
-    }
-
     public String toString() {
-        return columnName + ':' + values;
+        return columnName + ':' + value;
     }
 }

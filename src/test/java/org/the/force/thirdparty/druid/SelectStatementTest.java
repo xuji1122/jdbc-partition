@@ -1,6 +1,8 @@
 package org.the.force.thirdparty.druid;
 
 import org.testng.annotations.Test;
+import org.the.force.jdbc.partition.TestJdbcPartitionBase;
+import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.resource.sql.SqlKey;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
@@ -14,7 +16,7 @@ import java.util.List;
  * Created by xuji on 2017/6/3.
  */
 @Test
-public class SelectStatementTest {
+public class SelectStatementTest extends TestJdbcPartitionBase {
 
     private Log logger = LogFactory.getLog(UpdateStatementTest.class);
 
@@ -42,6 +44,7 @@ public class SelectStatementTest {
             SQLStatement sqlStatement = stmts.get(i);
         }
     }
+
     public void testSelectQuery3() {
         String sql = "select t.* from t_order t where user_id in (?,?,?) and name=?  and id>0 and (time>? or status=?) order by id limit 20 ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
@@ -49,8 +52,10 @@ public class SelectStatementTest {
             SQLStatement sqlStatement = stmts.get(i);
         }
     }
+
     public void testCaseWhenQuery3() {
-        String sql = "select t.id,case  when t.type=1 then 1 else 0 end from t_order t where user_id in (?,?,?) and name=?  and id>0 and (time>? or status=?) order by id limit 20 ";
+        String sql =
+            "select t.id,case  when t.type=1 then 1 else 0 end from t_order t where user_id in (?,?,?) and name=?  and id>0 and (time>? or status=?) order by id limit 20 ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
@@ -129,8 +134,10 @@ public class SelectStatementTest {
     }
 
     /**
-     * SQLSelect  未必包括query
-     * --> SQLSelectQuery  <]--- SQLUnionQuery --->聚合SQLSelectQuery
+     *
+     * SQLQueryExpr 可以出现在二元操作符中或者exits中或者函数中  between后的表达式不能是子查询
+     * SQLInSubQueryExpr  in 中
+     *
      */
     public void testwhere1() {
         //SQLInwhereExpr 桥接 SQLSelect
@@ -164,7 +171,7 @@ public class SelectStatementTest {
      * SQLTableSource <---SQLTableSourceImpl
      * <]---  SQLExprTableSource  直接命名
      * <]---  SQLJoinTableSource  joinType on(可以无)
-     * <]---  SQLwhereTableSource
+     * <]---  SQLSubqueryTableSource
      * <]---  SQLUnionQueryTableSource
      */
     public void testFromSubQuery1() {
@@ -177,6 +184,34 @@ public class SelectStatementTest {
         }
     }
 
+    /**
+     * SQLListExpr
+     */
+    public void testColumnsInValues() {
+        //SQLSubqueryTableSource  SQLTableSource
+
+        String sql = "select id,name from  t  where (t.name,t.name) in (1,3) ";
+        List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+        for (int i = 0; i < stmts.size(); i++) {
+            SQLStatement sqlStatement = stmts.get(i);
+            logger.info("\n:" + PartitionSqlUtils.toSql(sqlStatement, sqlDialect));
+        }
+    }
+
+    /**
+     * SQLListExpr
+     */
+    public void testColumnsInSubQuery() {
+        //SQLSubqueryTableSource  SQLTableSource
+
+        String sql = "select id,name from  t  where (t.name,t.name) in (select id,name from b where a>0) ";
+        List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+        for (int i = 0; i < stmts.size(); i++) {
+            SQLStatement sqlStatement = stmts.get(i);
+            logger.info("\n:" + PartitionSqlUtils.toSql(sqlStatement, sqlDialect));
+        }
+    }
+
     public void testSqlKey() {
         String sql = "select id,name from (select id,name from user where id>10 ) t  where t.id>0 order by id limit 20 ";
         SqlKey sqlKey1 = new SqlKey(sql);
@@ -185,9 +220,9 @@ public class SelectStatementTest {
             SQLStatement sqlStatement = stmts.get(i);
             String fsql = SQLUtils.toSQLString(sqlStatement, JdbcConstants.MYSQL);
             SqlKey sqlKey2 = new SqlKey(fsql);
-            logger.info("sqlKey1:"+ sqlKey1);
-            logger.info("sqlKey2:"+sqlKey2);
-            logger.info("equals:"+ sqlKey2.equals(sqlKey1));
+            logger.info("sqlKey1:" + sqlKey1);
+            logger.info("sqlKey2:" + sqlKey2);
+            logger.info("equals:" + sqlKey2.equals(sqlKey1));
         }
     }
 }

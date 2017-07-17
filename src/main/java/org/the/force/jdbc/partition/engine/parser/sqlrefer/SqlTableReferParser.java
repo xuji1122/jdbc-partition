@@ -18,7 +18,6 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -128,10 +127,7 @@ public class SqlTableReferParser extends AbstractVisitor {
         if (isInTableSource || visitingTableSource != null) {
             return false;
         }
-        SqlRefer sqlRefer = SqlReferParser.getSqlRefer(propertyExpr);
-        if (sqlRefer == null) {
-            throw new ParserException("SQLPropertyExpr to SqlRefer is null");
-        }
+        SqlRefer sqlRefer = new SqlRefer(propertyExpr);
         if (subQuery == null) {
             if (sqlRefer.getName().equals("*")) {
                 if (sqlRefer.getOwnerName() == null) {
@@ -161,10 +157,7 @@ public class SqlTableReferParser extends AbstractVisitor {
         if (isInTableSource || visitingTableSource != null) {
             return false;
         }
-        SqlRefer sqlRefer = SqlReferParser.getSqlRefer(propertyExpr);
-        if (sqlRefer == null) {
-            throw new ParserException("SQLPropertyExpr to SqlRefer is null");
-        }
+        SqlRefer sqlRefer = new SqlRefer(propertyExpr);
         if (subQuery == null) {
             boolean b = checkOwner(sqlTable, sqlRefer);
             if (b) {

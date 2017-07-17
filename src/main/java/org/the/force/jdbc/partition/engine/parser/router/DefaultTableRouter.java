@@ -1,16 +1,16 @@
 package org.the.force.jdbc.partition.engine.parser.router;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.eval.SqlExprEvalFunction;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.eval.SqlValueEvalContext;
-import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;
 import org.the.force.jdbc.partition.engine.parser.output.MySqlPartitionSqlOutput;
-import org.the.force.jdbc.partition.engine.eval.SqlExprEvalFunctionFactory;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
@@ -18,13 +18,13 @@ import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
-import org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,239 +40,70 @@ public class DefaultTableRouter implements TableRouter {
 
     protected final LogicDbConfig logicDbConfig;
 
-    protected final ExprSqlTable exprSqlTable;
+    private final SQLStatement sqlStatement;
 
-    private final SqlValueEvalContext sqlValueEvalContext;
+    protected final ConditionPartitionSqlTable exprSqlTable;
 
-    public DefaultTableRouter(LogicDbConfig logicDbConfig, ExprSqlTable exprSqlTable, SqlValueEvalContext sqlValueEvalContext) {
+    public DefaultTableRouter(LogicDbConfig logicDbConfig, SQLStatement sqlStatement, ConditionPartitionSqlTable exprSqlTable) {
         this.logicDbConfig = logicDbConfig;
+        this.sqlStatement = sqlStatement;
         this.exprSqlTable = exprSqlTable;
-        this.sqlValueEvalContext = sqlValueEvalContext;
     }
 
     public Map<Partition, SqlTablePartitionSql> route(RouteEvent routeEvent) throws SQLException {
-        if (routeEvent.isInsertInto()) {
-            return insertIntoRoute(routeEvent, routeEvent.getPartitionColumnMap(), routeEvent.getValuesClauseList());
-        }
-        Map<SqlColumn, SQLExpr> partitionColumnValueMap = new HashMap<>();
-        Map<SqlColumn, SQLInListExpr> partitionSqlInValuesMap = new HashMap<>();
+        ConditionPartitionSqlTable conditionPartitionSqlTable =  exprSqlTable;
+
         Set<String> partitionColumnNames = routeEvent.getLogicTableConfig().getPartitionColumnNames();
-        Map<SqlColumn, SQLExpr> columnValueMap = routeEvent.getColumnValueMap();
-        Map<SqlColumn, SQLInListExpr> sqlInValuesMap = routeEvent.getSqlInValuesMap();
+
+        Map<SqlRefer, SqlExprEvaluator> columnValueMap = conditionPartitionSqlTable.getColumnValueMap();
+        Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap = new HashMap<>();
         if (columnValueMap != null) {
-            columnValueMap.entrySet().stream().filter(entry -> partitionColumnNames.contains(entry.getKey().getColumnName().toLowerCase())).forEach(entry -> {
+            columnValueMap.entrySet().stream().filter(entry -> partitionColumnNames.contains(entry.getKey().getName().toLowerCase())).forEach(entry -> {
                 partitionColumnValueMap.put(entry.getKey(), entry.getValue());
             });
         }
-        if (sqlInValuesMap != null) {
-            sqlInValuesMap.entrySet().stream().filter(entry -> partitionColumnNames.contains(entry.getKey().getColumnName().toLowerCase())).forEach(entry -> {
-                partitionSqlInValuesMap.put(entry.getKey(), entry.getValue());
-            });
-        }
-        if (partitionColumnValueMap.isEmpty() && partitionSqlInValuesMap.isEmpty()) {
+        Map<List<SQLExpr>, SQLInListEvaluator> sqlInValuesMap = conditionPartitionSqlTable.getColumnInValueListMap();
+        Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap = new HashMap<>();
+        sqlInValuesMap.forEach((listKey, sqlInListEvaluator) -> {
+            int size = listKey.size();
+            for (int i = 0; i < size; i++) {
+                SQLExpr sqlExpr = listKey.get(i);
+                if (sqlExpr instanceof SqlRefer) {
+                    SqlRefer sqlRefer = (SqlRefer) sqlExpr;
+                    String columnName = sqlRefer.getName().toLowerCase();
+                    if (partitionColumnNames.contains(columnName)) {
+                        partitionColumnInValueListMap.put(listKey, sqlInListEvaluator);
+                        break;
+                    }
+                }
+            }
+        });
+
+        if (partitionColumnValueMap.isEmpty() && partitionColumnInValueListMap.isEmpty()) {
             //TODO 全分区sql
-            return allPartitionSql(routeEvent);
+            return allPartitionRoute(routeEvent);
         }
-        if (!partitionSqlInValuesMap.isEmpty()) {
-            return columnInListPartition(routeEvent, partitionColumnValueMap, partitionSqlInValuesMap);
+        if (!partitionColumnInValueListMap.isEmpty()) {
+            return columnInValueListRoute(routeEvent, partitionColumnValueMap, partitionColumnInValueListMap);
         } else {
-            return columnEqualsPartition(routeEvent, partitionColumnValueMap);
+            return columnEqualsRoute(routeEvent, partitionColumnValueMap);
         }
     }
 
-    public Map<Partition, SqlTablePartitionSql> allPartitionSql(RouteEvent routeEvent) {
+    public Map<Partition, SqlTablePartitionSql> allPartitionRoute(RouteEvent routeEvent) {
         Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
         SortedSet<Partition> partitions = logicTableConfig.getPartitions();
         return sqlTablePartitions;
     }
-
-    /**
-     * 分区路由核心方法
-     * 将sql路由到所有分区
-     */
-    protected Map<Partition, SqlTablePartitionSql> insertIntoRoute(RouteEvent routeEvent, Map<Integer, SqlColumnValue> partitionColumnMap,
-        List<SQLInsertStatement.ValuesClause> valuesClauseList) throws SQLException {
-        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
-        LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
-
-        PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), routeEvent.getEventType(), logicTableConfig.getPartitionSortType(),
-            logicTableConfig.getPartitionColumnConfigs());
-        partitionEvent.setPartitions(logicTableConfig.getPartitions());
-        partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-
-        Map<Partition, SqlTablePartition> subsMap = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
-        for (SQLInsertStatement.ValuesClause valuesClause : valuesClauseList) {
-            List<SQLExpr> sqlExprList = valuesClause.getValues();
-            for (int i = 0; i < sqlExprList.size(); i++) {
-                SQLExpr sqlExpr = sqlExprList.get(i);
-                SqlColumnValue sqlColumnValue = partitionColumnMap.get(i);
-                if (sqlColumnValue != null) {
-                    SqlExprEvalFunction sqlValueFunction = sqlExprEvalFunctionFactory.matchSqlValueFunction(sqlExpr);
-                    if (sqlValueFunction == null) {
-                        //TODO 异常处理
-                        continue;
-                    }
-                    Object value = sqlValueFunction.getValue(sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
-                    if (value == null) {
-                        //TODO 异常处理
-                        continue;
-                    }
-                    if (SQLEvalVisitor.EVAL_VALUE_NULL == value) {
-                        sqlColumnValue.setValue(null);
-                    } else {
-                        sqlColumnValue.setValue(value);
-                    }
-                }
-            }
-            PartitionRule partitionRule = logicTableConfig.getPartitionRule();
-            TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
-            for (Map.Entry<Integer, SqlColumnValue> entry : partitionColumnMap.entrySet()) {
-                SqlColumnValue sqlColumnValue = entry.getValue();
-                if (sqlColumnValue.getValue() != null) {
-                    partitionColumnValueTreeSet.add(sqlColumnValue);
-                }
-            }
-            SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
-            Partition partition = partitions.iterator().next();
-            if (!subsMap.containsKey(partition)) {
-                subsMap.put(partition, new SqlTablePartition(exprSqlTable, partition));
-            }
-            SqlTablePartition sqlTablePartition = subsMap.get(partition);
-            sqlTablePartition.getValuesClauses().add(valuesClause);
-
-        }
-        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
-        for (Map.Entry<Partition, SqlTablePartition> entry : subsMap.entrySet()) {
-            StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, entry.getValue());
-            routeEvent.getSqlStatement().accept(mySqlPartitionSqlOutput);
-            List<SqlParameter> list = mySqlPartitionSqlOutput.getSqlParameterList();
-            String sql = sqlSb.toString();
-            sqlTablePartitions.put(entry.getKey(), new SqlTablePartitionSql(sql, list));
-        }
-        return sqlTablePartitions;
-    }
-
-
-
-    /**
-     * 分区路由核心方法
-     * 多个in表达式的列作为分库分表字段  将会对每个column的in的每个value做全排列组合，最后取交集的分区结果
-     *
-     * @throws SQLException
-     */
-    protected Map<Partition, SqlTablePartitionSql> columnInListPartition(RouteEvent routeEvent, Map<SqlColumn, SQLExpr> partitionColumnValueMap,
-        Map<SqlColumn, SQLInListExpr> partitionColumnSqlInValuesMap) throws SQLException {
-        LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
-        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
-        PartitionRule partitionRule = logicTableConfig.getPartitionRule();
-        /**
-         * 根据每个in表达式的column 分别做分区  Column-->Partition
-         */
-        Map<SqlColumn, Map<Partition, Pair<SQLInListExpr, List<SQLExpr>>>> columnPartitionResultMap = new HashMap<>();
-
-        PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), routeEvent.getEventType(), logicTableConfig.getPartitionSortType(),
-            logicTableConfig.getPartitionColumnConfigs());
-        partitionEvent.setPartitions(logicTableConfig.getPartitions());
-        partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-        //TODO no partition的处理 跳过
-        for (Map.Entry<SqlColumn, SQLInListExpr> entry1 : partitionColumnSqlInValuesMap.entrySet()) {
-            //指定的column,一个column对象唯一一个SQLInListExpr对象
-            SqlColumn sqlColumn = entry1.getKey();
-            Map<Partition, Pair<SQLInListExpr, List<SQLExpr>>> partitionInListMap = new HashMap<>();
-            columnPartitionResultMap.put(sqlColumn, partitionInListMap);
-            List<SQLExpr> sqlExprList = entry1.getValue().getTargetList();//不变的的list
-            for (SQLExpr sqlExpr : sqlExprList) {// in的每一个选项
-                TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
-                SqlColumnValue columnValueOuter = new SqlColumnValue(entry1.getKey().getColumnName());
-                Object value = sqlExprEvalFunctionFactory.matchSqlValueFunction(sqlExpr).getValue(sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
-                columnValueOuter.setValue(value);
-                partitionColumnValueTreeSet.add(columnValueOuter);
-                for (Map.Entry<SqlColumn, SQLExpr> entry2 : partitionColumnValueMap.entrySet()) {//等于的选项全部拿出来
-                    SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getColumnName());
-                    value = sqlExprEvalFunctionFactory.matchSqlValueFunction(entry2.getValue()).getValue( sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
-                    columnValueInner.setValue(value);
-                    partitionColumnValueTreeSet.add(columnValueInner);
-                }
-                SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
-                if (partitions.isEmpty()) {
-                    continue;
-                }
-
-                for (Partition partition : partitions) {
-                    Pair<SQLInListExpr, List<SQLExpr>> list = partitionInListMap.get(partition);
-                    if (list == null) {
-                        list = new Pair<>(entry1.getValue(), new ArrayList<SQLExpr>());
-                        partitionInListMap.put(partition, list);
-                    }
-                    list.getRight().add(sqlExpr);
-                }
-            }
-        }
-        /**
-         *   result 每一列的分区结果  取交集  reduce Column-->Partition  变成 Partition-->Column
-         *   Map<SqlColumn, Map<Partition, Triple<SQLInListExpr, SQLInListExpr,List<SQLExpr>>>>  ->  Map<Partition, List<Triple<SQLInListExpr, SQLInListExpr, List<SQLExpr>>>>
-         */
-
-        //结果集的结构，某个patition，使用了哪些列(SQLInListExpr)的哪些value (List<SQLExpr>)
-        Map<Partition, List<Pair<SQLInListExpr, List<SQLExpr>>>> partitionColumnsMap = new HashMap<>();
-        //统计某个Partition在所有SqlColumn中出现的次数，用于取交集
-        Map<Partition, Integer> partitionCount = new HashMap<>();
-        for (Map<Partition, Pair<SQLInListExpr, List<SQLExpr>>> value : columnPartitionResultMap.values()) {
-            if (value.isEmpty()) {
-                continue;
-            }
-            for (Map.Entry<Partition, Pair<SQLInListExpr, List<SQLExpr>>> entry : value.entrySet()) {
-                Partition partition = entry.getKey();
-                List<Pair<SQLInListExpr, List<SQLExpr>>> list = partitionColumnsMap.get(partition);
-                if (list == null) {
-                    list = new ArrayList<>();
-                    partitionColumnsMap.put(partition, list);
-                }
-                list.add(entry.getValue());
-                Integer count = partitionCount.get(partition);
-                if (count == null) {
-                    partitionCount.put(partition, 1);
-                } else {
-                    partitionCount.put(partition, count + 1);
-                }
-            }
-        }
-        //去除 假条件
-        for (Map.Entry<Partition, Integer> entry : partitionCount.entrySet()) {
-            if (entry.getValue() == null || entry.getValue() < columnPartitionResultMap.size()) {
-                partitionColumnsMap.remove(entry.getKey());
-            }
-        }
-
-        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
-        for (Map.Entry<Partition, List<Pair<SQLInListExpr, List<SQLExpr>>>> entry : partitionColumnsMap.entrySet()) {
-            Partition partition = entry.getKey();
-            SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
-            sqlTablePartition.setTotalPartitions(partitionColumnsMap.size());
-            sqlTablePartition.getSubInListExpr().addAll(entry.getValue());
-
-            StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
-            routeEvent.getSqlStatement().accept(mySqlPartitionSqlOutput);
-            List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
-            String sql = sqlSb.toString();
-            sqlTablePartitions.put(partition, new SqlTablePartitionSql(sql, newSqlParameters));
-        }
-        return sqlTablePartitions;
-
-    }
-
     /**
      * 分区路由核心方法
      * 没有in表达式 只有 列=value的 分区条件
      *
      * @throws SQLException
      */
-    protected Map<Partition, SqlTablePartitionSql> columnEqualsPartition(RouteEvent routeEvent, Map<SqlColumn, SQLExpr> partitionColumnValueMap) throws SQLException {
+    protected Map<Partition, SqlTablePartitionSql> columnEqualsRoute(RouteEvent routeEvent, Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap) throws SQLException {
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
-        SqlExprEvalFunctionFactory sqlExprEvalFunctionFactory = SqlExprEvalFunctionFactory.getSingleton();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
         TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
         //TODO 数据迁移时老区新区 周新区 update时策略 新区老区双写，表格主键的获取
@@ -280,10 +111,11 @@ public class DefaultTableRouter implements TableRouter {
             logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-        for (Map.Entry<SqlColumn, SQLExpr> entry2 : partitionColumnValueMap.entrySet()) {
-            SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getColumnName());
-            Object value = sqlExprEvalFunctionFactory.matchSqlValueFunction(entry2.getValue()).getValue( sqlValueEvalContext,routeEvent.getLogicSqlParameterHolder(),null);
-            columnValueInner.setValue(value);
+        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
+
+        for (Map.Entry<SqlRefer, SqlExprEvaluator> entry2 : partitionColumnValueMap.entrySet()) {
+            Object value = entry2.getValue().eval(sqlExprEvalContext, null);
+            SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getName(), value);
             partitionColumnValueTreeSet.add(columnValueInner);
         }
         SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
@@ -296,12 +128,78 @@ public class DefaultTableRouter implements TableRouter {
             sqlTablePartition.setTotalPartitions(partitions.size());
             StringBuilder sqlSb = new StringBuilder();
             MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
-            routeEvent.getSqlStatement().accept(mySqlPartitionSqlOutput);
+            sqlStatement.accept(mySqlPartitionSqlOutput);
             List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
             String sql = sqlSb.toString();
             sqlTablePartitions.put(partition, new SqlTablePartitionSql(sql, newSqlParameters));
         }
         return sqlTablePartitions;
     }
+
+    /**
+     * 分区路由核心方法
+     * 多个in表达式的列作为分库分表字段  将会对每个column的in的每个value做全排列组合，最后取交集的分区结果
+     *
+     * @throws SQLException
+     */
+    protected Map<Partition, SqlTablePartitionSql> columnInValueListRoute(RouteEvent routeEvent, Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap,
+        Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap) throws SQLException {
+        LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
+        PartitionRule partitionRule = logicTableConfig.getPartitionRule();
+        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
+        TableRouterInValuesCursor tableRouterInValuesCursor = new TableRouterInValuesCursor(sqlExprEvalContext, partitionColumnInValueListMap, partitionColumnValueMap);
+
+        PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), routeEvent.getEventType(), logicTableConfig.getPartitionSortType(),
+            logicTableConfig.getPartitionColumnConfigs());
+
+        partitionEvent.setPartitions(logicTableConfig.getPartitions());
+        partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
+        Map<Partition, Map<SQLInListExpr, List<Object[]>>> partitionColumnsMap = new HashMap<>();
+        while (tableRouterInValuesCursor.next()) {
+            TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = tableRouterInValuesCursor.getCurrentPartitionColumnValues();
+            SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
+            if (partitions.isEmpty()) {
+                continue;
+            }
+            Map<List<SQLExpr>, Pair<SQLInListExpr, Object[]>> map = tableRouterInValuesCursor.getCurrentRowColumnValues();
+            for (Partition partition : partitions) {
+                Map<SQLInListExpr, List<Object[]>> pairList = partitionColumnsMap.get(partition);
+                if (pairList == null) {
+                    pairList = new LinkedHashMap<>();
+                    partitionColumnsMap.put(partition, pairList);
+                }
+                for (Pair<SQLInListExpr, Object[]> pair : map.values()) {
+                    List<Object[]> list = pairList.get(pair.getLeft());
+                    Object[] rowValue = pair.getRight();
+                    boolean add = true;
+                    for (int k = 0; k < list.size(); k++) {
+                        Object[] exits = list.get(k);
+                        if (Arrays.equals(rowValue, exits)) {
+                            add = false;
+                        }
+                    }
+                    if (add) {
+                        list.add(rowValue);
+                    }
+                }
+            }
+        }
+        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
+        for (Map.Entry<Partition, Map<SQLInListExpr, List<Object[]>>> entry : partitionColumnsMap.entrySet()) {
+            Partition partition = entry.getKey();
+            SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
+            sqlTablePartition.setTotalPartitions(partitionColumnsMap.size());
+            sqlTablePartition.getSubInListExpr().putAll(entry.getValue());
+            StringBuilder sqlSb = new StringBuilder();
+            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
+            sqlStatement.accept(mySqlPartitionSqlOutput);
+            List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
+            String sql = sqlSb.toString();
+            sqlTablePartitions.put(partition, new SqlTablePartitionSql(sql, newSqlParameters));
+        }
+        return sqlTablePartitions;
+
+    }
+
 
 }

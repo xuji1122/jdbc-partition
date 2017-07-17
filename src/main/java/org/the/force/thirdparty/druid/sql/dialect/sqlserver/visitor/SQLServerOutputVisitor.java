@@ -451,12 +451,12 @@ public class SQLServerOutputVisitor extends SQLASTOutputVisitor implements SQLSe
             println();
             print0(ucase ? "OFFSET " : "offset ");
             x.getOffset().accept(this);
-            print0(ucase ? " ROWS" : " rows");
+            print0(ucase ? " ROWS" : " row");
             
             if (x.getRowCount() != null) {
                 print0(ucase ? " FETCH NEXT " : " fetch next ");
                 x.getRowCount().accept(this);
-                print0(ucase ? " ROWS ONLY" : " rows only");
+                print0(ucase ? " ROWS ONLY" : " row only");
             }
         }
         return false;

@@ -1542,11 +1542,11 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
                 if (offset != null) {
                     print0(ucase ? "OFFSET " : "offset ");
                     offset.accept(this);
-                    print0(ucase ? " ROWS " : " rows ");
+                    print0(ucase ? " ROWS " : " row ");
                 }
                 print0(ucase ? "FETCH FIRST " : "fetch first ");
                 first.accept(this);
-                print0(ucase ? " ROWS ONLY" : " rows only");
+                print0(ucase ? " ROWS ONLY" : " row only");
             } else {
                 println();
                 limit.accept(this);
@@ -2733,7 +2733,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
 
         if (x.getWindowing() != null) {
             if (SQLOver.WindowingType.ROWS.equals(x.getWindowingType())) {
-                print0(ucase ? " ROWS " : " rows ");
+                print0(ucase ? " ROWS " : " row ");
             } else if (SQLOver.WindowingType.RANGE.equals(x.getWindowingType())) {
                 print0(ucase ? " RANGE " : " range ");
             }
@@ -2749,7 +2749,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
 
         if (x.getWindowingBetweenBegin() != null) {
             if (SQLOver.WindowingType.ROWS.equals(x.getWindowingType())) {
-                print0(ucase ? " ROWS BETWEEN " : " rows between ");
+                print0(ucase ? " ROWS BETWEEN " : " row between ");
             } else if (SQLOver.WindowingType.RANGE.equals(x.getWindowingType())) {
                 print0(ucase ? " RANGE BETWEEN " : " range between ");
             }

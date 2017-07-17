@@ -93,7 +93,7 @@ public class PGOutputVisitor extends SQLASTOutputVisitor implements PGASTVisitor
             print0(ucase ? "NEXT " : "next ");
         }
         x.getCount().accept(this);
-        print0(ucase ? " ROWS ONLY" : " rows only");
+        print0(ucase ? " ROWS ONLY" : " row only");
         return false;
     }
 

@@ -25,8 +25,8 @@ public class Pair<L, R> {
     /**
      * Create a new pair instance.
      *
-     * @param left  the left eval, may be null
-     * @param right the right eval, may be null
+     * @param left  the left evaluator, may be null
+     * @param right the right evaluator, may be null
      */
     public Pair(final L left, final R right) {
         super();

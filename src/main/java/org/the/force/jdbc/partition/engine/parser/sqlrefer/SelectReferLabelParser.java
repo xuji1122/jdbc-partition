@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -23,9 +23,7 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by xuji on 2017/6/14.
@@ -81,10 +79,7 @@ public class SelectReferLabelParser {
                     columns.add(sqlPropertyExpr.getName());
                     continue;
                 }
-                SqlRefer sqlRefer = SqlReferParser.getSqlRefer(sqlPropertyExpr);
-                if (sqlRefer == null) {
-                    throw new SqlParseException("无法识别select的item的label");
-                }
+                SqlRefer sqlRefer = new SqlRefer(sqlPropertyExpr);
                 List<String> set = getAllColumns(sqlSelectQueryBlock.getFrom(), sqlRefer.getOwnerName());
                 columns.addAll(set);
             } else if (expr instanceof SQLAllColumnExpr) {
@@ -110,7 +105,7 @@ public class SelectReferLabelParser {
     public List<String> getAllColumns(SQLTableSource sqlTableSource, String targetTableName) throws SQLException {
         if (sqlTableSource instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) sqlTableSource;
-            ExprSqlTable exprSqlTable = new ExprSqlTable(logicDbConfig, sqlExprTableSource);
+            ExprSqlTable exprSqlTable = new ConditionPartitionSqlTable(logicDbConfig, sqlExprTableSource);
             if (targetTableName == null || targetTableName.equals(exprSqlTable.getAlias()) || targetTableName.equalsIgnoreCase(exprSqlTable.getTableName())) {
                 return exprSqlTable.getReferLabels();
             } else {

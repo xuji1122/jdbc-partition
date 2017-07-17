@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
-import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutionFactory;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutionFactory;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -27,7 +27,7 @@ public class UnionQueriedTableSource extends SQLUnionQueryTableSource implements
 
     private final SQLUnionQueryTableSource sqlUnionQueryTableSource;
 
-    private final SqlTable sqlTable;
+    private final ConditionalSqlTable sqlTable;
 
     private final QueryExecution queryExecution;
 
@@ -43,7 +43,7 @@ public class UnionQueriedTableSource extends SQLUnionQueryTableSource implements
         if (visitor instanceof PartitionSqlASTVisitor) {
             ((PartitionSqlASTVisitor) visitor).visit(this);
         } else {
-            visitor.visit(sqlUnionQueryTableSource);
+            sqlUnionQueryTableSource.accept(visitor);
         }
     }
 
@@ -55,7 +55,7 @@ public class UnionQueriedTableSource extends SQLUnionQueryTableSource implements
         return sqlUnionQueryTableSource;
     }
 
-    public SqlTable getSqlTable() {
+    public ConditionalSqlTable getSqlTable() {
         return sqlTable;
     }
 

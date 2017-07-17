@@ -18,7 +18,10 @@ public class ParserUtils {
     }
 
     public static boolean isRelational(SQLBinaryOpExpr opExpr) {
-        SQLBinaryOperator operator = opExpr.getOperator();
+        return isRelational(opExpr.getOperator());
+    }
+
+    public static boolean isRelational(SQLBinaryOperator operator) {
         return operator.isRelational() || operator == SQLBinaryOperator.Is || operator == SQLBinaryOperator.IsNot;
     }
 
@@ -32,7 +35,9 @@ public class ParserUtils {
     }
 
     public static boolean isLogical(SQLBinaryOpExpr opExpr) {
-        SQLBinaryOperator operator = opExpr.getOperator();
+        return isLogical(opExpr.getOperator());
+    }
+    public static boolean isLogical(SQLBinaryOperator operator) {
         return operator.isLogical();
     }
 }

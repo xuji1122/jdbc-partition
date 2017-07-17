@@ -6,12 +6,10 @@ import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.eval.SqlValueEvalContext;
-import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartitionSql;
-import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.parser.router.DefaultTableRouter;
+import org.the.force.jdbc.partition.engine.parser.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.parser.router.TableRouter;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
@@ -20,7 +18,6 @@ import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 
 import java.util.List;
 import java.util.Map;
@@ -35,15 +32,11 @@ public class UpdateDelParser {
 
     protected final LogicDbConfig logicDbConfig;
 
-    protected ExprSqlTable exprSqlTable;
+    protected ConditionPartitionSqlTable exprSqlTable;
 
     private final PartitionEvent.EventType eventType;
 
     private final SQLExpr where;
-
-    private final Map<SqlColumn, SQLExpr> columnValueMap;//静态不变
-
-    private final Map<SqlColumn, SQLInListExpr> sqlInValuesMap;//原始的in表达式，不可变
 
 
     private final TableRouter tableRouter;
@@ -52,14 +45,13 @@ public class UpdateDelParser {
         this.logicDbConfig = logicDbConfig;
         this.updateDelParserAdapter = updateDelParserAdapter;
         this.eventType = updateDelParserAdapter.getEventType();
-        exprSqlTable = new ExprSqlTable(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
+        exprSqlTable = new ConditionPartitionSqlTable(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
         TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprSqlTable, updateDelParserAdapter.getCondition());
         this.where = tableConditionParser.getSubQueryResetWhere();
-        columnValueMap = tableConditionParser.getCurrentTableColumnValueMap();
-        sqlInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
         SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLStatement(),exprSqlTable);
         exprSqlTable.setAlias(parser.getTableAlias());
-        tableRouter = new DefaultTableRouter(logicDbConfig, exprSqlTable,new SqlValueEvalContext(logicDbConfig));
+
+        tableRouter = new DefaultTableRouter(logicDbConfig,updateDelParserAdapter.getSQLStatement(), exprSqlTable);
     }
 
 
@@ -67,9 +59,7 @@ public class UpdateDelParser {
         LogicTableConfig[] configPair = logicDbConfig.getLogicTableManager(exprSqlTable.getTableName()).getLogicTableConfig();
         LogicTableConfig logicTableConfig = configPair[0];
         //TODO 数据迁移时老区新区 周新区 update时策略 新区老区双写，表格主键的获取
-        RouteEvent routeEvent = new RouteEvent(updateDelParserAdapter.getSQLStatement(), logicTableConfig, eventType, logicSqlParameterHolder);
-        routeEvent.setColumnValueMap(columnValueMap);
-        routeEvent.setSqlInValuesMap(sqlInValuesMap);
+        RouteEvent routeEvent = new RouteEvent(logicTableConfig, eventType, logicSqlParameterHolder);
         Map<Partition, SqlTablePartitionSql> partitionSqlTablePartitionSqlMap = tableRouter.route(routeEvent);
         for (Map.Entry<Partition, SqlTablePartitionSql> entry : partitionSqlTablePartitionSqlMap.entrySet()) {
             Partition partition = entry.getKey();

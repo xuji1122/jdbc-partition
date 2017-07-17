@@ -995,9 +995,9 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
     @Override
     public boolean visit(ModelClause.ReturnRowsClause x) {
         if (x.isAll()) {
-            print0(ucase ? "RETURN ALL ROWS" : "return all rows");
+            print0(ucase ? "RETURN ALL ROWS" : "return all row");
         } else {
-            print0(ucase ? "RETURN UPDATED ROWS" : "return updated rows");
+            print0(ucase ? "RETURN UPDATED ROWS" : "return updated row");
         }
         return false;
     }
@@ -2164,7 +2164,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
         if (x.isPreserveRows()) {
             println();
-            print0(ucase ? "PRESERVE ROWS" : "preserve rows");
+            print0(ucase ? "PRESERVE ROWS" : "preserve row");
         }
 
         if (x.getPartitioning() != null) {

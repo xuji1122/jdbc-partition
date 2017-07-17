@@ -1,8 +1,9 @@
 package org.the.force.jdbc.partition.engine.executor.dql.filter;
 
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
-import org.the.force.jdbc.partition.engine.parser.table.SubQueryConditionChecker;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
@@ -21,9 +22,7 @@ public class QueryReferFilter {
     private final LogicDbConfig logicDbConfig;
 
     //引用的表
-    private final SqlTable referTable;
-
-    private final SQLExpr selectReferFilterCondition;
+    private final ConditionalSqlTable referTable;
 
     //当 selectReferFilterCondition包含子查询时
     private final SubQueryFilter subQueryFilter;
@@ -32,15 +31,13 @@ public class QueryReferFilter {
     private Set<SqlRefer> orderBySqlRefers;
 
 
-    public QueryReferFilter(LogicDbConfig logicDbConfig, SqlTable referTable, SQLExpr selectReferFilterCondition) {
+    public QueryReferFilter(LogicDbConfig logicDbConfig, ConditionalSqlTable referTable) {
         this.logicDbConfig = logicDbConfig;
         this.referTable = referTable;
-        this.selectReferFilterCondition = selectReferFilterCondition;
-        if (selectReferFilterCondition == null) {
+        if (referTable.getCurrentTableOwnCondition() == null) {
             subQueryFilter = null;
         } else {
-            SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker(logicDbConfig);
-            selectReferFilterCondition.accept(conditionChecker);
+            SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,referTable.getCurrentTableOwnCondition());
             List<SQLExpr> subQueries = conditionChecker.getSubQueryList();
             if (subQueries != null && !subQueries.isEmpty()) {
                 subQueryFilter = new SubQueryFilter(logicDbConfig, subQueries);
@@ -54,12 +51,12 @@ public class QueryReferFilter {
         return logicDbConfig;
     }
 
-    public SqlTable getReferTable() {
+    public ConditionalSqlTable getReferTable() {
         return referTable;
     }
 
     public SQLExpr getSelectReferFilterCondition() {
-        return selectReferFilterCondition;
+        return referTable.getCurrentTableOwnCondition();
     }
 
     public SubQueryFilter getSubQueryFilter() {

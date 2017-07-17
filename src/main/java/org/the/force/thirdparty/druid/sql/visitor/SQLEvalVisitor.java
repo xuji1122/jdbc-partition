@@ -21,8 +21,8 @@ import java.util.List;
 
 public interface SQLEvalVisitor extends SQLASTVisitor {
 
-    public static final String EVAL_VALUE = "eval.eval";
-    public static final String EVAL_EXPR = "eval.expr";
+    public static final String EVAL_VALUE = "evaluator.evaluator";
+    public static final String EVAL_EXPR = "evaluator.expr";
     public static final Object EVAL_ERROR = new Object();
     public static final Object EVAL_VALUE_COUNT = new Object();
     public static final Object EVAL_VALUE_NULL = new Object();

@@ -1,7 +1,6 @@
 package org.the.force.jdbc.partition.common.cache;
 
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.engine.executor.dql.subqueryexpr.ExitsSubQueriedExpr;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 

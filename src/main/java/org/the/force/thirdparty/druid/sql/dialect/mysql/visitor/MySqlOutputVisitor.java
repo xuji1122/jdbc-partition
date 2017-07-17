@@ -1461,7 +1461,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (x.getRowsIdentifiedBy() != null) {
-            print0(ucase ? " ROWS IDENTIFIED BY " : " rows identified by ");
+            print0(ucase ? " ROWS IDENTIFIED BY " : " row identified by ");
             x.getRowsIdentifiedBy().accept(this);
         }
 

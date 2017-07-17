@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -171,6 +171,55 @@ public class BeanUtils {
         if (object1 == null || object2 == null) {
             return false;
         }
+        if (object1 instanceof Collection<?> && object2 instanceof Collection<?>) {
+            return equals((Collection<Object>) object1, (Collection<Object>) object2);
+        }
         return object1.equals(object2);
+    }
+
+    public static boolean equals(List<Object> list1, List<Object> list2) {
+        if (list1 == list2) {
+            return true;
+        }
+        if (list1 == null || list2 == null) {
+            return false;
+        }
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        int size = list1.size();
+        for (int i = 0; i < size; i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean equals(Collection<Object> c1, Collection<Object> c2) {
+        if (c1 == c2) {
+            return true;
+        }
+        if (c1 == null || c2 == null) {
+            return false;
+        }
+        if (c1.size() != c2.size()) {
+            return false;
+        }
+        if (c1 instanceof List<?> && c2 instanceof List<?>) {
+            return equals((List<Object>) c1, (List<Object>) c2);
+        }
+        Iterator<Object> e1 = c1.iterator();
+        Iterator<Object> e2 = c2.iterator();
+        while (e1.hasNext() && e2.hasNext()) {
+            Object o1 = e1.next();
+            Object o2 = e2.next();
+            if (o1 == null) {
+                return false;
+            }
+            if (!o1.equals(o2))
+                return false;
+        }
+        return !(e1.hasNext() || e2.hasNext());
     }
 }

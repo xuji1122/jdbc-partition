@@ -21,7 +21,7 @@ public class DataItemRowComparator implements Comparator<DataItemRow> {
             OrderByItem item = orderByItems.get(i);
             Object v1 = o1.getValue(item.getItemIndex());
             Object v2 = o2.getValue(item.getItemIndex());
-            if (v1 instanceof Comparable<?> && v1 instanceof Comparable<?>) {
+            if (v1 instanceof Comparable<?> && v2 instanceof Comparable<?>) {
                 Comparable<Object> c1 = (Comparable<Object>) v1;
                 Comparable<Object> c2 = (Comparable<Object>) v2;
                 int result = c1.compareTo(c2);

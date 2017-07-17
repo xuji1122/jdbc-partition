@@ -453,7 +453,7 @@ public class PGSQLStatementParser extends SQLStatementParser {
         // TO | =
         lexer.nextToken();
 
-        // eval | 'eval' | DEFAULT
+        // evaluator | 'evaluator' | DEFAULT
         List<SQLExpr> values = new ArrayList<SQLExpr>();
         while (!lexer.isEOF()) {
             lexer.nextToken();

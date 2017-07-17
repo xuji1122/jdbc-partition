@@ -2,9 +2,9 @@ package org.the.force.jdbc.partition.engine.parser.table;
 
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
-import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.QueriedSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectReferLabelParser;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -30,9 +30,9 @@ public class SqlTableParser {
     }
 
     //主要目的是获取tableSource包括哪些列，从而为sql条件归集提供必要的依据
-    public SqlTable getSqlTable(SQLTableSource tableSource){
+    public ConditionalSqlTable getSqlTable(SQLTableSource tableSource){
         if (tableSource instanceof SQLExprTableSource) {
-            ExprSqlTable sqlTable = new ExprSqlTable(logicDbConfig,(SQLExprTableSource) tableSource);
+            ConditionPartitionSqlTable sqlTable = new ConditionPartitionSqlTable(logicDbConfig,(SQLExprTableSource) tableSource);
             return sqlTable;
         } else if (tableSource instanceof SQLJoinTableSource) {
             throw new SqlParseException("SQLJoinTableSource 不能用于获取SqlTable");

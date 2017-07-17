@@ -1,6 +1,5 @@
 package org.the.force.jdbc.partition.engine.result;
 
-import org.the.force.jdbc.partition.engine.eval.TypedSqlValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 
 import java.sql.SQLException;
@@ -26,7 +25,7 @@ public class DataItemRow {
     }
 
     public Object getValue(int columnIndex) {
-        return new TypedSqlValue(cellValues[columnIndex], sqlTypes[columnIndex]);
+        return cellValues[columnIndex];
     }
 
     public Object getValue(String key) throws SQLException {
@@ -34,7 +33,7 @@ public class DataItemRow {
         if (index == null) {
             throw new SqlParseException("key" + key + " 不存在");
         }
-        return new TypedSqlValue(cellValues[index], sqlTypes[index]);
+        return cellValues[index];
     }
 
 }

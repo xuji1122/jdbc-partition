@@ -24,9 +24,9 @@ public class ValueExpr {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        ValueExprItem valueExprItem = (ValueExprItem) o;
+        ValueExpr valueExpr = (ValueExpr) o;
 
-        return getSqlExpr().equals(valueExprItem.getSqlExpr());
+        return getSqlExpr().equals(valueExpr.getSqlExpr());
 
     }
 

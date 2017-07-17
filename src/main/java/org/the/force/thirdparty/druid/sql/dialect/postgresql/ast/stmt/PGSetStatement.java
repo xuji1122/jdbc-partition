@@ -29,7 +29,7 @@ public class PGSetStatement extends SQLSetStatement implements PGSQLStatement {
     public final List<SQLExpr> values;
 
     // SET [ SESSION | LOCAL ] TIME ZONE { timezone | LOCAL | DEFAULT }
-    // SET [ SESSION | LOCAL ] configuration_parameter { TO | = } { eval | 'eval' | DEFAULT }
+    // SET [ SESSION | LOCAL ] configuration_parameter { TO | = } { evaluator | 'evaluator' | DEFAULT }
     public PGSetStatement(String range, String param, List<SQLExpr> values) {
         super(JdbcConstants.POSTGRESQL);
         this.range = range;

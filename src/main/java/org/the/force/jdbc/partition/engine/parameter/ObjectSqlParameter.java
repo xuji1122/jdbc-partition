@@ -16,6 +16,11 @@ public class ObjectSqlParameter implements SqlParameter {
         this.sqlType = sqlType;
     }
 
+    public ObjectSqlParameter(Object parameter) {
+        this.parameter = parameter;
+        this.sqlType = null;
+    }
+
     public void set(int parameterIndex, PreparedStatement preparedStatement) throws SQLException {
         if (parameter == null) {
             preparedStatement.setNull(parameterIndex, sqlType);

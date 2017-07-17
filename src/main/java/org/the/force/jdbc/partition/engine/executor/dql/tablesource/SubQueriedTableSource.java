@@ -2,12 +2,12 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.executor.QueryExecution;
-import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutionFactory;
 import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutionFactory;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
@@ -29,7 +29,7 @@ import java.util.Map;
 public class SubQueriedTableSource extends SQLSubqueryTableSource implements  ExecutableTableSource{
     private final LogicDbConfig logicDbConfig;
     private final SQLSubqueryTableSource subQueryTableSource;
-    private final SqlTable sqlTable;
+    private final ConditionalSqlTable sqlTable;
     private final QueryExecution queryExecution;
 
     //子查询预期的sqlTable
@@ -54,7 +54,7 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
         if (visitor instanceof PartitionSqlASTVisitor) {
             ((PartitionSqlASTVisitor) visitor).visit(this);
         } else {
-            visitor.visit(subQueryTableSource);
+            subQueryTableSource.accept(visitor);
         }
     }
 
@@ -70,7 +70,7 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
         return queryExecution;
     }
 
-    public SqlTable getSqlTable() {
+    public ConditionalSqlTable getSqlTable() {
         return sqlTable;
     }
 

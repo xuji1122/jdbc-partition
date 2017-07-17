@@ -7,10 +7,10 @@ import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoin
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
-import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
@@ -44,11 +44,11 @@ public class BlockQuerySelectParser extends AbstractVisitor {
     private Map<SqlRefer, Integer> sqlPropertyIntegerMap = new HashMap<>();
 
     //key为tableSource的alias或者tableName
-    private Map<String, SqlTable> sqlTableMap = new LinkedHashMap<>();
+    private Map<String, ConditionalSqlTable> sqlTableMap = new LinkedHashMap<>();
 
-    private Map<SqlTable, SqlTableRefers> sqlTableRefersMap = new LinkedHashMap<>();
+    private Map<ConditionalSqlTable, SqlTableRefers> sqlTableRefersMap = new LinkedHashMap<>();
 
-    private Map<SqlTable,Select> sqlTableSelectMap  = new LinkedHashMap<>();
+    private Map<ConditionalSqlTable, Select> sqlTableSelectMap = new LinkedHashMap<>();
 
     private Select gloableSelect;
 
@@ -61,8 +61,8 @@ public class BlockQuerySelectParser extends AbstractVisitor {
         SQLTableSource sqlTableSource = sqlSelectQueryBlock.getFrom();
         if (sqlTableSource instanceof ParallelJoinedTableSource) {
             ParallelJoinedTableSource tableSource = (ParallelJoinedTableSource) sqlTableSource;
-            List<SqlTable> sqlTables = tableSource.getSqlTables();
-            for (SqlTable sqlTable : sqlTables) {
+            List<ConditionalSqlTable> sqlTables = tableSource.getSqlTables();
+            for (ConditionalSqlTable sqlTable : sqlTables) {
                 SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
                 sqlTableMap.put(sqlTable.getRelativeKey(), sqlTable);
                 sqlTableRefersMap.put(sqlTable, sqlTableRefers);
@@ -74,7 +74,7 @@ public class BlockQuerySelectParser extends AbstractVisitor {
                     if (sqlExpr instanceof SQLAllColumnExpr) {
                         valueExprItem = new AllColumnItem(sqlExpr, index++, null);
                     } else if (sqlExpr instanceof SQLName) {
-                        SqlRefer sqlRefer = SqlReferParser.getSqlRefer(sqlExpr);
+                        SqlRefer sqlRefer = new SqlRefer((SQLName) sqlExpr);
                         if (sqlRefer.getName().equals("*")) {
                             valueExprItem = new AllColumnItem(sqlRefer, index++, null);
                         } else {
@@ -87,7 +87,7 @@ public class BlockQuerySelectParser extends AbstractVisitor {
                 }
             }
         } else {
-            SqlTable sqlTable = null;
+            ConditionalSqlTable sqlTable = null;
             SqlTableRefers sqlTableRefers = null;
             if (sqlTableSource instanceof WrappedSQLExprTableSource) {
                 WrappedSQLExprTableSource tableSource = (WrappedSQLExprTableSource) sqlTableSource;
@@ -95,16 +95,16 @@ public class BlockQuerySelectParser extends AbstractVisitor {
                 sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
             } else if (sqlTableSource instanceof SubQueriedTableSource) {
                 SubQueriedTableSource tableSource = (SubQueriedTableSource) sqlTableSource;
-                 sqlTable = tableSource.getSqlTable();
-                 sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
+                sqlTable = tableSource.getSqlTable();
+                sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
             } else if (sqlTableSource instanceof UnionQueriedTableSource) {
                 UnionQueriedTableSource tableSource = (UnionQueriedTableSource) sqlTableSource;
-                 sqlTable = tableSource.getSqlTable();
-                 sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
-            }else{
+                sqlTable = tableSource.getSqlTable();
+                sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
+            } else {
                 throw new SqlParseException("tableSource is not converted");
             }
-            gloableSelect = new Select(sqlTable,distinctAll);
+            gloableSelect = new Select(sqlTable, distinctAll);
             int index = 0;
             for (SQLSelectItem item : sqlSelectItems) {
                 String alias = item.getAlias();
@@ -113,7 +113,7 @@ public class BlockQuerySelectParser extends AbstractVisitor {
                 if (sqlExpr instanceof SQLAllColumnExpr) {
                     valueExprItem = new AllColumnItem(sqlExpr, index++, null);
                 } else if (sqlExpr instanceof SQLName) {
-                    SqlRefer sqlRefer = SqlReferParser.getSqlRefer(sqlExpr);
+                    SqlRefer sqlRefer = new SqlRefer((SQLName) sqlExpr);
                     if (sqlRefer.getName().equals("*")) {
                         valueExprItem = new AllColumnItem(sqlRefer, index++, null);
                     } else {
@@ -129,8 +129,6 @@ public class BlockQuerySelectParser extends AbstractVisitor {
 
 
     }
-
-
 
 
 

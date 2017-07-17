@@ -3,10 +3,10 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.JoinConnector;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTableRefers;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
@@ -48,7 +48,7 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
 
     //临时变量
 
-    private final List<SqlTable> sqlTables = new ArrayList<>();
+    private final List<ConditionalSqlTable> sqlTables = new ArrayList<>();
 
     /**
      * 此条件会被设置到外部的selectQuery中去，JoinedTableSource不必实际的查询
@@ -83,11 +83,11 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
             parseTableSource((SQLJoinTableSource) left);
         } else {
             left.setParent(this);
-            SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
+            ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
             sqlTables.add(sqlTable);
         }
         right.setParent(this);
-        SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
+        ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
         sqlTables.add(sqlTable);
         JoinConnector joinConnector = new JoinConnector(sqlJoinTableSource.getJoinType(), sqlJoinTableSource.getCondition());
         Pair<Integer, Integer> pair = new Pair<>(sqlTables.size() - 2, sqlTables.size() - 1);
@@ -100,15 +100,13 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
     private void parseTableCondition() {
         int size = sqlTables.size();
         for (int i = 0; i < size; i++) {
-            SqlTable sqlTable = sqlTables.get(i);
+            ConditionalSqlTable sqlTable = sqlTables.get(i);
             SQLTableSource sqlTableSource = sqlTable.getSQLTableSource();
             TableConditionParser parser = new TableConditionParser(logicDbConfig, this.otherCondition, i, sqlTables);
             this.otherCondition = parser.getOtherCondition();
-            SQLExpr tableOwnCondition = parser.getCurrentTableOwnCondition();
-            Map<SqlColumn, SQLExpr> currentTableColumnValueMap = parser.getCurrentTableColumnValueMap();
-            Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = parser.getCurrentTableColumnInValuesMap();
+            SQLExpr tableOwnCondition = sqlTable.getCurrentTableOwnCondition();
 
-            Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap = parser.getJoinConditionMap();
+            Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap = sqlTable.getJoinConditionMap();
             conditionTableMap.forEach((pair, list) -> {
                 Pair<Integer, Integer> key = pair;
                 List<SQLBinaryOpExpr> joinConditions = conditionTableMap.get(key);
@@ -137,12 +135,12 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
             if (sqlOrderByItemForJoin.isEmpty()) {
                 throw new SqlParseException("join的条件sqlProperties.isEmpty()");
             }
-            QueryReferFilter queryReferFilter = new QueryReferFilter(logicDbConfig, sqlTable, tableOwnCondition);
+            QueryReferFilter queryReferFilter = new QueryReferFilter(logicDbConfig, sqlTable);
             queryReferFilter.getOrderBySqlRefers().addAll(sqlOrderByItemForJoin);
             ExecutableTableSource executableTableSource;
             if (sqlTableSource instanceof SQLExprTableSource) {
                 SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlJoinTableSource.getParent(), sqlTable).getSqlTableRefers();
-                executableTableSource = new AtomicTableSource(logicDbConfig, queryReferFilter, sqlTableRefers, currentTableColumnValueMap, currentTableColumnInValuesMap);
+                executableTableSource = new AtomicTableSource(logicDbConfig, queryReferFilter, sqlTableRefers);
             } else if (sqlTableSource instanceof SQLJoinTableSource) {
                 throw new ParserException("SQLJoinTableSource 不应出现");
             } else if (sqlTableSource instanceof SQLSubqueryTableSource) {
@@ -181,7 +179,7 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
                 conditionSet.forEach(sqlExpr -> sqlExpr.accept(visitor));
             }
         } else {
-            visitor.visit(sqlJoinTableSource);
+            sqlJoinTableSource.accept(visitor);
         }
     }
 
@@ -193,7 +191,7 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
         return planedTableSourceMap;
     }
 
-    public List<SqlTable> getSqlTables() {
+    public List<ConditionalSqlTable> getSqlTables() {
         return sqlTables;
     }
 

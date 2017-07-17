@@ -5,6 +5,7 @@ import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.model.LogicTable;
+import org.the.force.thirdparty.druid.sql.ast.SQLName;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.support.logging.Log;
@@ -20,7 +21,7 @@ import java.util.TreeSet;
 /**
  * Created by xuji on 2017/5/23.
  */
-public class ExprSqlTable implements SqlTable {
+public abstract class ExprSqlTable implements SqlTable{
 
     private Log logger = LogFactory.getLog(ExprSqlTable.class);
 
@@ -33,26 +34,21 @@ public class ExprSqlTable implements SqlTable {
     //关联的table的定义
     private LogicTable logicTable;
 
+
     public ExprSqlTable(LogicDbConfig logicDbConfig, SQLExprTableSource sqlExprTableSource) {
         this.logicDbConfig = logicDbConfig;
         this.sqlExprTableSource = sqlExprTableSource;
-        if (sqlExprTableSource != null) {
-            this.alias = sqlExprTableSource.getAlias();//大小写敏感
-            SqlRefer sqlRefer = SqlReferParser.getSqlRefer(sqlExprTableSource.getExpr());
-            if (sqlRefer == null) {
-                throw new SqlParseException("sqlRefer == null");
-            }
-            if (sqlRefer.getOwnerName() == null) {
-                this.schema = PartitionJdbcConstants.EMPTY_NAME;
-            } else {
-                this.schema = sqlRefer.getOwnerName();
-            }
-            this.tableName = sqlRefer.getName();
-        } else {
-            this.alias = null;
-            this.schema = PartitionJdbcConstants.EMPTY_NAME;
-            this.tableName = PartitionJdbcConstants.EMPTY_NAME;
+        this.alias = sqlExprTableSource.getAlias();//大小写敏感
+        if (!(sqlExprTableSource.getExpr() instanceof SQLName)) {
+            throw new SqlParseException("SQLExprTableSource的expr非sqlName类型");
         }
+        SqlRefer sqlRefer = new SqlRefer((SQLName) sqlExprTableSource.getExpr());
+        if (sqlRefer.getOwnerName() == null) {
+            this.schema = PartitionJdbcConstants.EMPTY_NAME;
+        } else {
+            this.schema = sqlRefer.getOwnerName();
+        }
+        this.tableName = sqlRefer.getName();
     }
 
     public String getSchema() {

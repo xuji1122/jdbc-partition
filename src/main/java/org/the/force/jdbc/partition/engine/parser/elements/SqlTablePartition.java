@@ -1,16 +1,13 @@
 package org.the.force.jdbc.partition.engine.parser.elements;
 
-import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.rule.Partition;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
-import org.the.force.thirdparty.druid.sql.ast.SQLOrderBy;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/5/24.
@@ -23,7 +20,7 @@ public class SqlTablePartition {
     private final Partition partition;
 
 
-    private List<Pair<SQLInListExpr, List<SQLExpr>>> subInListExpr;//in values 路由的结果
+    private Map<SQLInListExpr, List<Object[]>> subInListExpr;//in values 路由的结果
 
     private List<SQLInsertStatement.ValuesClause> valuesClauses;//insert 的 values 路由结果
 
@@ -54,9 +51,9 @@ public class SqlTablePartition {
         return getPartition().equals(that.getPartition());
     }
 
-    public List<Pair<SQLInListExpr, List<SQLExpr>>> getSubInListExpr() {
+    public Map<SQLInListExpr, List<Object[]>> getSubInListExpr() {
         if (subInListExpr == null) {
-            subInListExpr = new ArrayList<>();
+            subInListExpr = new LinkedHashMap<>();
         }
         return subInListExpr;
     }

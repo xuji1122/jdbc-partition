@@ -5,7 +5,7 @@ import org.the.force.jdbc.partition.engine.executor.dml.UpdateExecution;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.engine.executor.ddl.TableDdlExecution;
 import org.the.force.jdbc.partition.engine.executor.dml.DeleteExecution;
-import org.the.force.jdbc.partition.engine.executor.dml.InsertExecution;
+import org.the.force.jdbc.partition.engine.executor.dml.InsertExecutor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.sql.SqlExecutionPlan;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -146,7 +146,7 @@ public class SqlExecutionFactory extends AbstractVisitor {
         }
         try {
             if (sqlStatement == null) {
-                constructor = InsertExecution.class.getConstructor(LogicDbConfig.class, SQLInsertStatement.class);
+                constructor = InsertExecutor.class.getConstructor(LogicDbConfig.class, SQLInsertStatement.class);
                 sqlStatement = x;
             }
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.elements;
 
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
 public class Select {
 
     //被引用的立场
-    private final SqlTable sqlTable;
+    private final ConditionalSqlTable sqlTable;
 
     private final boolean distinctAll;
 
@@ -21,7 +22,7 @@ public class Select {
 
     private int extendBound;
 
-    public Select(SqlTable sqlTable,boolean distinctAll) {
+    public Select(ConditionalSqlTable sqlTable,boolean distinctAll) {
         this.sqlTable = sqlTable;
         this.distinctAll = distinctAll;
     }
@@ -47,7 +48,7 @@ public class Select {
     }
 
 
-    public SqlTable getSqlTable() {
+    public ConditionalSqlTable getSqlTable() {
         return sqlTable;
     }
 

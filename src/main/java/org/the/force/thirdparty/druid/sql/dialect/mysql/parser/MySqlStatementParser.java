@@ -4090,7 +4090,7 @@ public class MySqlStatementParser extends SQLStatementParser {
     public MySqlDeclareHandlerStatement parseDeclareHandler() {
         //DECLARE handler_type HANDLER FOR condition_value[,...] sp_statement
         //handler_type 取值为 CONTINUE | EXIT | UNDO
-        //condition_value 取值为 SQLWARNING | NOT FOUND | SQLEXCEPTION | SQLSTATE eval(异常码 e.g 1062)
+        //condition_value 取值为 SQLWARNING | NOT FOUND | SQLEXCEPTION | SQLSTATE evaluator(异常码 e.g 1062)
 
         MySqlDeclareHandlerStatement stmt = new MySqlDeclareHandlerStatement();
         accept(Token.DECLARE);

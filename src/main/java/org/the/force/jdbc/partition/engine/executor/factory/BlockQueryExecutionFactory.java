@@ -7,15 +7,13 @@ import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoin
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
-import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlColumn;
-import org.the.force.jdbc.partition.engine.parser.elements.SqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionPartitionSqlTable;
+import org.the.force.jdbc.partition.engine.parser.elements.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
-import org.the.force.jdbc.partition.engine.parser.table.SubQueryConditionChecker;
+import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
@@ -25,7 +23,6 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by xuji on 2017/6/3.
@@ -36,16 +33,12 @@ import java.util.Map;
 public class BlockQueryExecutionFactory implements QueryExecutionFactory {
 
 
-
     private QueryExecution queryExecution;
-
 
 
     public BlockQueryExecutionFactory(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery) {
         this(logicDbConfig, selectQuery, null);
     }
-
-
 
     /**
      * @param logicDbConfig
@@ -57,11 +50,9 @@ public class BlockQueryExecutionFactory implements QueryExecutionFactory {
         SQLTableSource from = selectQuery.getFrom();
         if (from instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) from;
-            SqlTable sqlTable = new ExprSqlTable(logicDbConfig, sqlExprTableSource);
+            ConditionPartitionSqlTable sqlTable = new ConditionPartitionSqlTable(logicDbConfig, sqlExprTableSource);
             TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, sqlTable, selectQuery.getWhere());
-            Map<SqlColumn, SQLExpr> currentTableColumnValueMap = tableConditionParser.getCurrentTableColumnValueMap();
-            Map<SqlColumn, SQLInListExpr> currentTableColumnInValuesMap = tableConditionParser.getCurrentTableColumnInValuesMap();
-            WrappedSQLExprTableSource wrappedSQLExprTableSource = new WrappedSQLExprTableSource(sqlTable, currentTableColumnValueMap, currentTableColumnInValuesMap);
+            WrappedSQLExprTableSource wrappedSQLExprTableSource = new WrappedSQLExprTableSource(sqlTable);
             selectQuery.setFrom(wrappedSQLExprTableSource);
             //先做掉子查询，然后转为数据库的sql语句到数据库执行sql
             subQueries = tableConditionParser.getSubQueryList();
@@ -79,8 +70,7 @@ public class BlockQueryExecutionFactory implements QueryExecutionFactory {
                 SQLExpr newWhere = parallelJoinedTableSource.getOtherCondition(); //tableSource特有的条件过滤掉之后剩余的条件
                 //剩余的where条件是否有子查询
                 if (newWhere != null) {
-                    SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker(logicDbConfig);
-                    newWhere.accept(conditionChecker);
+                    SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,newWhere);
                     subQueries = conditionChecker.getSubQueryList();
                 }
                 selectQuery.setFrom(parallelJoinedTableSource);
@@ -88,24 +78,23 @@ public class BlockQueryExecutionFactory implements QueryExecutionFactory {
                 //
             } else {
                 //子查询的场景  from 是子查询
-                SqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(from);
+                ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(from);
                 TableConditionParser parser = new TableConditionParser(logicDbConfig, sqlTable, selectQuery.getWhere());
                 SQLExpr newWhere = parser.getOtherCondition();
                 if (newWhere != null) {
-                    SubQueryConditionChecker conditionChecker = new SubQueryConditionChecker(logicDbConfig);
-                    newWhere.accept(conditionChecker);
+                    SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,newWhere);
                     subQueries = conditionChecker.getSubQueryList();
                 }
                 selectQuery.setWhere(newWhere);
                 //确保sqlTable的alias被正确设置
                 if (from instanceof SQLSubqueryTableSource) {
                     SubQueriedTableSource sqlTableSource =
-                        new SubQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable, parser.getCurrentTableOwnCondition()));
+                        new SubQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable));
                     selectQuery.setFrom(sqlTableSource);
                     //确保sqlTable被正确设置
                 } else if (from instanceof SQLUnionQueryTableSource) {
                     UnionQueriedTableSource sqlTableSource =
-                        new UnionQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable, parser.getCurrentTableOwnCondition()));
+                        new UnionQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable));
                     selectQuery.setFrom(sqlTableSource);
                     //确保sqlTable被正确设置
                 } else {

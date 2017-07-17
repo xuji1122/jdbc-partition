@@ -9,6 +9,7 @@ import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExec
 import org.the.force.jdbc.partition.engine.executor.physic.StaticPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
+import org.the.force.jdbc.partition.engine.parser.elements.DdlSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.parser.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.parser.output.MySqlPartitionSqlOutput;
@@ -44,7 +45,7 @@ public class TableDdlExecution implements BatchAbleSqlExecution {
         this.logicDbConfig = logicDbConfig;
         this.sqlStatement = sqlStatement;
         this.tableSource = tableSource;
-        exprSqlTable = new ExprSqlTable(logicDbConfig, this.tableSource);
+        exprSqlTable = new DdlSqlTable(logicDbConfig, this.tableSource);
         logicTableConfig = logicDbConfig.getLogicTableManager(exprSqlTable.getTableName()).getLogicTableConfig()[0];
     }
 
@@ -63,7 +64,7 @@ public class TableDdlExecution implements BatchAbleSqlExecution {
             SqlObjCopier sqlObjCopier = new SqlObjCopier();
             sqlObjCopier.addReplaceObj(tableSource, newTableSource);
             SQLStatement sqlStatement = sqlObjCopier.copy(this.sqlStatement);
-            RouteEvent routeEvent = new RouteEvent(sqlStatement, logicTableConfig, PartitionEvent.EventType.DDL, logicSqlParameterHolder);
+            RouteEvent routeEvent = new RouteEvent(logicTableConfig, PartitionEvent.EventType.DDL, logicSqlParameterHolder);
             MySqlPartitionSqlOutput output = new MySqlPartitionSqlOutput(sb, logicDbConfig, routeEvent, sqlTablePartition);
             sqlStatement.accept(output);
             String sql = sb.toString();
