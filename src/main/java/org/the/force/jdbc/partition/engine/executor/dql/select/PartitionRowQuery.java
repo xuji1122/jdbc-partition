@@ -1,13 +1,12 @@
 package org.the.force.jdbc.partition.engine.executor.dql.select;
 
-import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.QueryExecution;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.executor.dql.filter.SubQueryFilter;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 
@@ -20,18 +19,17 @@ import java.sql.SQLException;
  * 选择TableParitionGroupByQuery或TablePartitionUnionQuery是动态的
  * 此时通过TableParitionQueryAdapter动态实现TablePartitionQuery
  */
-public class PartitionRowQuery implements QueryExecution {
+public class PartitionRowQuery implements QueryExecutor {
 
     private final LogicDbConfig logicDbConfig;
 
     //condition在inputQueryBlock中
+
     private final SQLSelectQueryBlock inputQueryBlock;
 
     private final ConditionalSqlTable sqlTable;
 
     private final TableRouter tableRouter;
-
-    private SubQueryFilter subQueryFilter;
 
     private QueryReferFilter queryReferFilter;
 
@@ -49,15 +47,6 @@ public class PartitionRowQuery implements QueryExecution {
 
     public ResultSet execute(QueryCommand queryCommand, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
         return null;
-    }
-
-
-    public SubQueryFilter getSubQueryFilter() {
-        return subQueryFilter;
-    }
-
-    public void setSubQueryFilter(SubQueryFilter subQueryFilter) {
-        this.subQueryFilter = subQueryFilter;
     }
 
     public QueryReferFilter getQueryReferFilter() {

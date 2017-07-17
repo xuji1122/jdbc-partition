@@ -32,7 +32,7 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
 
     private List<SQLExpr> subQueryList = new ArrayList<>();
 
-    private SQLObject subQueryResetExprObj;
+    private SQLObject subQueryResetSqlObject;
 
     private static Log log = LogFactory.getLog(SubQueryResetParser.class);
 
@@ -40,10 +40,10 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
         this.logicDbConfig = logicDbConfig;
         SQLExpr newExpr = checkSubExpr(sqlExpr);
         if (newExpr != null) {
-            subQueryResetExprObj = newExpr;
+            subQueryResetSqlObject = newExpr;
         } else {
             sqlExpr.accept(this);
-            subQueryResetExprObj = sqlExpr;
+            subQueryResetSqlObject = sqlExpr;
         }
     }
 
@@ -208,7 +208,7 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
         return subQueryList;
     }
 
-    public SQLObject getSubQueryResetExprObj() {
-        return subQueryResetExprObj;
+    public SQLObject getSubQueryResetSqlObject() {
+        return subQueryResetSqlObject;
     }
 }

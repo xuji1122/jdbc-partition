@@ -7,7 +7,7 @@ import org.the.force.jdbc.partition.engine.executor.physic.LinedSql;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.StaticPhysicSqlExecutor;
-import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
+import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.sqlelements.sqltable.DdlSqlTable;
 import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprSqlTable;
@@ -28,7 +28,7 @@ import java.util.SortedSet;
 /**
  * Created by xuji on 2017/5/18.
  */
-public class TableDdlExecution implements BatchAbleSqlExecution {
+public class TableDdlExecutor implements BatchAbleSqlExecutor {
 
     protected final LogicDbConfig logicDbConfig;
 
@@ -41,7 +41,7 @@ public class TableDdlExecution implements BatchAbleSqlExecution {
     protected final LogicTableConfig logicTableConfig;
 
 
-    public TableDdlExecution(LogicDbConfig logicDbConfig, SQLStatement sqlStatement, SQLExprTableSource tableSource) {
+    public TableDdlExecutor(LogicDbConfig logicDbConfig, SQLStatement sqlStatement, SQLExprTableSource tableSource) {
         this.logicDbConfig = logicDbConfig;
         this.sqlStatement = sqlStatement;
         this.tableSource = tableSource;

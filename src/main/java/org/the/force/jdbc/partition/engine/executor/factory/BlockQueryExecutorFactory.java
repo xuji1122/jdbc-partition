@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.factory;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.executor.QueryExecution;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
@@ -22,8 +22,6 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
 
-import java.util.List;
-
 /**
  * Created by xuji on 2017/6/3.
  * 执行顺序 sqlTableSource --> 子查询 --> 自身（newWhere和聚合条件等）
@@ -33,7 +31,7 @@ import java.util.List;
 public class BlockQueryExecutorFactory implements QueryExecutorFactory {
 
 
-    private QueryExecution queryExecution;
+    private QueryExecutor queryExecutor;
 
 
     public BlockQueryExecutorFactory(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery) {
@@ -46,7 +44,6 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
      * @param queryReferFilter 这个参数是对selectQuery的查询结果集的过滤 表示的是SQLSelectQueryBlock来自于一个子查询
      */
     public BlockQueryExecutorFactory(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery, QueryReferFilter queryReferFilter) {
-        List<SQLExpr> subQueries = null;
         SQLTableSource from = selectQuery.getFrom();
         if (from instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) from;
@@ -55,7 +52,6 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
             WrappedSQLExprTableSource wrappedSQLExprTableSource = new WrappedSQLExprTableSource(sqlTable);
             selectQuery.setFrom(wrappedSQLExprTableSource);
             //先做掉子查询，然后转为数据库的sql语句到数据库执行sql
-            subQueries = tableConditionParser.getSubQueryList();
             SQLExpr newWhere = tableConditionParser.getSubQueryResetWhere();
             selectQuery.setWhere(newWhere);
             //确保sqlTable被正确设置
@@ -70,8 +66,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                 SQLExpr newWhere = parallelJoinedTableSource.getOtherCondition(); //tableSource特有的条件过滤掉之后剩余的条件
                 //剩余的where条件是否有子查询
                 if (newWhere != null) {
-                    SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,newWhere);
-                    subQueries = conditionChecker.getSubQueryList();
+                    newWhere = (SQLExpr) new SubQueryResetParser(logicDbConfig, newWhere).getSubQueryResetSqlObject();
                 }
                 selectQuery.setFrom(parallelJoinedTableSource);
                 selectQuery.setWhere(newWhere);
@@ -82,19 +77,16 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                 TableConditionParser parser = new TableConditionParser(logicDbConfig, sqlTable, selectQuery.getWhere());
                 SQLExpr newWhere = parser.getOtherCondition();
                 if (newWhere != null) {
-                    SubQueryResetParser conditionChecker = new SubQueryResetParser(logicDbConfig,newWhere);
-                    subQueries = conditionChecker.getSubQueryList();
+                    newWhere = (SQLExpr) new SubQueryResetParser(logicDbConfig, newWhere).getSubQueryResetSqlObject();
                 }
                 selectQuery.setWhere(newWhere);
                 //确保sqlTable的alias被正确设置
                 if (from instanceof SQLSubqueryTableSource) {
-                    SubQueriedTableSource sqlTableSource =
-                        new SubQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable));
+                    SubQueriedTableSource sqlTableSource = new SubQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable));
                     selectQuery.setFrom(sqlTableSource);
                     //确保sqlTable被正确设置
                 } else if (from instanceof SQLUnionQueryTableSource) {
-                    UnionQueriedTableSource sqlTableSource =
-                        new UnionQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable));
+                    UnionQueriedTableSource sqlTableSource = new UnionQueriedTableSource(logicDbConfig, new QueryReferFilter(logicDbConfig, sqlTable));
                     selectQuery.setFrom(sqlTableSource);
                     //确保sqlTable被正确设置
                 } else {
@@ -105,7 +97,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         }
     }
 
-    public QueryExecution getQueryExecution() {
-        return queryExecution;
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
     }
 }

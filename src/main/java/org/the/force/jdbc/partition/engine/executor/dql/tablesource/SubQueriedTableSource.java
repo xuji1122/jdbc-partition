@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.executor.QueryExecution;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
@@ -30,7 +30,7 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
     private final LogicDbConfig logicDbConfig;
     private final SQLSubqueryTableSource subQueryTableSource;
     private final ConditionalSqlTable sqlTable;
-    private final QueryExecution queryExecution;
+    private final QueryExecutor queryExecutor;
 
     //子查询预期的sqlTable
     public SubQueriedTableSource(LogicDbConfig logicDbConfig, QueryReferFilter queryReferFilter) {
@@ -42,9 +42,9 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
             throw new ParserException("sqlSelectQuery == null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            queryExecution = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery, queryReferFilter).getQueryExecution();
+            queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery, queryReferFilter).getQueryExecutor();
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
-            queryExecution = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery, queryReferFilter).getQueryExecution();
+            queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery, queryReferFilter).getQueryExecutor();
         } else {
             throw new ParserException("un supported executor sqlelements:" + PartitionSqlUtils.toSql(sqlSelectQuery, logicDbConfig.getSqlDialect()));
         }
@@ -66,8 +66,8 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
         return subQueryTableSource;
     }
 
-    public QueryExecution getQueryExecution() {
-        return queryExecution;
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
     }
 
     public ConditionalSqlTable getSqlTable() {

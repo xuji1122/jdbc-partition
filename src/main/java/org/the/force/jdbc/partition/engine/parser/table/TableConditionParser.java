@@ -79,7 +79,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
         //先重置子查询
         subQueryResetParser = new SubQueryResetParser(logicDbConfig, originalWhere);
-        subQueryResetWhere = (SQLExpr) subQueryResetParser.getSubQueryResetExprObj();
+        subQueryResetWhere = (SQLExpr) subQueryResetParser.getSubQueryResetSqlObject();
         columnConditionStack = new StackArray(16);
         tableOwnConditionStack = new StackArray(16);
         this.subQueryResetWhere.accept(this);

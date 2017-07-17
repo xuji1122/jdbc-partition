@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.executor.factory;
 
-import org.the.force.jdbc.partition.engine.executor.dml.MySqlReplaceIntoExecution;
+import org.the.force.jdbc.partition.engine.executor.ddl.TableDdlExecutor;
+import org.the.force.jdbc.partition.engine.executor.dml.MySqlReplaceIntoExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.UpdateExecutor;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
-import org.the.force.jdbc.partition.engine.executor.ddl.TableDdlExecution;
 import org.the.force.jdbc.partition.engine.executor.dml.DeleteExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.InsertExecutor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -79,7 +79,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 return (SqlExecutor) obj;
             }
             if(obj instanceof QueryExecutorFactory){
-                return ((QueryExecutorFactory)obj).getQueryExecution();
+                return ((QueryExecutorFactory)obj).getQueryExecutor();
             }
             //TODO check null
             return null;
@@ -161,7 +161,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         }
         try {
             if (sqlStatement == null) {
-                constructor = MySqlReplaceIntoExecution.class.getConstructor(LogicDbConfig.class, MySqlReplaceStatement.class);
+                constructor = MySqlReplaceIntoExecutor.class.getConstructor(LogicDbConfig.class, MySqlReplaceStatement.class);
                 sqlStatement = x;
             }
         } catch (Exception e) {
@@ -227,7 +227,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
             sqlStatement = x;
             tableSource = x.getTableSource();
             try {
-                constructor = TableDdlExecution.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
+                constructor = TableDdlExecutor.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
@@ -250,7 +250,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
             sqlStatement = x;
             tableSource = x.getTableSources().get(0);
             try {
-                constructor = TableDdlExecution.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
+                constructor = TableDdlExecutor.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
@@ -270,7 +270,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
             tableSource = x.getTableSource();
             sqlStatement = x;
             try {
-                constructor = TableDdlExecution.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
+                constructor = TableDdlExecutor.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }

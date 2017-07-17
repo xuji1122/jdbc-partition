@@ -134,7 +134,7 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
                 throw new SqlParseException("join的条件sqlProperties.isEmpty()");
             }
             QueryReferFilter queryReferFilter = new QueryReferFilter(logicDbConfig, sqlTable);
-            queryReferFilter.getOrderBySqlRefers().addAll(sqlOrderByItemForJoin);
+            queryReferFilter.getOrderBySqlRefersForJoin().addAll(sqlOrderByItemForJoin);
             ExecutableTableSource executableTableSource;
             if (sqlTableSource instanceof SQLExprTableSource) {
                 SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlJoinTableSource.getParent(), sqlTable).getSqlTableRefers();

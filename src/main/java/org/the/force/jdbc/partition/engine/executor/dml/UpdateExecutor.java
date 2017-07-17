@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.executor.dml;
 
 import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
-import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
+import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -15,7 +15,7 @@ import org.the.force.thirdparty.druid.support.logging.LogFactory;
 /**
  * Created by xuji on 2017/5/18.
  */
-public class UpdateExecutor implements BatchAbleSqlExecution {
+public class UpdateExecutor implements BatchAbleSqlExecutor {
 
     private static Log logger = LogFactory.getLog(UpdateExecutor.class);
 

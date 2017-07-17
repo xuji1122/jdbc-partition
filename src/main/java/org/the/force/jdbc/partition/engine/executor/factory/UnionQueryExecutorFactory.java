@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.factory;
 
-import org.the.force.jdbc.partition.engine.executor.QueryExecution;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
@@ -12,7 +12,7 @@ import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
  */
 public class UnionQueryExecutorFactory implements QueryExecutorFactory {
 
-    private QueryExecution queryExecution;
+    private QueryExecutor queryExecutor;
 
     public UnionQueryExecutorFactory(LogicDbConfig logicDbConfig, SQLUnionQuery sqlUnionQuery) {
         this(logicDbConfig, sqlUnionQuery, null);
@@ -35,8 +35,7 @@ public class UnionQueryExecutorFactory implements QueryExecutorFactory {
 
     }
 
-    @Override
-    public QueryExecution getQueryExecution() {
-        return queryExecution;
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
     }
 }

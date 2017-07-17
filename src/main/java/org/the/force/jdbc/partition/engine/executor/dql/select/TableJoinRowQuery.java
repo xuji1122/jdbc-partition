@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.executor.dql.select;
 
 import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.QueryExecution;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 /**
  * Created by xuji on 2017/7/12.
  */
-public class TableJoinRowQuery implements QueryExecution {
+public class TableJoinRowQuery implements QueryExecutor {
 
     private final LogicDbConfig logicDbConfig;
 

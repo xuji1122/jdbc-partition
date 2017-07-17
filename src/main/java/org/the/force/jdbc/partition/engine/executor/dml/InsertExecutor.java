@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.executor.dml;
 
 import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecution;
+import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * Created by xuji on 2017/5/18.
  */
-public class InsertExecutor implements BatchAbleSqlExecution {
+public class InsertExecutor implements BatchAbleSqlExecutor {
 
     private static Log logger = LogFactory.getLog(InsertExecutor.class);
 

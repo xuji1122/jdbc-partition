@@ -9,7 +9,7 @@ import org.the.force.jdbc.partition.resource.executor.SqlExecutor;
  * 可以累积SQL行批量执行的SqlExecution ,主要就是insert,dml delete等dml操作
  * 批量执行的模式（单笔执行是其中的一个case）
  */
-public interface BatchAbleSqlExecution extends SqlExecutor {
+public interface BatchAbleSqlExecutor extends SqlExecutor {
 
     /**
      * 累积sql行
