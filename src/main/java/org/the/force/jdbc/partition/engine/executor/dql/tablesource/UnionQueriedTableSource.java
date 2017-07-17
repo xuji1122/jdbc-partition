@@ -4,8 +4,8 @@ import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
@@ -36,6 +36,7 @@ public class UnionQueriedTableSource extends SQLUnionQueryTableSource implements
         this.logicDbConfig = logicDbConfig;
         this.sqlTable = queryReferFilter.getReferTable();
         this.sqlUnionQueryTableSource = (SQLUnionQueryTableSource) sqlTable.getSQLTableSource();
+        this.setParent(sqlUnionQueryTableSource.getParent());
         queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, sqlUnionQueryTableSource.getUnion(), queryReferFilter).getQueryExecutor();
     }
 

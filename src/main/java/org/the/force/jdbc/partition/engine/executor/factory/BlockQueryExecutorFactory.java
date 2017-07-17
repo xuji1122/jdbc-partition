@@ -6,12 +6,11 @@ import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
@@ -33,7 +32,6 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
 
     private QueryExecutor queryExecutor;
 
-
     public BlockQueryExecutorFactory(LogicDbConfig logicDbConfig, SQLSelectQueryBlock selectQuery) {
         this(logicDbConfig, selectQuery, null);
     }
@@ -49,8 +47,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) from;
             ExprConditionalSqlTable sqlTable = new ExprConditionalSqlTable(logicDbConfig, sqlExprTableSource);
             TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, sqlTable, selectQuery.getWhere());
-            WrappedSQLExprTableSource wrappedSQLExprTableSource = new WrappedSQLExprTableSource(sqlTable);
-            selectQuery.setFrom(wrappedSQLExprTableSource);
+            selectQuery.setFrom(sqlTable);
             //先做掉子查询，然后转为数据库的sql语句到数据库执行sql
             SQLExpr newWhere = tableConditionParser.getSubQueryResetWhere();
             selectQuery.setWhere(newWhere);

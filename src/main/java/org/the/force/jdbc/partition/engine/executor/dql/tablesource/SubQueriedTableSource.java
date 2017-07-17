@@ -37,6 +37,7 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
         this.logicDbConfig = logicDbConfig;
         this.sqlTable = queryReferFilter.getReferTable();
         this.subQueryTableSource = (SQLSubqueryTableSource)sqlTable.getSQLTableSource();
+        this.setParent(subQueryTableSource.getParent());
         SQLSelectQuery sqlSelectQuery = subQueryTableSource.getSelect().getQuery();
         if (sqlSelectQuery == null) {
             throw new ParserException("sqlSelectQuery == null");

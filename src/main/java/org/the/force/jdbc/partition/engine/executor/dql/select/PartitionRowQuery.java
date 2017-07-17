@@ -3,10 +3,9 @@ package org.the.force.jdbc.partition.engine.executor.dql.select;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
 import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 
@@ -27,7 +26,7 @@ public class PartitionRowQuery implements QueryExecutor {
 
     private final SQLSelectQueryBlock inputQueryBlock;
 
-    private final ConditionalSqlTable sqlTable;
+    private final ExprConditionalSqlTable sqlTable;
 
     private final TableRouter tableRouter;
 
@@ -37,8 +36,7 @@ public class PartitionRowQuery implements QueryExecutor {
     public PartitionRowQuery(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputQueryBlock) {
         this.logicDbConfig = logicDbConfig;
         this.inputQueryBlock = inputQueryBlock;
-        WrappedSQLExprTableSource sqlExprTableSource = (WrappedSQLExprTableSource) inputQueryBlock.getFrom();
-        sqlTable = sqlExprTableSource.getSqlTable();
+        sqlTable = (ExprConditionalSqlTable) inputQueryBlock.getFrom();
         tableRouter = null;
         //parse group by type
 

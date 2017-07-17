@@ -6,20 +6,26 @@ import org.the.force.jdbc.partition.engine.sqlelements.SqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.model.LogicTable;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLHint;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
+import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
+import org.the.force.thirdparty.druid.sql.repository.SchemaObject;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/5/23.
  */
-public abstract class ExprSqlTable implements SqlTable {
+public abstract class ExprSqlTable extends SQLExprTableSource implements SqlTable {
 
     private Log logger = LogFactory.getLog(ExprSqlTable.class);
 
@@ -47,6 +53,7 @@ public abstract class ExprSqlTable implements SqlTable {
             this.schema = sqlRefer.getOwnerName();
         }
         this.tableName = sqlRefer.getName();
+        this.setParent(sqlExprTableSource.getParent());
     }
 
     public String getSchema() {
@@ -64,15 +71,6 @@ public abstract class ExprSqlTable implements SqlTable {
     public void setAlias(String alias) {
         this.alias = alias;
     }
-
-    public boolean equals(Object o) {
-        return sqlExprTableSource.equals(o);
-    }
-
-    public int hashCode() {
-        return sqlExprTableSource.hashCode();
-    }
-
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -108,7 +106,7 @@ public abstract class ExprSqlTable implements SqlTable {
 
     }
 
-    public SQLTableSource getSQLTableSource() {
+    public SQLExprTableSource getSQLTableSource() {
         return sqlExprTableSource;
     }
 
@@ -121,5 +119,171 @@ public abstract class ExprSqlTable implements SqlTable {
             return alias;
         }
         return tableName;
+    }
+
+    protected void accept0(SQLASTVisitor visitor) {
+        sqlExprTableSource.accept(visitor);
+    }
+
+    @Override
+    public int getHintsSize() {
+        return sqlExprTableSource.getHintsSize();
+    }
+
+    @Override
+    public SQLExpr getExpr() {
+        return sqlExprTableSource.getExpr();
+    }
+
+    @Override
+    public void setExpr(SQLExpr expr) {
+        sqlExprTableSource.setExpr(expr);
+    }
+
+    @Override
+    public List<SQLHint> getHints() {
+        return sqlExprTableSource.getHints();
+    }
+
+    @Override
+    public void setHints(List<SQLHint> hints) {
+        sqlExprTableSource.setHints(hints);
+    }
+
+    @Override
+    public List<SQLName> getPartitions() {
+        return sqlExprTableSource.getPartitions();
+    }
+
+    @Override
+    public int getPartitionSize() {
+        return sqlExprTableSource.getPartitionSize();
+    }
+
+    @Override
+    public SQLExpr getFlashback() {
+        return sqlExprTableSource.getFlashback();
+    }
+
+    @Override
+    public void setFlashback(SQLExpr flashback) {
+        sqlExprTableSource.setFlashback(flashback);
+    }
+
+    @Override
+    public SQLObject getParent() {
+        return sqlExprTableSource.getParent();
+    }
+
+    @Override
+    public void addPartition(SQLName partition) {
+        sqlExprTableSource.addPartition(partition);
+    }
+
+    @Override
+    public void setParent(SQLObject parent) {
+        sqlExprTableSource.setParent(parent);
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return sqlExprTableSource.getAttributes();
+    }
+
+
+
+    @Override
+    public Object getAttribute(String name) {
+        return sqlExprTableSource.getAttribute(name);
+    }
+
+    @Override
+    public void putAttribute(String name, Object value) {
+        sqlExprTableSource.putAttribute(name, value);
+    }
+
+    @Override
+    public void output(StringBuffer buf) {
+        sqlExprTableSource.output(buf);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return sqlExprTableSource.equals(o);
+    }
+
+    @Override
+    public Map<String, Object> getAttributesDirect() {
+        return sqlExprTableSource.getAttributesDirect();
+    }
+
+    @Override
+    public void addBeforeComment(String comment) {
+        sqlExprTableSource.addBeforeComment(comment);
+    }
+
+    @Override
+    public int hashCode() {
+        return sqlExprTableSource.hashCode();
+    }
+
+    @Override
+    public String computeAlias() {
+        return sqlExprTableSource.computeAlias();
+    }
+
+    @Override
+    public void addBeforeComment(List<String> comments) {
+        sqlExprTableSource.addBeforeComment(comments);
+    }
+
+    @Override
+    public SQLExprTableSource clone() {
+        return sqlExprTableSource.clone();
+    }
+
+    @Override
+    public void cloneTo(SQLExprTableSource x) {
+        sqlExprTableSource.cloneTo(x);
+    }
+
+    @Override
+    public List<String> getBeforeCommentsDirect() {
+        return sqlExprTableSource.getBeforeCommentsDirect();
+    }
+
+    @Override
+    public SchemaObject getSchemaObject() {
+        return sqlExprTableSource.getSchemaObject();
+    }
+
+    @Override
+    public void setSchemaObject(SchemaObject schemaObject) {
+        sqlExprTableSource.setSchemaObject(schemaObject);
+    }
+
+    @Override
+    public void addAfterComment(String comment) {
+        sqlExprTableSource.addAfterComment(comment);
+    }
+
+    @Override
+    public void addAfterComment(List<String> comments) {
+        sqlExprTableSource.addAfterComment(comments);
+    }
+
+    @Override
+    public List<String> getAfterCommentsDirect() {
+        return sqlExprTableSource.getAfterCommentsDirect();
+    }
+
+    @Override
+    public boolean hasBeforeComment() {
+        return sqlExprTableSource.hasBeforeComment();
+    }
+
+    @Override
+    public boolean hasAfterComment() {
+        return sqlExprTableSource.hasAfterComment();
     }
 }

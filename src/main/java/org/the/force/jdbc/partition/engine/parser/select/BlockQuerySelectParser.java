@@ -1,17 +1,17 @@
 package org.the.force.jdbc.partition.engine.parser.select;
 
-import org.the.force.jdbc.partition.engine.sqlelements.query.AllColumnItem;
-import org.the.force.jdbc.partition.engine.sqlelements.query.Select;
-import org.the.force.jdbc.partition.engine.sqlelements.query.ValueExprItem;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.WrappedSQLExprTableSource;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
-import org.the.force.jdbc.partition.engine.sqlelements.SqlTableRefers;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sqlelements.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.sqlelements.query.AllColumnItem;
+import org.the.force.jdbc.partition.engine.sqlelements.query.Select;
+import org.the.force.jdbc.partition.engine.sqlelements.query.ValueExprItem;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -88,9 +88,9 @@ public class BlockQuerySelectParser extends AbstractVisitor {
         } else {
             ConditionalSqlTable sqlTable = null;
             SqlTableRefers sqlTableRefers = null;
-            if (sqlTableSource instanceof WrappedSQLExprTableSource) {
-                WrappedSQLExprTableSource tableSource = (WrappedSQLExprTableSource) sqlTableSource;
-                sqlTable = tableSource.getSqlTable();
+            if (sqlTableSource instanceof ExprConditionalSqlTable) {
+                ExprConditionalSqlTable tableSource = (ExprConditionalSqlTable) sqlTableSource;
+                sqlTable = tableSource;
                 sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
             } else if (sqlTableSource instanceof SubQueriedTableSource) {
                 SubQueriedTableSource tableSource = (SubQueriedTableSource) sqlTableSource;
