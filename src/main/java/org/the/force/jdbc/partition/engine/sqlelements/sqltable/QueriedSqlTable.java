@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Created by xuji on 2017/6/14.
  */
-public abstract class QueriedConditionalSqlTable implements ConditionalSqlTable {
+public abstract class QueriedSqlTable implements ConditionalSqlTable {
 
     private final String alias;
 
@@ -25,7 +25,7 @@ public abstract class QueriedConditionalSqlTable implements ConditionalSqlTable 
 
 
 
-    public QueriedConditionalSqlTable(SQLTableSource sqlTableSource) {
+    public QueriedSqlTable(SQLTableSource sqlTableSource) {
         if (sqlTableSource instanceof SQLExprTableSource) {
             throw new SqlParseException("sqlTableSource instanceof SQLExprTableSource");
         }

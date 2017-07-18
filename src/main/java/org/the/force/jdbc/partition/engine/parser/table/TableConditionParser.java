@@ -34,7 +34,6 @@ import java.util.List;
  * 3, 搜集可能出现在where条件中的join条件  写入{@link currentSqlTable}和{@link currentTableOwnCondition}
  * 4，从原始的where条件中 去除已经归集到tableSource的条件和join的条件，拼装新的where条件 输出{@link otherCondition}
  * 5，借助SubQueryResetParser 重置where表达式中的子查询为可以执行的子查询表达式
- * <p>
  */
 public class TableConditionParser extends PartitionAbstractVisitor {
     /**
@@ -367,9 +366,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
     }
 
     /**
-     * factory in 子查询表达式  in not in
-     * TODO 归属的column是分库分表位的情况，延迟分库分表
-     *
+     * in 子查询表达式  in not in
      * @param x
      * @return
      */

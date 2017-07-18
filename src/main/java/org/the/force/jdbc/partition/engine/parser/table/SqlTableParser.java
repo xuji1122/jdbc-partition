@@ -4,7 +4,7 @@ import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTa
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.QueriedConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sqlelements.sqltable.QueriedSqlTable;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectReferLabelParser;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -47,7 +47,7 @@ public class SqlTableParser {
         }else if (tableSource instanceof SQLSubqueryTableSource) {
             SQLSubqueryTableSource sqlSubqueryTableSource = (SQLSubqueryTableSource) tableSource;
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
-            return new QueriedConditionalSqlTable(tableSource) {
+            return new QueriedSqlTable(tableSource) {
                 public List<String> getReferLabels() {
                     List<String> columns;
                     try {
@@ -60,7 +60,7 @@ public class SqlTableParser {
             };
         } else if (tableSource instanceof SQLUnionQueryTableSource) {
             SQLUnionQueryTableSource sqlUnionQueryTableSource = (SQLUnionQueryTableSource) tableSource;
-            return new QueriedConditionalSqlTable(tableSource) {
+            return new QueriedSqlTable(tableSource) {
                 public List<String> getReferLabels() {
                     List<String> columns;
                     try {

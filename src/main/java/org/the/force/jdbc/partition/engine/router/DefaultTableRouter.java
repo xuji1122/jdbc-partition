@@ -171,16 +171,7 @@ public class DefaultTableRouter implements TableRouter {
                 for (Pair<SQLInListExpr, Object[]> pair : map.values()) {
                     List<Object[]> list = pairList.get(pair.getLeft());
                     Object[] rowValue = pair.getRight();
-                    boolean add = true;
-                    for (int k = 0; k < list.size(); k++) {
-                        Object[] exits = list.get(k);
-                        if (Arrays.equals(rowValue, exits)) {
-                            add = false;
-                        }
-                    }
-                    if (add) {
-                        list.add(rowValue);
-                    }
+                    list.add(rowValue);
                 }
             }
         }
