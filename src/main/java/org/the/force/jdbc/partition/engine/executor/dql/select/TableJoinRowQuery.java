@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.dql.select;
 
-import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.router.TableRouter;

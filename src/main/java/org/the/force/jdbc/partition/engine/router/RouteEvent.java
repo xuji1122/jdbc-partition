@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.router;
 
-import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 

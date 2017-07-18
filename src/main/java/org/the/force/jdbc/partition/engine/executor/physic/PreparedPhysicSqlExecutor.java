@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.engine.executor.physic;
 import com.mysql.jdbc.Statement;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.WriteCommand;
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.SqlParameter;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

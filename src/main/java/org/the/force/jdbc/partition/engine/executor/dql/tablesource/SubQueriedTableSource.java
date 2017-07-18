@@ -6,7 +6,7 @@ import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.filter.QueryReferFilter;
 import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -47,7 +47,7 @@ public class SubQueriedTableSource extends SQLSubqueryTableSource implements  Ex
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
             queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery, queryReferFilter).getQueryExecutor();
         } else {
-            throw new ParserException("un supported executor sqlelements:" + PartitionSqlUtils.toSql(sqlSelectQuery, logicDbConfig.getSqlDialect()));
+            throw new ParserException("un supported executor elements:" + PartitionSqlUtils.toSql(sqlSelectQuery, logicDbConfig.getSqlDialect()));
         }
     }
 

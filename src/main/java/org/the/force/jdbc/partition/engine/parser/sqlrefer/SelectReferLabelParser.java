@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;

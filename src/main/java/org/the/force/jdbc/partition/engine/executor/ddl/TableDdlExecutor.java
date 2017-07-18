@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.ddl;
 
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
-import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedSql;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
@@ -9,9 +9,9 @@ import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExec
 import org.the.force.jdbc.partition.engine.executor.physic.StaticPhysicSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.DdlSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.sql.elements.table.DdlSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.router.output.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;

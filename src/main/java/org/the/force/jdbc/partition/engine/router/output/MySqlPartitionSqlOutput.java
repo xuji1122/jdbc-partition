@@ -8,11 +8,11 @@ import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
-import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.ObjectSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.sql.parameter.IntegerSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.ObjectSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;

@@ -1,22 +1,22 @@
 package org.the.force.jdbc.partition.resource.statement;
 
-import org.the.force.jdbc.partition.engine.parameter.ByteSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.DecimalSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.DoubleSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.FloatSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.IntegerSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.LongSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.ShortSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.StringSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.ByteSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.DecimalSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.DoubleSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.FloatSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.IntegerSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.LongSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.ShortSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.StringSqlParameter;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 
-import org.the.force.jdbc.partition.engine.parameter.LogicSqlParameterHolder;
-import org.the.force.jdbc.partition.engine.parameter.DateSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.NullSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.ObjectSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.TimeSqlParameter;
-import org.the.force.jdbc.partition.engine.parameter.TimestampSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.sql.parameter.DateSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.NullSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.ObjectSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.TimeSqlParameter;
+import org.the.force.jdbc.partition.engine.sql.parameter.TimestampSqlParameter;
 
 import java.io.InputStream;
 import java.io.Reader;

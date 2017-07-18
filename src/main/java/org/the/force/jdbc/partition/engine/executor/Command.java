@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor;
 
-import org.the.force.jdbc.partition.engine.parameter.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.SqlParameter;
 import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
 
 import java.sql.Connection;

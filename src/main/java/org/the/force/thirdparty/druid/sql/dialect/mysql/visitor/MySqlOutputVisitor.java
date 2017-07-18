@@ -1494,7 +1494,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         if (MySqlKillStatement.Type.CONNECTION.equals(x.getType())) {
             print0(ucase ? "KILL CONNECTION " : "kill connection ");
         } else if (MySqlKillStatement.Type.QUERY.equals(x.getType())) {
-            print0(ucase ? "KILL QUERY " : "kill sqlelements ");
+            print0(ucase ? "KILL QUERY " : "kill elements ");
         } else {
             print0(ucase ? "KILL " : "kill ");
         }
@@ -2316,7 +2316,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (x.getForQuery() != null) {
-            print0(ucase ? " FOR QUERY " : " for sqlelements ");
+            print0(ucase ? " FOR QUERY " : " for elements ");
             x.getForQuery().accept(this);
         }
 

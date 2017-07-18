@@ -9,8 +9,8 @@ import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueried
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;

@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.filter;
 
-import org.the.force.jdbc.partition.engine.sqlelements.SqlRefer;
-import org.the.force.jdbc.partition.engine.sqlelements.sqltable.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 

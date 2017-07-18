@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.router;
 
-import org.the.force.jdbc.partition.engine.sqlelements.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartitionSql;
 import org.the.force.jdbc.partition.rule.Partition;
 
 import java.sql.SQLException;
