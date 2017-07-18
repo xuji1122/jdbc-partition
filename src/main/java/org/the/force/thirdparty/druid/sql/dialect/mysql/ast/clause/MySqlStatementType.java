@@ -30,7 +30,7 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdat
  * @author zz [455910092@qq.com]
  */
 public enum MySqlStatementType {
-	//select statement
+	//blockquery statement
 	SELECT(SQLSelectStatement.class.getName()),
 	//dml statement
 	UPDATE(MySqlUpdateStatement.class.getName()),
@@ -48,7 +48,7 @@ public enum MySqlStatementType {
 	BLOCK(SQLBlockStatement.class.getName()),
 	//declare statement
 	DECLARE(MySqlDeclareStatement.class.getName()),
-	//select into
+	//blockquery into
 	SELECTINTO(MySqlSelectIntoStatement.class.getName()),
 	//case
 	CASE(MySqlCaseStatement.class.getName()),

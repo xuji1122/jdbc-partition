@@ -21,11 +21,11 @@ public class SqlTableRefers {
         this.referAll = referAll;
     }
 
-    public void addRefer(String refer) {
+    public void addReferLabel(String refer) {
          refers.add(refer);
     }
 
-    public Set<String> getRefers() {
+    public Set<String> getReferLabels() {
         return refers;
     }
 

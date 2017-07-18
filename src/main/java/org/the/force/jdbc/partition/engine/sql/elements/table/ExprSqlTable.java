@@ -95,7 +95,7 @@ public abstract class ExprSqlTable extends SQLExprTableSource implements SqlTabl
                 logicTable = logicDbConfig.getLogicTableManager(tableName).getLogicTable();
                 setLogicTable(logicTable);
             } catch (SQLException e) {
-                logger.warn("could not get select meta data,table_name=" + tableName, e);
+                logger.warn("could not get blockquery meta data,table_name=" + tableName, e);
             }
         }
         if (logicTable != null) {

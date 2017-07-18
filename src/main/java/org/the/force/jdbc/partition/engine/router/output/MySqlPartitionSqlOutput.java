@@ -6,15 +6,13 @@ import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
+import org.the.force.jdbc.partition.engine.router.RouteEvent;
+import org.the.force.jdbc.partition.engine.sql.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprSqlTable;
 import org.the.force.jdbc.partition.engine.sql.parameter.IntegerSqlParameter;
 import org.the.force.jdbc.partition.engine.sql.parameter.ObjectSqlParameter;
-import org.the.force.jdbc.partition.engine.sql.SqlParameter;
-import org.the.force.jdbc.partition.engine.sql.elements.table.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.router.RouteEvent;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.rule.Partition;
@@ -217,11 +215,5 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    public boolean visit(SubQueriedTableSource subQueriedTableSource) {
-        return false;
-    }
 
-    public boolean visit(UnionQueriedTableSource unionQueriedTableSource) {
-        return false;
-    }
 }

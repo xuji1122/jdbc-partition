@@ -27,7 +27,7 @@ public class MySqlCursorDeclareStatement extends MySqlStatementImpl {
 	
 	//cursor name
 	private String cursorName; 
-	//select statement
+	//blockquery statement
 	private SQLSelectStatement select;
 	
 	public String getCursorName() {

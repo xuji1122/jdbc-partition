@@ -287,8 +287,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * in 条件表达式 支持的类别
      * c1 in (1,2,3)
      * (c1,c2) in ((1,2),(3,4))
-     * c1 in (select id from xxx)
-     * (c1,c2) in (select id,type from xxx)
+     * c1 in (blockquery id from xxx)
+     * (c1,c2) in (blockquery id,type from xxx)
      * 子查询的处理借助where条件重置{@link SubQueryResetParser}和{@link SQLInSubQueriedExpr}实现
      * @param x
      * @return

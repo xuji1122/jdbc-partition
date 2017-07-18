@@ -1489,7 +1489,7 @@ public class Lexer {
             return true;
         }
         comment = comment.toLowerCase();
-        if (comment.indexOf("select") != -1 //
+        if (comment.indexOf("blockquery") != -1 //
             || comment.indexOf("delete") != -1 //
             || comment.indexOf("insert") != -1 //
             || comment.indexOf("dml") != -1 //

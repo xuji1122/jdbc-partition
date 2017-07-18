@@ -13,9 +13,9 @@ db_order:
             #物理库节点的名字被当做一个指针，在定义表格分区时使用
             children:
                 db_order_0:
-                    url:  jdbc:mysql://dev.db:3306/db_order_0
+                    url:  jdbc:mysql://dev.blockquery:3306/db_order_0
                 db_order_1:
-                    url:  jdbc:mysql://dev.db:3306/db_order_1
+                    url:  jdbc:mysql://dev.blockquery:3306/db_order_1
         # 逻辑表列表，只有子节点，没有data
         logic_tables:
             children:

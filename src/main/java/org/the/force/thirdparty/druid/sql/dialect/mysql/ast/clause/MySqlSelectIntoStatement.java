@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class MySqlSelectIntoStatement extends MySqlStatementImpl {
 
-	//select statement
+	//blockquery statement
 	private SQLSelect select;
 	//var list
 	private List<SQLExpr> varList=new ArrayList<SQLExpr>();

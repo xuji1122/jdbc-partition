@@ -140,7 +140,7 @@ public class SqlTableReferParser extends AbstractVisitor {
             } else {
                 Boolean b = checkByOwnerOnly(sqlTable, sqlRefer);
                 if (b != null && b) {
-                    sqlTableRefers.addRefer(sqlRefer.getName());
+                    sqlTableRefers.addReferLabel(sqlRefer.getName());
                 }
             }
         } else {
@@ -161,7 +161,7 @@ public class SqlTableReferParser extends AbstractVisitor {
         if (subQuery == null) {
             boolean b = checkOwner(sqlTable, sqlRefer);
             if (b) {
-                sqlTableRefers.addRefer(sqlRefer.getName());
+                sqlTableRefers.addReferLabel(sqlRefer.getName());
             }
         }
         return false;

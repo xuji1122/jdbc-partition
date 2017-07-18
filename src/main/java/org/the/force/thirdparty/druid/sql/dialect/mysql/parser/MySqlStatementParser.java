@@ -3474,7 +3474,7 @@ public class MySqlStatementParser extends SQLStatementParser {
             if (lexer.token() == Token.UNTIL) {
                 return;
             }
-            // select into
+            // blockquery into
             if (lexer.token() == (Token.SELECT)) {
                 statementList.add(this.parseSelectInto());
                 continue;
@@ -3536,7 +3536,7 @@ public class MySqlStatementParser extends SQLStatementParser {
                 continue;
             }
 
-            // select
+            // blockquery
             if (lexer.token() == Token.LPAREN) {
                 char ch = lexer.current();
                 int bp = lexer.bp();
@@ -3891,7 +3891,7 @@ public class MySqlStatementParser extends SQLStatementParser {
     }
 
     /**
-     * parse select into
+     * parse blockquery into
      */
     public MySqlSelectIntoStatement parseSelectInto() {
         MySqlSelectIntoParser parse = new MySqlSelectIntoParser(this.exprParser);
@@ -4059,7 +4059,7 @@ public class MySqlStatementParser extends SQLStatementParser {
             return this.parseBlock();
         }
 
-        // select
+        // blockquery
         if (lexer.token() == Token.LPAREN) {
             char ch = lexer.current();
             int bp = lexer.bp();

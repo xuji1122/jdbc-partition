@@ -84,9 +84,9 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
 
     public boolean visit(OdpsCreateTableStatement x) {
         if (x.isIfNotExiists()) {
-            print0(ucase ? "CREATE TABLE IF NOT EXISTS " : "create select if not exists ");
+            print0(ucase ? "CREATE TABLE IF NOT EXISTS " : "create blockquery if not exists ");
         } else {
-            print0(ucase ? "CREATE TABLE " : "create select ");
+            print0(ucase ? "CREATE TABLE " : "create blockquery ");
         }
 
         x.getName().accept(this);
@@ -235,9 +235,9 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
             printlnComments(x.getBeforeCommentsDirect());
         }
         if (x.isOverwrite()) {
-            print0(ucase ? "INSERT OVERWRITE TABLE " : "insert overwrite select ");
+            print0(ucase ? "INSERT OVERWRITE TABLE " : "insert overwrite blockquery ");
         } else {
-            print0(ucase ? "INSERT INTO TABLE " : "insert into select ");
+            print0(ucase ? "INSERT INTO TABLE " : "insert into blockquery ");
         }
         x.getTableSource().accept(this);
 
@@ -421,7 +421,7 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
             print0(ucase ? "USER " : "user ");
             x.getUser().accept(this);
         } else if (x.getTable() != null) {
-            print0(ucase ? "TABLE " : "select ");
+            print0(ucase ? "TABLE " : "blockquery ");
             x.getTable().accept(this);
             if (x.getColumns().size() > 0) {
                 print('(');
@@ -444,7 +444,7 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
             printlnComments(x.getBeforeCommentsDirect());
         }
 
-        print0(ucase ? "SELECT " : "select ");
+        print0(ucase ? "SELECT " : "blockquery ");
 
         List<SQLHint> hints = x.getHintsDirect();
         if (hints != null) {
@@ -536,7 +536,7 @@ public class OdpsOutputVisitor extends SQLASTOutputVisitor implements OdpsASTVis
 
     @Override
     public boolean visit(OdpsAnalyzeTableStatement x) {
-        print0(ucase ? "ANALYZE TABLE " : "analyze select ");
+        print0(ucase ? "ANALYZE TABLE " : "analyze blockquery ");
         x.getTable().accept(this);
 
         if (x.getPartition().size() > 0) {

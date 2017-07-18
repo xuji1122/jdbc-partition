@@ -27,10 +27,10 @@ public class TestDdl extends TestJdbcPartitionBase {
             PreparedStatement preparedStatement = connection.prepareStatement(sqls[0]);
             int result = preparedStatement.executeUpdate();
             preparedStatement.close();
-            logger.info(MessageFormat.format("drop select {0} result={1}", tableName, result));
+            logger.info(MessageFormat.format("drop blockquery {0} result={1}", tableName, result));
             preparedStatement = connection.prepareStatement(sqls[1]);
             result = preparedStatement.executeUpdate();
-            logger.info(MessageFormat.format("create select {0} result={1}", tableName, result));
+            logger.info(MessageFormat.format("create blockquery {0} result={1}", tableName, result));
             preparedStatement.close();
         }
         connection.close();

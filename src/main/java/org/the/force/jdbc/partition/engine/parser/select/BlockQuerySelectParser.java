@@ -1,18 +1,14 @@
 package org.the.force.jdbc.partition.engine.parser.select;
 
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.elements.SqlTableRefers;
 import org.the.force.jdbc.partition.engine.sql.elements.query.AllColumnItem;
 import org.the.force.jdbc.partition.engine.sql.elements.query.Select;
 import org.the.force.jdbc.partition.engine.sql.elements.query.ValueExprItem;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
-import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
@@ -87,22 +83,6 @@ public class BlockQuerySelectParser extends AbstractVisitor {
             }
         } else {
             ConditionalSqlTable sqlTable = null;
-            SqlTableRefers sqlTableRefers = null;
-            if (sqlTableSource instanceof ExprConditionalSqlTable) {
-                ExprConditionalSqlTable tableSource = (ExprConditionalSqlTable) sqlTableSource;
-                sqlTable = tableSource;
-                sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
-            } else if (sqlTableSource instanceof SubQueriedTableSource) {
-                SubQueriedTableSource tableSource = (SubQueriedTableSource) sqlTableSource;
-                sqlTable = tableSource.getSqlTable();
-                sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
-            } else if (sqlTableSource instanceof UnionQueriedTableSource) {
-                UnionQueriedTableSource tableSource = (UnionQueriedTableSource) sqlTableSource;
-                sqlTable = tableSource.getSqlTable();
-                sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlSelectQueryBlock, sqlTable).getSqlTableRefers();
-            } else {
-                throw new SqlParseException("tableSource is not converted");
-            }
             gloableSelect = new Select(sqlTable, distinctAll);
             int index = 0;
             for (SQLSelectItem item : sqlSelectItems) {

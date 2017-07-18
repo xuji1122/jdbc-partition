@@ -40,8 +40,8 @@ public class TestJdbcBase {
         sqlDialectName = System.getProperty("executor.dialect", "mysql");
         sqlDialect = SqlDialect.getByName(sqlDialectName);
         defaultPhysicDbHost = System.getProperty("defaultPhysicDbHost", "localhost:3306");
-        user = System.getProperty("db.user", "root");
-        password = System.getProperty("db.user.password", "123456");
+        user = System.getProperty("blockquery.user", "root");
+        password = System.getProperty("blockquery.user.password", "123456");
         projectBasePath = System.getProperty("project.base.path", System.getProperty("user.dir"));
         logger.info("sqlDialectName=" + sqlDialectName);
         logger.info("defaultPhysicDbHost=" + defaultPhysicDbHost);

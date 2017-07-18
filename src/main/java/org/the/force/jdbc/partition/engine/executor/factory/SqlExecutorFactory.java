@@ -1,14 +1,13 @@
 package org.the.force.jdbc.partition.engine.executor.factory;
 
 import org.the.force.jdbc.partition.engine.executor.ddl.TableDdlExecutor;
+import org.the.force.jdbc.partition.engine.executor.dml.DeleteExecutor;
+import org.the.force.jdbc.partition.engine.executor.dml.InsertExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.MySqlReplaceIntoExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.UpdateExecutor;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
-import org.the.force.jdbc.partition.engine.executor.dml.DeleteExecutor;
-import org.the.force.jdbc.partition.engine.executor.dml.InsertExecutor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutor;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
@@ -36,7 +35,7 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/5/17.
- * sql解析匹配器,获得适合的LogicSqlReWriter实例,快速定位，兼容不通的数据库类型，一般根据statement的root即可定位
+ * sqlExecutor匹配器
  */
 public class SqlExecutorFactory extends AbstractVisitor {
 
@@ -47,8 +46,6 @@ public class SqlExecutorFactory extends AbstractVisitor {
     private SQLObject sqlStatement;
 
     private SQLExprTableSource tableSource;
-
-    private SQLExpr condition;
 
     private Constructor constructor;
 
@@ -79,7 +76,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 return (SqlExecutor) obj;
             }
             if(obj instanceof QueryExecutorFactory){
-                return ((QueryExecutorFactory)obj).getQueryExecutor();
+                return ((QueryExecutorFactory)obj).build();
             }
             //TODO check null
             return null;
@@ -214,7 +211,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
     }
 
     /**
-     * create select
+     * create blockquery
      *
      * @param x
      * @return
@@ -237,7 +234,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
     //==========================mysql=============================
 
     /**
-     * drop select
+     * drop blockquery
      *
      * @param x
      * @return

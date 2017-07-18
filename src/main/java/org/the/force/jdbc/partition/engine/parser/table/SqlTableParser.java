@@ -1,11 +1,9 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.SubQueriedTableSource;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.UnionQueriedTableSource;
-import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.table.QueriedSqlTable;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectReferLabelParser;
+import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.elements.table.QueriedSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
@@ -40,11 +38,7 @@ public class SqlTableParser {
         if (tableSource.getAlias() == null) {
             throw new SqlParseException("tableSource.getAlias()==null)");
         }
-        if( tableSource instanceof SubQueriedTableSource){
-            return ((SubQueriedTableSource)tableSource).getSqlTable();
-        }else if(tableSource instanceof UnionQueriedTableSource){
-            return ((UnionQueriedTableSource)tableSource).getSqlTable();
-        }else if (tableSource instanceof SQLSubqueryTableSource) {
+        else if (tableSource instanceof SQLSubqueryTableSource) {
             SQLSubqueryTableSource sqlSubqueryTableSource = (SQLSubqueryTableSource) tableSource;
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
             return new QueriedSqlTable(tableSource) {

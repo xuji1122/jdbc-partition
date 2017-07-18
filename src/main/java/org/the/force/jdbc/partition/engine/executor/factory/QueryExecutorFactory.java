@@ -7,6 +7,6 @@ import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
  */
 public interface QueryExecutorFactory {
 
-    QueryExecutor getQueryExecutor();
+    QueryExecutor build();
 
 }

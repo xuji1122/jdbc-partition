@@ -53,7 +53,7 @@ public class SQLServerOutputVisitor extends SQLASTOutputVisitor implements SQLSe
     }
 
     public boolean visit(SQLServerSelectQueryBlock x) {
-        print0(ucase ? "SELECT " : "select ");
+        print0(ucase ? "SELECT " : "blockquery ");
 
         if (SQLSetQuantifier.ALL == x.getDistionOption()) {
             print0(ucase ? "ALL " : "all ");
