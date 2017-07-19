@@ -18,10 +18,7 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/7/18.
- * 确保sqlTable被正确设置
- * group by 涉及的排序问题  没有group by 但是列有聚合查询也包括在内
- * order by 涉及的问题
- * limit涉及的问题
+ * 交给db执行的节点，需要路由和merge分区结果
  */
 public class DbBlockQueryExecutor extends SQLTableSourceImpl implements BlockQueryExecutor {
 

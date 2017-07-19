@@ -20,10 +20,7 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/7/18.
- * 确保sqlTable被正确设置
- * group by 涉及的排序问题  没有group by 但是列有聚合查询也包括在内
- * order by 涉及的问题
- * limit涉及的问题
+ * client端执行的sql
  */
 public class LogicBlockQueryExecutor extends SQLTableSourceImpl implements BlockQueryExecutor {
 
