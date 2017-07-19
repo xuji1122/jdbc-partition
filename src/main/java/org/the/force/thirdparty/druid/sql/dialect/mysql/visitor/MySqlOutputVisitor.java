@@ -225,7 +225,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             printlnComments(x.getBeforeCommentsDirect());
         }
 
-        print0(ucase ? "SELECT " : "blockquery ");
+        print0(ucase ? "SELECT " : "executor ");
 
         for (int i = 0, size = x.getHintsSize(); i < size; ++i) {
             SQLCommentHint hint = x.getHints().get(i);
@@ -508,9 +508,9 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
         }
 
         if (SQLCreateTableStatement.Type.GLOBAL_TEMPORARY.equals(x.getType())) {
-            print0(ucase ? "TEMPORARY TABLE " : "temporary blockquery ");
+            print0(ucase ? "TEMPORARY TABLE " : "temporary executor ");
         } else {
-            print0(ucase ? "TABLE " : "blockquery ");
+            print0(ucase ? "TABLE " : "executor ");
         }
 
         if (x.isIfNotExiists()) {
@@ -1118,7 +1118,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? " IGNORE " : " ignore ");
         }
 
-        print0(ucase ? " INTO TABLE " : " into blockquery ");
+        print0(ucase ? " INTO TABLE " : " into executor ");
         x.getTableName().accept(this);
 
         if (x.getColumnsTerminatedBy() != null || x.getColumnsEnclosedBy() != null || x.getColumnsEscaped() != null) {
@@ -1452,7 +1452,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? " IGNORE " : " ignore ");
         }
 
-        print0(ucase ? " INTO TABLE " : " into blockquery ");
+        print0(ucase ? " INTO TABLE " : " into executor ");
         x.getTableName().accept(this);
 
         if (x.getCharset() != null) {
@@ -1696,7 +1696,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
     @Override
     public boolean visit(MySqlUpdateStatement x) {
         if (x.getReturning() != null && x.getReturning().size() > 0) {
-            print0(ucase ? "SELECT " : "blockquery ");
+            print0(ucase ? "SELECT " : "executor ");
             printAndAccept(x.getReturning(), ", ");
             println();
             print0(ucase ? "FROM " : "from ");
@@ -1979,7 +1979,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlShowCreateTableStatement x) {
-        print0(ucase ? "SHOW CREATE TABLE " : "show create blockquery ");
+        print0(ucase ? "SHOW CREATE TABLE " : "show create executor ");
         x.getName().accept(this);
         return false;
     }
@@ -2394,7 +2394,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlShowTableStatusStatement x) {
-        print0(ucase ? "SHOW TABLE STATUS" : "show blockquery status");
+        print0(ucase ? "SHOW TABLE STATUS" : "show executor status");
         if (x.getDatabase() != null) {
             print0(ucase ? " FROM " : " from ");
             x.getDatabase().accept(this);
@@ -2482,9 +2482,9 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
     @Override
     public boolean visit(SQLAlterTableStatement x) {
         if (x.isIgnore()) {
-            print0(ucase ? "ALTER IGNORE TABLE " : "alter ignore blockquery ");
+            print0(ucase ? "ALTER IGNORE TABLE " : "alter ignore executor ");
         } else {
-            print0(ucase ? "ALTER TABLE " : "alter blockquery ");
+            print0(ucase ? "ALTER TABLE " : "alter executor ");
         }
         printTableSourceExpr(x.getName());
         incrementIndent();
@@ -2580,7 +2580,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlRenameTableStatement x) {
-        print0(ucase ? "RENAME TABLE " : "rename blockquery ");
+        print0(ucase ? "RENAME TABLE " : "rename executor ");
         printAndAccept(x.getItems(), ", ");
         return false;
     }
@@ -3019,7 +3019,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? "LOCAL " : "local ");
         }
 
-        print0(ucase ? "TABLE " : "blockquery ");
+        print0(ucase ? "TABLE " : "executor ");
 
         printAndAccept(x.getTableSources(), ", ");
         return false;
@@ -3041,7 +3041,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
             print0(ucase ? "LOCAL " : "local ");
         }
 
-        print0(ucase ? "TABLE " : "blockquery ");
+        print0(ucase ? "TABLE " : "executor ");
 
         printAndAccept(x.getTableSources(), ", ");
         return false;

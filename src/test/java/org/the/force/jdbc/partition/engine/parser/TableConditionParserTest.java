@@ -40,7 +40,7 @@ public class TableConditionParserTest extends AbstractVisitor {
     }
 
     public void testTableConditionParser1() {
-        String sql = "blockquery id,name from t_order where user_id in (?,?,?) and name=?  and id=2  and (time>? or status=?) and  1=1 order by id limit 20 ";
+        String sql = "executor id,name from t_order where user_id in (?,?,?) and name=?  and id=2  and (time>? or status=?) and  1=1 order by id limit 20 ";
         SQLExprTableSource sqlExprTableSource = new SQLExprTableSource();
         sqlExprTableSource.setExpr(new SQLIdentifierExpr("t_order"));
 
@@ -48,14 +48,14 @@ public class TableConditionParserTest extends AbstractVisitor {
     }
 
     public void testTableConditionParser2() {
-        String sql = "blockquery id,name from t_order where  id>0  and ( (time>? or status=?) or (type=? and from_id=? )) order by id limit 20 ";
+        String sql = "executor id,name from t_order where  id>0  and ( (time>? or status=?) or (type=? and from_id=? )) order by id limit 20 ";
         SQLExprTableSource sqlExprTableSource = new SQLExprTableSource();
         sqlExprTableSource.setExpr(new SQLIdentifierExpr("t_order"));
         printResult(sql, new ExprConditionalSqlTable(null, sqlExprTableSource));
     }
 
     public void testTableConditionParser3() {
-        String sql = "blockquery id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  o.test1=4+i.test2  and i.pid=?   order by id limit 20 ";
+        String sql = "executor id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  o.test1=4+i.test2  and i.pid=?   order by id limit 20 ";
         logger.info("executor:\n" + sql);
         SQLExprTableSource sqlExprTableSource = new SQLExprTableSource();
         sqlExprTableSource.setExpr(new SQLIdentifierExpr("t_order"));
@@ -66,37 +66,37 @@ public class TableConditionParserTest extends AbstractVisitor {
 
     public void testTableConditionParser4() {
         String sql =
-            "blockquery id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
+            "executor id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
         printResult(sql, new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser5() {
-        String sql = "blockquery id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  order by id limit 20 ";
+        String sql = "executor id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  order by id limit 20 ";
         printResult(sql, new ExprConditionalSqlTable(null,new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser6() {
         String sql =
-            "blockquery id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  o.f1 is null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=?  and o.test1=4+i.test2  and o.f2 is not null order by id limit 20 ";
+            "executor id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  o.f1 is null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=?  and o.test1=4+i.test2  and o.f2 is not null order by id limit 20 ";
         printResult(sql, new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser7() {
         String sql =
-            "blockquery id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and  o.f1 is null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=?  and o.f2 is not null order by id limit 20 ";
+            "executor id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and  o.f1 is null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=?  and o.f2 is not null order by id limit 20 ";
         printResult(sql, new ExprConditionalSqlTable(null,new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser8() {
         String sql =
-            "blockquery id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and i.f1 is null and  o.f1 is null and o.f2 is not null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=? and o.user_id in (blockquery id from user) and exits (blockquery 1 from temp) and not exits (blockquery 1 from temp_2 )  order by id limit 20 ";
+            "executor id,name from t_order o , t_order_item i  where o.id=i.order_id and o.id>0  and i.f1 is null and  o.f1 is null and o.f2 is not null and  (i.time>? or i.status=?) and (o.status=o.type  and o.abd=3+o.bf  or o.status=2  )  and o.name in (1,2,3,o.id) and o.t in(4,5) and o.abc=? and o.user_id in (executor id from user) and exits (executor 1 from temp) and not exits (executor 1 from temp_2 )  order by id limit 20 ";
         logger.info("executor:\n" + sql);
         printResult(sql, new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
     public void testTableConditionParser9() {
         String sql =
-            "blockquery id,name from t_order o , t_order_item i  where o.id=i.order_id  and o.user_id in (blockquery id from user) and exits (blockquery 1 from temp) and not exits (blockquery 1 from temp_2 )  order by id limit 20 ";
+            "executor id,name from t_order o , t_order_item i  where o.id=i.order_id  and o.user_id in (executor id from user) and exits (executor 1 from temp) and not exits (executor 1 from temp_2 )  order by id limit 20 ";
         printResult(sql, new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(null, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 

@@ -445,7 +445,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
             printlnComments(x.getBeforeCommentsDirect());
         }
 
-        print0(ucase ? "SELECT " : "blockquery ");
+        print0(ucase ? "SELECT " : "executor ");
 
         if (x.getHintsSize() > 0) {
             printAndAccept(x.getHints(), ", ");
@@ -1432,7 +1432,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(OracleLockTableStatement x) {
-        print0(ucase ? "LOCK TABLE " : "lock blockquery ");
+        print0(ucase ? "LOCK TABLE " : "lock executor ");
         x.getTable().accept(this);
         print0(ucase ? " IN " : " in ");
         print0(x.getLockMode().toString());
@@ -1670,7 +1670,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
             }
         }
 
-        print0(ucase ? "ALTER TABLE " : "alter blockquery ");
+        print0(ucase ? "ALTER TABLE " : "alter executor ");
         printTableSourceExpr(x.getName());
         incrementIndent();
         for (SQLAlterTableItem item : x.getItems()) {
@@ -2473,7 +2473,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(SQLTruncateStatement x) {
-        print0(ucase ? "TRUNCATE TABLE " : "truncate blockquery ");
+        print0(ucase ? "TRUNCATE TABLE " : "truncate executor ");
         printAndAccept(x.getTableSources(), ", ");
 
         if (x.isPurgeSnapshotLog()) {

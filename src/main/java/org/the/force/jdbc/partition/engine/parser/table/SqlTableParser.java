@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectReferLabelParser;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
@@ -28,17 +29,18 @@ public class SqlTableParser {
     }
 
     //主要目的是获取tableSource包括哪些列，从而为sql条件归集提供必要的依据
-    public ConditionalSqlTable getSqlTable(SQLTableSource tableSource){
+    public ConditionalSqlTable getSqlTable(SQLTableSource tableSource) {
         if (tableSource instanceof SQLExprTableSource) {
-            ExprConditionalSqlTable sqlTable = new ExprConditionalSqlTable(logicDbConfig,(SQLExprTableSource) tableSource);
+            ExprConditionalSqlTable sqlTable = new ExprConditionalSqlTable(logicDbConfig, (SQLExprTableSource) tableSource);
             return sqlTable;
+        } else if (tableSource instanceof JoinedTableSourceExecutor) {
+
         } else if (tableSource instanceof SQLJoinTableSource) {
             throw new SqlParseException("SQLJoinTableSource 不能用于获取SqlTable");
         }
         if (tableSource.getAlias() == null) {
             throw new SqlParseException("tableSource.getAlias()==null)");
-        }
-        else if (tableSource instanceof SQLSubqueryTableSource) {
+        } else if (tableSource instanceof SQLSubqueryTableSource) {
             SQLSubqueryTableSource sqlSubqueryTableSource = (SQLSubqueryTableSource) tableSource;
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
             return new QueriedSqlTable(tableSource) {

@@ -5,7 +5,8 @@ import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ParallelJoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.executor.LogicBlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.sql.SqlParameter;
@@ -194,13 +195,8 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    public boolean visit(SubQueriedExpr x) {
-        return false;
-    }
 
-    public boolean visit(SQLInSubQueriedExpr x) {
-        return false;
-    }
+
 
     public boolean isParametric() {
         return parametric;
@@ -210,10 +206,24 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return routeEvent;
     }
 
-
-    public boolean visit(ParallelJoinedTableSource parallelJoinedTableSource) {
+    /**
+     * 需要执行查询，
+     * 查询的结果需要关联语境输出sql?
+     * 一行一列
+     * 一行多列
+     * 多行多列
+     * @param x
+     * @return
+     */
+    public boolean visit(SubQueriedExpr x) {
         return false;
     }
 
+    public boolean visit(JoinedTableSourceExecutor joinedTableSourceExecutor) {
+        return false;
+    }
 
+    public boolean visit(LogicBlockQueryExecutor logicBlockQueryExecutor) {
+        return false;
+    }
 }

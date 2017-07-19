@@ -46,7 +46,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
-        ((BatchAbleSqlExecutor) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
+        ((BatchAbleSqlExecutor) visitor.getSqlExecutor()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
         logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
@@ -79,7 +79,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
-        ((BatchAbleSqlExecutor) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
+        ((BatchAbleSqlExecutor) visitor.getSqlExecutor()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
         logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
@@ -95,7 +95,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
-        ((BatchAbleSqlExecutor) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
+        ((BatchAbleSqlExecutor) visitor.getSqlExecutor()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
         logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
@@ -114,7 +114,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
-        ((BatchAbleSqlExecutor) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
+        ((BatchAbleSqlExecutor) visitor.getSqlExecutor()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
         logger.info("sql解析结果" + dbExecutorRouter.toString());
 
     }
@@ -132,7 +132,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
-        ((BatchAbleSqlExecutor) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
+        ((BatchAbleSqlExecutor) visitor.getSqlExecutor()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
         logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
@@ -149,7 +149,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         stmt.accept(visitor);
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
 
-        ((BatchAbleSqlExecutor) visitor.getSqlPlan()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
+        ((BatchAbleSqlExecutor) visitor.getSqlExecutor()).addSqlLine(dbExecutorRouter, logicLogicSqlParameterHolder);
         logger.info("sql解析结果" + dbExecutorRouter.toString());
     }
 
@@ -165,7 +165,7 @@ public class UpdatePlanTest extends TestJdbcPartitionBase {
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
         SqlExecutorFactory visitor = new SqlExecutorFactory(logicDbConfig);
         stmt.accept(visitor);
-        BatchAbleSqlExecutor batchAbleSqlExecutor = (BatchAbleSqlExecutor) visitor.getSqlPlan();
+        BatchAbleSqlExecutor batchAbleSqlExecutor = (BatchAbleSqlExecutor) visitor.getSqlExecutor();
         PhysicDbExecutor dbExecutorRouter = new PhysicDbExecutor();
         for (int i = 1; i <= 9; i++) {
             logicLogicSqlParameterHolder.addLineNumber();

@@ -1449,7 +1449,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
             printlnComments(x.getBeforeCommentsDirect());
         }
 
-        print0(ucase ? "SELECT " : "blockquery ");
+        print0(ucase ? "SELECT " : "executor ");
 
         if (JdbcConstants.INFORMIX.equals(dbType)) {
             printFetchFirst(x);
@@ -1822,9 +1822,9 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
 
     public boolean visit(SQLDropTableStatement x) {
         if (x.isTemporary()) {
-            print0(ucase ? "DROP TEMPORARY TABLE " : "drop temporary blockquery ");
+            print0(ucase ? "DROP TEMPORARY TABLE " : "drop temporary executor ");
         } else {
-            print0(ucase ? "DROP TABLE " : "drop blockquery ");
+            print0(ucase ? "DROP TABLE " : "drop executor ");
         }
 
         if (x.isIfExists()) {
@@ -2089,7 +2089,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
     }
 
     protected void printCreateTable(SQLCreateTableStatement x) {
-        print0(ucase ? "CREATE TABLE " : "create blockquery ");
+        print0(ucase ? "CREATE TABLE " : "create executor ");
         if (SQLCreateTableStatement.Type.GLOBAL_TEMPORARY.equals(x.getType())) {
             print0(ucase ? "GLOBAL TEMPORARY " : "global temporary ");
         } else if (SQLCreateTableStatement.Type.LOCAL_TEMPORARY.equals(x.getType())) {
@@ -2462,7 +2462,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
 
     @Override
     public boolean visit(SQLTruncateStatement x) {
-        print0(ucase ? "TRUNCATE TABLE " : "truncate blockquery ");
+        print0(ucase ? "TRUNCATE TABLE " : "truncate executor ");
         printAndAccept(x.getTableSources(), ", ");
         
         if (x.isDropStorage()) {
@@ -2972,7 +2972,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
 
     @Override
     public boolean visit(SQLAlterTableStatement x) {
-        print0(ucase ? "ALTER TABLE " : "alter blockquery ");
+        print0(ucase ? "ALTER TABLE " : "alter executor ");
         printTableSourceExpr(x.getName());
         incrementIndent();
         for (int i = 0; i < x.getItems().size(); ++i) {
@@ -3864,7 +3864,7 @@ public class SQLASTOutputVisitor extends SQLASTVisitorAdapter implements Paramet
         x.getName().accept(this);
 
         if (x.getType() == SQLDeclareItem.Type.TABLE) {
-            print0(ucase ? " TABLE" : " blockquery");
+            print0(ucase ? " TABLE" : " executor");
             int size = x.getTableElementList().size();
 
             if (size > 0) {

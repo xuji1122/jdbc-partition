@@ -1,14 +1,13 @@
-package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
+package org.the.force.jdbc.partition.engine.executor.dql.factory;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.ExecutableTableSource;
-import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.elements.JoinConnector;
 import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
@@ -29,7 +28,6 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectOrderByItem;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -43,13 +41,9 @@ import java.util.stream.Collectors;
  * Created by xuji on 2017/6/4.
  * 平铺的JoinedTableSource 非嵌套
  */
-public class ParallelJoinedTableSource extends SQLJoinTableSource implements ExecutableTableSource {
+public class JoinedTableSourceFactory {
 
     private LogicDbConfig logicDbConfig;
-
-    //输入
-
-    private SQLJoinTableSource sqlJoinTableSource;
 
     //临时变量
 
@@ -60,24 +54,20 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
      */
     private SQLExpr otherCondition;
 
-    //输出
-
     private final Map<Pair<Integer, Integer>, JoinConnector> joinConnectorMap = new LinkedHashMap<>();
 
-    private final Map<Integer, QueryExecutor> planedTableSourceMap = new LinkedHashMap<>();
+    private final List<QueryExecutor> queryExecutors = new ArrayList<>();
 
     private Set<SQLExpr> conditionSet = new LinkedHashSet<>();
 
+    //输出
+    private JoinedTableSourceExecutor joinedTableSourceExecutor;
 
-    public ParallelJoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
+    public JoinedTableSourceFactory(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
         this.logicDbConfig = logicDbConfig;
-        this.sqlJoinTableSource = sqlJoinTableSource;
-        super.alias = sqlJoinTableSource.getAlias();
-        super.hints = sqlJoinTableSource.getHints();
-        super.setFlashback(sqlJoinTableSource.getFlashback());
-        super.setParent(sqlJoinTableSource.getParent());
         this.otherCondition = originalWhere;
-        parseTableSource(sqlJoinTableSource);
+        joinedTableSourceExecutor = new JoinedTableSourceExecutor(logicDbConfig, sqlJoinTableSource);
+        parseTableSource(joinedTableSourceExecutor.getSqlJoinTableSource());
         parseTableCondition();
     }
 
@@ -87,11 +77,11 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
         if (left instanceof SQLJoinTableSource) {
             parseTableSource((SQLJoinTableSource) left);
         } else {
-            left.setParent(this);
+            left.setParent(joinedTableSourceExecutor);
             ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
             sqlTables.add(sqlTable);
         }
-        right.setParent(this);
+        right.setParent(joinedTableSourceExecutor);
         ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
         sqlTables.add(sqlTable);
         JoinConnector joinConnector = new JoinConnector(sqlJoinTableSource.getJoinType(), sqlJoinTableSource.getCondition());
@@ -137,17 +127,18 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
             if (sqlOrderByItemForJoin.isEmpty()) {
                 throw new SqlParseException("join的条件sqlProperties.isEmpty()");
             }
-            SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, sqlJoinTableSource.getParent(), sqlTable).getSqlTableRefers();
+            SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, joinedTableSourceExecutor.getSqlJoinTableSource().getParent(), sqlTable).getSqlTableRefers();
             SQLSelectQueryBlock sqlSelectQueryBlock = buildSQLSelectQueryBlock(sqlTable, sqlTableRefers, sqlOrderByItemForJoin);
             QueryExecutor queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, sqlSelectQueryBlock).build();
-            planedTableSourceMap.put(i, queryExecutor);
+            queryExecutor.setParent(joinedTableSourceExecutor.getSqlJoinTableSource().getParent());
+            queryExecutors.add(queryExecutor);
         }
 
     }
 
     private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableRefers sqlTableRefers, List<SqlRefer> sqlOrderByItemForJoin) {
         MySqlSelectQueryBlock mySqlSelectQueryBlock = new MySqlSelectQueryBlock();
-        mySqlSelectQueryBlock.setParent(this.getParent());
+        mySqlSelectQueryBlock.setParent(joinedTableSourceExecutor.getSqlJoinTableSource());
         mySqlSelectQueryBlock.setFrom(sqlTable.getSQLTableSource());
         if (sqlTable.getAlias() != null) {
             sqlTable.getSQLTableSource().setAlias(sqlTable.getAlias());
@@ -206,85 +197,15 @@ public class ParallelJoinedTableSource extends SQLJoinTableSource implements Exe
     }
 
 
-    protected void accept0(SQLASTVisitor visitor) {
-        if (visitor instanceof PartitionSqlASTVisitor) {
-            PartitionSqlASTVisitor partitionSqlASTVisitor = (PartitionSqlASTVisitor) visitor;
-            partitionSqlASTVisitor.visit(this);
-        } else {
-            sqlJoinTableSource.accept(visitor);
-        }
-    }
-
     public Set<SQLExpr> getConditionSet() {
         return conditionSet;
-    }
-
-
-    public List<ConditionalSqlTable> getSqlTables() {
-        return sqlTables;
     }
 
     public SQLExpr getOtherCondition() {
         return otherCondition;
     }
 
-
-    public JoinType getJoinType() {
-        throw new UnsupportedOperationException(this.getClass().getName());
+    public JoinedTableSourceExecutor getJoinedTableSourceExecutor() {
+        return joinedTableSourceExecutor;
     }
-
-    public void setJoinType(JoinType joinType) {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public SQLTableSource getLeft() {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public void setLeft(SQLTableSource left) {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public SQLTableSource getRight() {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public void setRight(SQLTableSource right) {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public SQLExpr getCondition() {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public void setCondition(SQLExpr condition) {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public List<SQLExpr> getUsing() {
-        return sqlJoinTableSource.getUsing();
-    }
-
-    public boolean isNatural() {
-        return sqlJoinTableSource.isNatural();
-    }
-
-    public void setNatural(boolean natural) {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-    public void output(StringBuffer buf) {
-        sqlJoinTableSource.output(buf);
-    }
-
-    public boolean equals(Object o) {
-        return sqlJoinTableSource.equals(o);
-    }
-
-    public boolean replace(SQLExpr expr, SQLExpr target) {
-        throw new UnsupportedOperationException(this.getClass().getName());
-    }
-
-
-
 }

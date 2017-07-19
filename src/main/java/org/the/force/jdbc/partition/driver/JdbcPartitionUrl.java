@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 /**
  * Created by xuji on 2017/7/1.
- * jdbc:partition:sqlDialect@ip:port,ip:port/logic/blockquery/path?p=a
+ * jdbc:partition:sqlDialect@ip:port,ip:port/logic/executor/path?p=a
  */
 public class JdbcPartitionUrl {
 

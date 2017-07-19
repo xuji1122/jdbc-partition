@@ -179,7 +179,7 @@ public class PGOutputVisitor extends SQLASTOutputVisitor implements PGASTVisitor
             println();
         }
 
-        print0(ucase ? "SELECT " : "blockquery ");
+        print0(ucase ? "SELECT " : "executor ");
 
         if (SQLSetQuantifier.ALL == x.getDistionOption()) {
             print0(ucase ? "ALL " : "all ");
@@ -253,7 +253,7 @@ public class PGOutputVisitor extends SQLASTOutputVisitor implements PGASTVisitor
 
     @Override
     public boolean visit(SQLTruncateStatement x) {
-        print0(ucase ? "TRUNCATE TABLE " : "truncate blockquery ");
+        print0(ucase ? "TRUNCATE TABLE " : "truncate executor ");
         if (x.isOnly()) {
             print0(ucase ? "ONLY " : "only ");
         }

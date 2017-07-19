@@ -1,16 +1,16 @@
 package org.the.force.jdbc.partition.driver;
 
+import org.the.force.jdbc.partition.engine.BathAbleSqlEngine;
 import org.the.force.jdbc.partition.engine.GeneralSqlEngine;
+import org.the.force.jdbc.partition.engine.QuerySqlEngine;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
-import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.resource.connection.AbstractConnection;
+import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.mysql.MySqlDdMetaDataImpl;
-import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
-import org.the.force.jdbc.partition.engine.BathAbleSqlEngine;
-import org.the.force.jdbc.partition.engine.QuerySqlEngine;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutor;
-import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
+import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
 
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -62,8 +62,8 @@ public class JdbcPartitionConnection extends AbstractConnection {
         SqlExecutor sqlExecutor = getSqlExecutorManager().getSqlExecutor(sql);
         if (sqlExecutor instanceof BatchAbleSqlExecutor) {
             return new BathAbleSqlEngine(this, (BatchAbleSqlExecutor) sqlExecutor);
-        } else if (sqlExecutor instanceof QueryExecutorFactory) {
-            return new QuerySqlEngine(this, (QueryExecutorFactory) sqlExecutor);
+        } else if (sqlExecutor instanceof QueryExecutor) {
+            return new QuerySqlEngine(this, (QueryExecutor) sqlExecutor);
         } else {
             //TODO check null
             return null;
@@ -80,7 +80,7 @@ public class JdbcPartitionConnection extends AbstractConnection {
             if (b) {
                 //TODO check null
             } else {
-                return new QuerySqlEngine(this, (QueryExecutorFactory) sqlExecutor);
+                return new QuerySqlEngine(this, (QueryExecutor) sqlExecutor);
             }
             //TODO check null
             return null;

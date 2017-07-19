@@ -14,7 +14,7 @@ public class TestCopy {
 
     @Test
     public void test1() throws Exception {
-        String sql = "blockquery * from `t_order` t,`t_user` u where t.user_id=u.id and t.status='1' ";
+        String sql = "executor * from `t_order` t,`t_user` u where t.user_id=u.id and t.status='1' ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);

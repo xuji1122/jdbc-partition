@@ -16,7 +16,7 @@ import java.util.List;
 public class SqlErrorTest extends TestJdbcBase {
 
     public void testSQLSelect1() {
-        String sql = "blockquery * from t_order elder by name";
+        String sql = "executor * from t_order elder by name";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
@@ -26,7 +26,7 @@ public class SqlErrorTest extends TestJdbcBase {
     }
 
     public void testSQLSelect2() {
-        String sql = "blockquery * from t_order \n 1=1";
+        String sql = "executor * from t_order \n 1=1";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
@@ -36,7 +36,7 @@ public class SqlErrorTest extends TestJdbcBase {
     }
 
     public void testSQLSelect3() {
-        String sql = "blockquery * from t1 where b in (blockquery b from t2) and a = 1";
+        String sql = "executor * from t1 where b in (executor b from t2) and a = 1";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);

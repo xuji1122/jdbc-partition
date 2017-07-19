@@ -2,9 +2,8 @@ package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -28,7 +27,7 @@ public class SQLInSubQueriedExpr extends SQLInListExpr implements SqlExprEvaluat
     private final LogicDbConfig logicDbConfig;
     private final SQLInSubQueryExpr sqlInSubQueryExpr;
 
-    private final QueryExecutorFactory queryExecutorFactory;
+    private final QueryExecutor queryExecutor;
 
     public SQLInSubQueriedExpr(LogicDbConfig logicDbConfig, SQLInSubQueryExpr sqlInSubQueryExpr) {
         this.logicDbConfig = logicDbConfig;
@@ -41,9 +40,10 @@ public class SQLInSubQueriedExpr extends SQLInListExpr implements SqlExprEvaluat
             throw new ParserException("sqlSelect.getQuery()==null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            this.queryExecutorFactory = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery);
+            this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).build();
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
-            this.queryExecutorFactory = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery);
+            throw new ParserException("SQLUnionQuery 不支持" + sqlSelectQuery.getClass());
+            //this.queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery).build();
         } else {
             throw new ParserException("不受支持的sqlSelectQuery类型" + sqlSelectQuery.getClass());
         }
@@ -58,6 +58,10 @@ public class SQLInSubQueriedExpr extends SQLInListExpr implements SqlExprEvaluat
     //            sqlInSubQueryExpr.accept(visitor);
     //        }
     //    }
+
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
+    }
 
     public List<Object[]> eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         return null;

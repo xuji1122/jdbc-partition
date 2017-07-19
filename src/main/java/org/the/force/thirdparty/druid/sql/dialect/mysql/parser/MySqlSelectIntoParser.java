@@ -183,7 +183,7 @@ public class MySqlSelectIntoParser extends SQLSelectParser {
         return queryRest(queryBlock);
     }
     /**
-     * parse the blockquery into arguments
+     * parse the executor into arguments
      * @return
      */
 	protected List<SQLExpr> parseIntoArgs() {

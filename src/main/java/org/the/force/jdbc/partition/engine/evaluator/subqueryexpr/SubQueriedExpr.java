@@ -3,9 +3,8 @@ package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.factory.BlockQueryExecutorFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
-import org.the.force.jdbc.partition.engine.executor.factory.UnionQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -29,7 +28,7 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     private final SQLQueryExpr sqlQueryExpr;
 
-    private final QueryExecutorFactory queryExecutorFactory;
+    private final QueryExecutor queryExecutor;
 
     public SubQueriedExpr(LogicDbConfig logicDbConfig, SQLQueryExpr sqlQueryExpr) {
         this.logicDbConfig = logicDbConfig;
@@ -43,9 +42,9 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
             throw new ParserException("sqlSelect.getQuery()==null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            this.queryExecutorFactory = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery);
+            this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).build();
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
-            this.queryExecutorFactory = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery);
+            throw new ParserException("SQLUnionQuery 不支持" + sqlSelectQuery.getClass());
         } else {
             throw new ParserException("不受支持的sqlSelectQuery类型" + sqlSelectQuery.getClass());
         }
@@ -59,6 +58,10 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
             visitor.visit(sqlQueryExpr);
 
         }
+    }
+
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
     }
 
     public SQLQueryExpr getSqlQueryExpr() {

@@ -38,8 +38,8 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
         sqlDialectName = System.getProperty("executor.dialect", "mysql");
         sqlDialect = SqlDialect.getByName(sqlDialectName);
         defaultPhysicDbHost = System.getProperty("defaultPhysicDbHost", "localhost:3306");
-        user = System.getProperty("blockquery.user", "root");
-        password = System.getProperty("blockquery.user.password", "123456");
+        user = System.getProperty("executor.user", "root");
+        password = System.getProperty("executor.user.password", "123456");
         projectBasePath = System.getProperty("project.base.path", System.getProperty("user.dir"));
         logger.info("sqlDialectName=" + sqlDialectName);
         logger.info("defaultPhysicDbHost=" + defaultPhysicDbHost);
@@ -47,7 +47,7 @@ public class TestJdbcPartitionBase extends TestJdbcBase {
         logger.info("projectBasePath=" + projectBasePath);
 
         zkConnectStr = System.getProperty("zk.connect.str", "localhost:2181");
-        zkRootPath = "blockquery/" + sqlDialectName + "blockquery";
+        zkRootPath = "executor/" + sqlDialectName + "executor";
         logger.info("zkConnectStr=" + zkConnectStr);
         logger.info("zkRootPath=" + zkRootPath);
         //TODO 可能变化的点

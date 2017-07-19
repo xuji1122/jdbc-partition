@@ -16,7 +16,7 @@ public class UpdateStatementTest {
 
 
     public void testStartupVisitor() {
-        String sql = "blockquery * from t_order o join t_order_item i on t.id=o.order_id where id=? ";
+        String sql = "executor * from t_order o join t_order_item i on t.id=o.order_id where id=? ";
         SQLStatement stmt = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL).get(0);
         SqlExecutorFactory visitor = new SqlExecutorFactory(null);
         stmt.accept(visitor);
@@ -52,7 +52,7 @@ public class UpdateStatementTest {
     }
 
     public void testConditionJoin() {
-        String sql = "blockquery * from `t_order` t,`t_user` u where t.user_id=u.id and t.status='1' ";
+        String sql = "executor * from `t_order` t,`t_user` u where t.user_id=u.id and t.status='1' ";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);

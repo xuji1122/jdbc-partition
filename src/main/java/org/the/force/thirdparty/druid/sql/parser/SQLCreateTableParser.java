@@ -125,7 +125,7 @@ public class SQLCreateTableParser extends SQLDDLParser {
 
             // while
             // (this.tokenList.current().equals(OracleToken.ConstraintToken)) {
-            // parseConstaint(blockquery.getConstraints());
+            // parseConstaint(executor.getConstraints());
             //
             // if (this.tokenList.current().equals(OracleToken.CommaToken))
             // ;

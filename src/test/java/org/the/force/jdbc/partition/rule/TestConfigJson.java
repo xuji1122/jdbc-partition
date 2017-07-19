@@ -24,7 +24,7 @@ public class TestConfigJson extends TestJdbcPartitionBase {
     public void test2() throws Exception {
         ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(500, 3);
         CuratorFramework curatorFramework =
-            CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace("blockquery/" + sqlDialectName + "blockquery").connectionTimeoutMs(15000).sessionTimeoutMs(20000)
+            CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace("executor/" + sqlDialectName + "executor").connectionTimeoutMs(15000).sessionTimeoutMs(20000)
                 .retryPolicy(retryPolicy).build();
         curatorFramework.start();
         DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);

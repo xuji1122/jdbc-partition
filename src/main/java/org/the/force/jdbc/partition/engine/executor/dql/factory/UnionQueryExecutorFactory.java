@@ -1,6 +1,7 @@
-package org.the.force.jdbc.partition.engine.executor.factory;
+package org.the.force.jdbc.partition.engine.executor.dql.factory;
 
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
@@ -10,8 +11,6 @@ import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
  * 不同的逻辑表之间union  不支持  说明表关系设计得不好，只支持典型的关系型数据库
  */
 public class UnionQueryExecutorFactory implements QueryExecutorFactory {
-
-    private QueryExecutor queryExecutor;
 
 
     public UnionQueryExecutorFactory(LogicDbConfig logicDbConfig, SQLUnionQuery sqlUnionQuery) {
@@ -31,6 +30,6 @@ public class UnionQueryExecutorFactory implements QueryExecutorFactory {
     }
 
     public QueryExecutor build() {
-        return queryExecutor;
+        return null;
     }
 }

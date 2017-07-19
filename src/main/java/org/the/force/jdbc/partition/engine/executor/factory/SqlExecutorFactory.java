@@ -5,7 +5,10 @@ import org.the.force.jdbc.partition.engine.executor.dml.DeleteExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.InsertExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.MySqlReplaceIntoExecutor;
 import org.the.force.jdbc.partition.engine.executor.dml.UpdateExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.dql.factory.UnionQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutor;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
@@ -25,7 +28,6 @@ import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlInser
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlReplaceStatement;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.dialect.mysql.ast.statement.MySqlUpdateStatement;
-import org.the.force.thirdparty.druid.sql.parser.ParserException;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -63,7 +65,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         return false;
     }
 
-    public SqlExecutor getSqlPlan() {
+    public SqlExecutor getSqlExecutor() {
         List<Object> args = new ArrayList<>();
         args.add(logicDbConfig);
         args.add(sqlStatement);
@@ -72,24 +74,16 @@ public class SqlExecutorFactory extends AbstractVisitor {
         }
         try {
             Object obj = constructor.newInstance(args.toArray());
-            if (obj instanceof SqlExecutor) {
+            if (obj instanceof QueryExecutorFactory) {
+                return ((QueryExecutorFactory) obj).build();
+            } else if (obj instanceof SqlExecutor) {
                 return (SqlExecutor) obj;
             }
-            if(obj instanceof QueryExecutorFactory){
-                return ((QueryExecutorFactory)obj).build();
-            }
-            //TODO check null
             return null;
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new SqlParseException(e);
         }
-        return null;
     }
-
 
     //==========================mysql=============================
 
@@ -106,12 +100,11 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 constructor = BlockQueryExecutorFactory.class.getConstructor(LogicDbConfig.class, SQLSelectQueryBlock.class);
                 sqlStatement = x;
             } catch (NoSuchMethodException e) {
-                throw new ParserException("", e);
+                throw new SqlParseException("", e);
             }
         }
         return isContinue();
     }
-
     /**
      * @param mySqlUnionQuery
      * @return
@@ -125,7 +118,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 constructor = UnionQueryExecutorFactory.class.getConstructor(LogicDbConfig.class, SQLUnionQuery.class);
                 sqlStatement = mySqlUnionQuery;
             } catch (NoSuchMethodException e) {
-                throw new ParserException("", e);
+                throw new SqlParseException("", e);
             }
         }
         return isContinue();
@@ -162,7 +155,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 sqlStatement = x;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new SqlParseException("", e);
         }
         return isContinue();
     }
@@ -184,7 +177,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 sqlStatement = x;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new SqlParseException("", e);
         }
         return isContinue();
     }
@@ -205,13 +198,13 @@ public class SqlExecutorFactory extends AbstractVisitor {
                 sqlStatement = x;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new SqlParseException("", e);
         }
         return isContinue();
     }
 
     /**
-     * create blockquery
+     * create executor
      *
      * @param x
      * @return
@@ -226,7 +219,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
             try {
                 constructor = TableDdlExecutor.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
             } catch (NoSuchMethodException e) {
-                e.printStackTrace();
+                throw new SqlParseException("", e);
             }
         }
         return isContinue();
@@ -234,7 +227,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
     //==========================mysql=============================
 
     /**
-     * drop blockquery
+     * drop executor
      *
      * @param x
      * @return
@@ -249,7 +242,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
             try {
                 constructor = TableDdlExecutor.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
             } catch (NoSuchMethodException e) {
-                e.printStackTrace();
+                throw new SqlParseException("", e);
             }
         }
         return isContinue();
@@ -269,7 +262,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
             try {
                 constructor = TableDdlExecutor.class.getConstructor(LogicDbConfig.class, SQLStatement.class, SQLExprTableSource.class);
             } catch (NoSuchMethodException e) {
-                e.printStackTrace();
+                throw new SqlParseException("", e);
             }
         }
         return isContinue();

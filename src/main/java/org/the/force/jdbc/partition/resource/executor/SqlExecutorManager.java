@@ -62,7 +62,7 @@ public class SqlExecutorManager {
             SqlExecutorFactory sqlExecutorFactory = new SqlExecutorFactory(logicDbConfig);
             SQLStatement sqlStatement = stmtList.get(0);
             sqlStatement.accept(sqlExecutorFactory);
-            SqlExecutor sqlExecutor = sqlExecutorFactory.getSqlPlan();
+            SqlExecutor sqlExecutor = sqlExecutorFactory.getSqlExecutor();
             logger.info(MessageFormat.format("\n\t\t\t\tlogic executor:{0} \n\t\t\t\texecutor execution factory:{1}", sql, sqlExecutor.toString()));
             return sqlExecutor;
         } catch (Exception e) {
