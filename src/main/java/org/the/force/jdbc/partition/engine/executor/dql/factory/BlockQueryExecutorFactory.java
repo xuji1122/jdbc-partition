@@ -8,6 +8,7 @@ import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
+import org.the.force.jdbc.partition.engine.sql.elements.query.ExecutorNodeType;
 import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -24,9 +25,7 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/6/3.
- * 执行顺序 sqlTableSource --> 子查询 --> 自身（newWhere和聚合条件等）
- * 如果sqlTableSource是单表 则 子查询 --> 自身（tableSource newWhere和聚合条件等）
- * 如果没有子查询 自身（tableSource newWhere和聚合条件等）
+ * 处理select tableSource的嵌套关系，依据此关系为主判断查询执行器的类型
  */
 public class BlockQueryExecutorFactory implements QueryExecutorFactory {
 
@@ -59,36 +58,16 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
      */
     public BlockQueryExecutor build(SQLSelectQueryBlock selectQueryBlock) {
 
-        boolean isLogic = false;
-        ExprConditionalSqlTable exprConditionalSqlTable = null;
         List<SQLSelectQueryBlock> sqlSelectQueryBlockList = new ArrayList<>();//用于从root开始保存嵌套的SQLSelectQueryBlock
         /*
-            第一步：遍历tableSource的嵌套关系
-                   探测selectQueryBlock是交给db执行还是要通过client实现，依据就是找到最底层的tableSource是单表的还是多表的
+          第一步：遍历tableSource的嵌套关系
+                 探测selectQueryBlock是交给db执行还是要通过client实现，依据就是找到最底层的tableSource是单表的还是多表的
          */
-        do {
-            sqlSelectQueryBlockList.add(selectQueryBlock);
-            if (selectQueryBlock.getFrom() instanceof SQLExprTableSource) {
-                exprConditionalSqlTable = (ExprConditionalSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(selectQueryBlock.getFrom());
-                TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
-                selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
-                break;
-            } else if (selectQueryBlock.getFrom() instanceof SQLJoinTableSource) {
-                resetJoinTableSource(selectQueryBlock);
-                isLogic = true;
-                break;
-            } else if (!(selectQueryBlock.getFrom() instanceof SQLSubqueryTableSource)) {
-                //TODO
-                throw new SqlParseException(
-                    "不支持的tableSource:" + PartitionSqlUtils.toSql(selectQueryBlock, logicDbConfig.getSqlDialect()) + " : from=" + selectQueryBlock.getFrom().getClass().getName());
-            }
-            selectQueryBlock = checkSQLSubqueryTableSource(selectQueryBlock);
-
-        } while (true);
+        ExecutorNodeType executorNodeType = detectExecutorNodeType(selectQueryBlock, sqlSelectQueryBlockList);
         /*
          第二步：build执行顺序
          */
-        if (isLogic) {
+        if (executorNodeType.isLogic()) {
             //需要client端自己处理结果集的嵌套关系
             LogicBlockQueryExecutor root = null;//返回的结果
             for (int i = sqlSelectQueryBlockList.size() - 1; i > -1; i--) {//从最底层的查询开始build
@@ -105,9 +84,35 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
             return root;
         } else {
             //由db处理结果集的嵌套关系，只需要将最外层的查询发给db即可。
-            return new DbBlockQueryExecutor(logicDbConfig, sqlSelectQueryBlockList.get(0), exprConditionalSqlTable);
+            return new DbBlockQueryExecutor(logicDbConfig, sqlSelectQueryBlockList.get(0), executorNodeType.getExprConditionalSqlTable());
         }
 
+    }
+
+    /**
+     * 遍历tableSource的嵌套关系
+     * 探测selectQueryBlock是交给db执行还是要通过client实现，依据就是找到最底层的tableSource是单表的还是多表的
+     * 从root到底部，依次将SQLSelectQueryBlock add到sqlSelectQueryBlockList
+     *
+     * @param selectQueryBlock
+     * @param sqlSelectQueryBlockList
+     * @return
+     */
+    private ExecutorNodeType detectExecutorNodeType(SQLSelectQueryBlock selectQueryBlock, List<SQLSelectQueryBlock> sqlSelectQueryBlockList) {
+
+        do {
+            sqlSelectQueryBlockList.add(selectQueryBlock);
+            if (selectQueryBlock.getFrom() instanceof SQLExprTableSource) {
+                return checkExprTableSource(selectQueryBlock);
+            } else if (selectQueryBlock.getFrom() instanceof SQLJoinTableSource) {
+                return checkJoinTableSource(selectQueryBlock);
+            } else if (!(selectQueryBlock.getFrom() instanceof SQLSubqueryTableSource)) {
+                //TODO
+                throw new SqlParseException(
+                    "不支持的tableSource:" + PartitionSqlUtils.toSql(selectQueryBlock, logicDbConfig.getSqlDialect()) + " : from=" + selectQueryBlock.getFrom().getClass().getName());
+            }
+            selectQueryBlock = checkSQLSubqueryTableSource(selectQueryBlock);
+        } while (true);
     }
 
     private SQLSelectQueryBlock checkSQLSubqueryTableSource(SQLSelectQueryBlock selectQueryBlock) {
@@ -123,7 +128,20 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         }
     }
 
-    public void resetJoinTableSource(SQLSelectQueryBlock selectQueryBlock) {
+    protected ExecutorNodeType checkExprTableSource(SQLSelectQueryBlock selectQueryBlock) {
+        ExprConditionalSqlTable exprConditionalSqlTable = (ExprConditionalSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(selectQueryBlock.getFrom());
+        TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
+        selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
+        return new ExecutorNodeType(false, exprConditionalSqlTable);
+    }
+
+    /**
+     *判断table join的场景是否需要client自己执行
+     * （目前都是client自己执行join的逻辑，未来考虑到小表广播的功能，可能还是交给db执行）
+     * @param selectQueryBlock
+     * @return
+     */
+    protected ExecutorNodeType checkJoinTableSource(SQLSelectQueryBlock selectQueryBlock) {
         JoinedTableSourceFactory joinedTableSourceFactory =
             new JoinedTableSourceFactory(logicDbConfig, (SQLJoinTableSource) selectQueryBlock.getFrom(), selectQueryBlock.getWhere());
         SQLExpr newWhere = joinedTableSourceFactory.getOtherCondition(); //tableSource特有的条件过滤掉之后剩余的条件
@@ -133,7 +151,6 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         }
         selectQueryBlock.setFrom(joinedTableSourceFactory.getJoinedTableSourceExecutor());
         selectQueryBlock.setWhere(newWhere);
+        return new ExecutorNodeType(true, null);
     }
-
-
 }
