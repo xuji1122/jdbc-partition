@@ -26,12 +26,12 @@ public class BinaryOpEvaluatorFactory {
         SQLBinaryOperator operator = sqlBinaryOpExpr.getOperator();
         if (operator == SQLBinaryOperator.Equality) {
             return new SQLEqualEvaluator(logicDbConfig, sqlBinaryOpExpr);
+        } else if (operator == SQLBinaryOperator.Concat) {
+            return new SQLConcatEvaluator(logicDbConfig, sqlBinaryOpExpr);
         } else if (ParserUtils.isLogical(sqlBinaryOpExpr)) {//逻辑关系表达式
             return new LogicBooleanEvaluator(logicDbConfig, sqlBinaryOpExpr);
         } else if (ParserUtils.isRelational(operator)) {//关系表达式
             return new RelationalBinaryOpEvaluator(logicDbConfig, sqlBinaryOpExpr);
-        } else if (operator == SQLBinaryOperator.Concat) {
-            return new SQLConcatEvaluator(logicDbConfig, sqlBinaryOpExpr);
         } else {
             return new MathBinaryOpEvaluator(logicDbConfig, sqlBinaryOpExpr);
         }

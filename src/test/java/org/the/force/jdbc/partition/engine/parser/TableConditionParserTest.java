@@ -67,7 +67,7 @@ public class TableConditionParserTest extends AbstractVisitor {
 
     public void testTableConditionParser4() {
         String sql =
-            "select id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
+            "select id,name from t_order o join t_order_item i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.type=2  )  and o.name in (1,2,3) and o.abc=? order by id limit 20 ";
         printResult(sql, new ExprConditionalSqlTable(TestSupport.partitionDb.ymlLogicDbConfig, new SQLExprTableSource(new SQLIdentifierExpr("t_order"),"o")), new ExprConditionalSqlTable(TestSupport.partitionDb.ymlLogicDbConfig, new SQLExprTableSource(new SQLIdentifierExpr("t_order_item"),"i")));
     }
 
@@ -111,11 +111,11 @@ public class TableConditionParserTest extends AbstractVisitor {
                 SQLExpr subQueryResetWhere = conditionVisitor.getSubQueryResetWhere();
                 SQLExpr tableOwnCondition = sqlTable[k].getTableOwnCondition();
                 SQLExpr otherCondition = conditionVisitor.getOtherCondition();
-                Map<SqlRefer, SqlExprEvaluator> currentTableColumnValueMap = sqlTable[k].getColumnValueMap();
+                Map<SqlRefer, List<SqlExprEvaluator>> currentTableColumnValueMap = sqlTable[k].getColumnConditionsMap();
 
-                Map<List<SQLExpr>, SQLInListEvaluator> currentTableColumnInValuesMap = sqlTable[k].getColumnInValueListMap();
+                Map<List<SQLExpr>, SQLInListEvaluator> currentTableColumnInValuesMap = sqlTable[k].getColumnInListConditionMap();
 
-                Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap = sqlTable[k].getJoinConditionMap();
+                Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap = conditionVisitor.getJoinConditionMap();
                 logger.info(MessageFormat.format("{0}:======================", sqlTable[k].getTableName()));
                 if (subQueryResetWhere == null) {
                     logger.info("subQueryResetWhere == null");
@@ -140,7 +140,7 @@ public class TableConditionParserTest extends AbstractVisitor {
                     logger.info("conditionTableMap\n" + conditionTableMap);
                 }
                 currentTableColumnValueMap.forEach((key, value) -> {
-                    logger.info(MessageFormat.format("\nkey={0},valueExpr={1}", key, SQLUtils.toMySqlString(value)));
+                    logger.info(MessageFormat.format("\nkey={0},valueExpr={1}", key, value.toString()));
                 });
                 currentTableColumnInValuesMap.forEach((key, value) -> {
                     logger.info(MessageFormat.format("key={0},valueExpr={1}", key, SQLUtils.toMySqlString(value)));

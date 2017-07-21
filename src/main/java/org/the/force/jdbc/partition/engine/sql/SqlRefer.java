@@ -2,8 +2,6 @@ package org.the.force.jdbc.partition.engine.sql;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
-import org.the.force.jdbc.partition.engine.executor.result.DataItemRow;
-import org.the.force.jdbc.partition.engine.sql.SqlTable;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
@@ -21,6 +19,7 @@ public class SqlRefer extends AbstractSqlExprEvaluator {
     private final String ownerName;
 
     private final String name;
+
 
     public SqlRefer(SQLName sqlExpr) {
         super(sqlExpr);
@@ -65,6 +64,5 @@ public class SqlRefer extends AbstractSqlExprEvaluator {
     public String getName() {
         return name;
     }
-
 
 }

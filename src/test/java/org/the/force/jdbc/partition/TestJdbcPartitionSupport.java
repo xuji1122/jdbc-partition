@@ -23,7 +23,6 @@ import java.util.Properties;
 
 /**
  * Created by xuji on 2017/7/1.
- * 测试优先级 配置初始化100   建表200    纯测试解析类 300  dml 400 查询 500
  */
 public final class TestJdbcPartitionSupport {
 
@@ -83,7 +82,7 @@ public final class TestJdbcPartitionSupport {
         Yaml yml = new Yaml();
         Object object;
         try {
-            object = yml.load(new FileInputStream(TestSupport.getYamlFromFile(logicDbName + ".yml")));
+            object = yml.load(new FileInputStream(TestSupport.getYamlFromFile(TestSupport.test_cases_basic_path + "/schema/" + logicDbName + ".yml")));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -96,7 +95,7 @@ public final class TestJdbcPartitionSupport {
         logger.info("yml config info:\n" + object.toString());
         logger.info("implClass:" + object.getClass().getName());
         String json = BeanUtils.toJson(jsonDbDataNode);
-        logger.info("json:\n" + json);
+        logger.info("yml config json:\n" + json);
     }
 
     public Connection getConnection() throws SQLException {

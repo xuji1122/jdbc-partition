@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cases>
+    <case numer="1">
+        <!-- -->
+        <input type="sql.sql">
+            <sql>
+                select id,name from t_order where user_id in (?,?,?) and name=? and id=2 and (time>? or status=?) and 1=1 order by id limit 20
+            </sql>
+            <params>
+                <data type="int"></data>
+            </params>
+        </input>
+        <output type="string">
+            <data assert="sql.equals">xxxxxx</data>
+        </output>
+    </case>
+</cases>

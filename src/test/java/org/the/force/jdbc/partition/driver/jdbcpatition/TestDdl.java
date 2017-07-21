@@ -14,7 +14,6 @@ import java.text.MessageFormat;
 @Test(priority = 200)
 public class TestDdl {
 
-
     public void testDropCreateTable() throws Exception {
         Connection connection = TestSupport.partitionDb.getConnection();
         connection.close();
@@ -22,8 +21,8 @@ public class TestDdl {
         String[] tableNames = new String[] {"user/t_user", "order/t_order", "order/t_order_sku"};
         for (int i = 0; i < tableNames.length; i++) {
             String tableName = tableNames[i].substring(tableNames[i].lastIndexOf('/') + 1);
-            String path = tableNames[i] + ".sql";
-            String[] sqls = TestSupport.loadSqlFromFile(path);
+            String path = tableNames[i] + ".ddl.sql";
+            String[] sqls = TestSupport.loadSqlFromFile(TestSupport.test_cases_basic_schema_path + "/" + path);
             PreparedStatement preparedStatement = connection.prepareStatement(sqls[0]);
             int result = preparedStatement.executeUpdate();
             preparedStatement.close();

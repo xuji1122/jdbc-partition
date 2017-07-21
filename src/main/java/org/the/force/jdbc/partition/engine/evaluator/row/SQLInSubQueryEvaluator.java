@@ -15,6 +15,7 @@ public class SQLInSubQueryEvaluator extends SQLInListEvaluator {
 
     private final SQLInSubQueriedExpr valuesEvaluator;
 
+
     public SQLInSubQueryEvaluator(LogicDbConfig logicDbConfig, SQLInSubQueriedExpr originalSqlExpr) {
         super(logicDbConfig, originalSqlExpr);
         this.valuesEvaluator = originalSqlExpr;

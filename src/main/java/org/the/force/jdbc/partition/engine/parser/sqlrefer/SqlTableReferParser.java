@@ -89,7 +89,9 @@ public class SqlTableReferParser extends AbstractVisitor {
             sqlJoinTableSource.getCondition().accept(this);
             sqlJoinTableSource.getLeft().accept(this);
             sqlJoinTableSource.getRight().accept(this);
-            sqlJoinTableSource.getFlashback().accept(this);
+            if(sqlJoinTableSource.getFlashback()!=null){
+                sqlJoinTableSource.getFlashback().accept(this);
+            }
             return false;
         } else {
             return true;

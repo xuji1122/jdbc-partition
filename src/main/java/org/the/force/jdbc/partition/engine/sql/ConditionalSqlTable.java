@@ -14,11 +14,16 @@ import java.util.Map;
  */
 public interface ConditionalSqlTable extends SqlTable {
 
-    Map<SqlRefer, SqlExprEvaluator> getColumnValueMap();
+    Map<SqlRefer, List<SqlExprEvaluator>> getColumnConditionsMap();
 
-    Map<List<SQLExpr>, SQLInListEvaluator> getColumnInValueListMap();
+    Map<List<SQLExpr>, SQLInListEvaluator> getColumnInListConditionMap();
 
-    Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> getJoinConditionMap();
+    /**
+     * 在join的条件中指明的与其他的sqlTable的某个字段相等
+     * 两个表具有此种关联时，可以共用单表的条件
+     * @return
+     */
+    Map<SqlRefer, List<Pair<ConditionalSqlTable,SqlRefer>>> getEqualReferMap();
 
     SQLExpr getTableOwnCondition();
 

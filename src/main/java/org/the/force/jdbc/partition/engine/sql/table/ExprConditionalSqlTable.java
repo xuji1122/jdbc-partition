@@ -7,7 +7,6 @@ import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 
 import java.util.LinkedHashMap;
@@ -21,11 +20,11 @@ import java.util.Map;
  */
 public class ExprConditionalSqlTable extends ExprSqlTable implements ConditionalSqlTable {
 
-    private final Map<SqlRefer, SqlExprEvaluator> columnValueMap = new LinkedHashMap<>();
+    private final Map<SqlRefer, List<SqlExprEvaluator>> columnConditionsMap = new LinkedHashMap<>();
 
-    private final Map<List<SQLExpr>, SQLInListEvaluator> columnInValueListMap = new LinkedHashMap<>();
+    private final Map<List<SQLExpr>, SQLInListEvaluator> columnInListConditionMap = new LinkedHashMap<>();
 
-    private final Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> joinConditionMap = new LinkedHashMap<>();
+    private final Map<SqlRefer,List<Pair<ConditionalSqlTable,SqlRefer>>> equalReferMap = new LinkedHashMap<>();
 
     private SQLExpr tableOwnCondition;//归集到currentSqlTable的sql条件
 
@@ -34,16 +33,16 @@ public class ExprConditionalSqlTable extends ExprSqlTable implements Conditional
         super(logicDbConfig, sqlExprTableSource);
     }
 
-    public Map<SqlRefer, SqlExprEvaluator> getColumnValueMap() {
-        return columnValueMap;
+    public Map<SqlRefer, List<SqlExprEvaluator>> getColumnConditionsMap() {
+        return columnConditionsMap;
     }
 
-    public Map<List<SQLExpr>, SQLInListEvaluator> getColumnInValueListMap() {
-        return columnInValueListMap;
+    public Map<List<SQLExpr>, SQLInListEvaluator> getColumnInListConditionMap() {
+        return columnInListConditionMap;
     }
 
-    public Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> getJoinConditionMap() {
-        return joinConditionMap;
+    public Map<SqlRefer,List<Pair<ConditionalSqlTable,SqlRefer>>> getEqualReferMap() {
+        return equalReferMap;
     }
 
 

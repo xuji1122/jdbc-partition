@@ -40,4 +40,6 @@ public class SQLEqualEvaluator extends AbstractSqlExprEvaluator {
     public SqlExprEvaluator getRightEvaluator() {
         return rightEvaluator;
     }
+
+
 }

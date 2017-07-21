@@ -2,6 +2,8 @@ package org.the.force.jdbc.partition.engine.parser.copy;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -30,8 +32,18 @@ public class SqlObjCopier {
 
     private SimpleLinkedList<Object[]> replaceObjPairs = new SimpleLinkedList<>();
 
+    private boolean useEqualsWhenReplace = false;
+
     public SqlObjCopier() {
 
+    }
+
+    public boolean isUseEqualsWhenReplace() {
+        return useEqualsWhenReplace;
+    }
+
+    public void setUseEqualsWhenReplace(boolean useEqualsWhenReplace) {
+        this.useEqualsWhenReplace = useEqualsWhenReplace;
     }
 
     public SqlObjCopier(String... excludeRootFields) {
@@ -62,6 +74,10 @@ public class SqlObjCopier {
             return source;
         } else if (source instanceof Character) {
             return (T) source.getClass().getConstructor(new Class[] {String.class}).newInstance(source.toString());
+        } else if (source instanceof SQLInSubQueryExpr) {
+            return source;
+        } else if (source instanceof SubQueriedExpr) {
+            return source;
         }
         Class<?> clazz = source.getClass();
         if (clazz.isEnum()) {
@@ -104,7 +120,7 @@ public class SqlObjCopier {
             SimpleLinkedList.Node<Object[]> node = replaceObjPairs.first();
             while (node != null) {
                 Object[] pair = node.item();
-                if (pair[0] == value) {
+                if (pair[0] == value || (isUseEqualsWhenReplace() && pair[0].equals(value))) {
                     pd.set(target, pair[1]);
                     replaceObjPairs.remove(node);
                     continue w;
@@ -115,6 +131,7 @@ public class SqlObjCopier {
         }
         return (T) target;
     }
+
 
     private Collection copy0(Collection source) throws Exception {
         Collection dest = source.getClass().newInstance();

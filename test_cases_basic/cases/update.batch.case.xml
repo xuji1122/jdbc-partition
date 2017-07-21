@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cases>
+    <case numer="1">
+        <input type="sql.exe">
+            <sql>
+                INSERT INTO t_user(id,channel,app_id,identifier,birth_date,status)
+                VALUES(?,?,?,?,?,?) ,(?,?,?,?,?,?)
+                ON DUPLICATE KEY UPDATE app_id=app_id,status=status
+            </sql>
+            <params>
+                <data type="int">1</data>
+            </params>
+        </input>
+        <output type="int">
+            <!-- 断言结果 大于等于2 -->
+            <data assert="equals|greater">2</data>
+        </output>
+    </case>
+</cases>
+

@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.router;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.evaluator.row.SQLEqualEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
@@ -11,6 +12,7 @@ import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
+import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
@@ -55,30 +57,50 @@ public class DefaultTableRouter implements TableRouter {
 
         Set<String> partitionColumnNames = routeEvent.getLogicTableConfig().getPartitionColumnNames();
 
-        Map<SqlRefer, SqlExprEvaluator> columnValueMap = exprConditionalSqlTable.getColumnValueMap();
+        /*
+           过滤table的字段的单个取值条件
+         */
+        Map<SqlRefer, List<SqlExprEvaluator>> columnValueMap = exprConditionalSqlTable.getColumnConditionsMap();
         Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap = new HashMap<>();
         if (columnValueMap != null) {
-            columnValueMap.entrySet().stream().filter(entry -> partitionColumnNames.contains(entry.getKey().getName().toLowerCase())).forEach(entry -> {
-                partitionColumnValueMap.put(entry.getKey(), entry.getValue());
+            columnValueMap.entrySet().stream().filter((entry) -> partitionColumnNames.contains(entry.getKey().getName().toLowerCase())).forEach(entry -> {
+                List<SqlExprEvaluator> sqlExprEvaluatorList = entry.getValue();
+                for (SqlExprEvaluator sqlExprEvaluator : sqlExprEvaluatorList) {
+                    if (sqlExprEvaluator instanceof SQLEqualEvaluator) {
+                        SQLEqualEvaluator sqlEqualEvaluator = (SQLEqualEvaluator) sqlExprEvaluator;
+                        if (sqlEqualEvaluator.getLeftEvaluator().equals(entry.getKey())) {
+                            partitionColumnValueMap.put(entry.getKey(), sqlEqualEvaluator.getRightEvaluator());
+                        } else if (sqlEqualEvaluator.getRightEvaluator().equals(entry.getKey())) {
+                            partitionColumnValueMap.put(entry.getKey(), sqlEqualEvaluator.getLeftEvaluator());
+                        } else {
+                            throw new SqlParseException("not match equals column");
+                        }
+                        break;
+                    }
+                }
             });
         }
-        Map<List<SQLExpr>, SQLInListEvaluator> sqlInValuesMap = exprConditionalSqlTable.getColumnInValueListMap();
+        /*
+          过滤table的的  in取值条件
+         */
+        Map<List<SQLExpr>, SQLInListEvaluator> sqlInValuesMap = exprConditionalSqlTable.getColumnInListConditionMap();
         Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap = new HashMap<>();
         sqlInValuesMap.forEach((listKey, sqlInListEvaluator) -> {
-            int size = listKey.size();
-            for (int i = 0; i < size; i++) {
-                SQLExpr sqlExpr = listKey.get(i);
-                if (sqlExpr instanceof SqlRefer) {
-                    SqlRefer sqlRefer = (SqlRefer) sqlExpr;
-                    String columnName = sqlRefer.getName().toLowerCase();
-                    if (partitionColumnNames.contains(columnName)) {
-                        partitionColumnInValueListMap.put(listKey, sqlInListEvaluator);
-                        break;
+            if (!sqlInListEvaluator.isNot()) {
+                int size = listKey.size();
+                for (int i = 0; i < size; i++) {
+                    SQLExpr sqlExpr = listKey.get(i);
+                    if (sqlExpr instanceof SqlRefer) {
+                        SqlRefer sqlRefer = (SqlRefer) sqlExpr;
+                        String columnName = sqlRefer.getName().toLowerCase();
+                        if (partitionColumnNames.contains(columnName)) {
+                            partitionColumnInValueListMap.put(listKey, sqlInListEvaluator);
+                            break;
+                        }
                     }
                 }
             }
         });
-
         if (partitionColumnValueMap.isEmpty() && partitionColumnInValueListMap.isEmpty()) {
             //TODO 全分区sql
             return allPartitionRoute(routeEvent);

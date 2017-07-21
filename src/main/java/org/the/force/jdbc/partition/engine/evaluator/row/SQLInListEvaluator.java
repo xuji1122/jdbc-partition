@@ -26,6 +26,8 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
 
     protected final List<SqlExprEvaluator> targetListEvaluator = new ArrayList<>();
 
+    private final boolean not;
+
     public SQLInListEvaluator(LogicDbConfig logicDbConfig, SQLInListExpr originalSqlExpr) {
         super(originalSqlExpr);
         this.logicDbConfig = logicDbConfig;
@@ -34,6 +36,7 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         if (sqlExprList != null && !sqlExprList.isEmpty()) {
             targetListEvaluator.addAll(sqlExprList.stream().map(sqlExpr -> logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(sqlExpr)).collect(Collectors.toList()));
         }
+        this.not = originalSqlExpr.isNot();
     }
 
     public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
@@ -44,10 +47,10 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
             throw new PartitionSystemException("targetListValue.size() > 1,只能返回一行");
         }
         if (targetListValue.isEmpty()) {
-            return new BooleanValue(false);
+            return new BooleanValue(not);
         }
         if (object == null) {
-            return new BooleanValue(false);
+            return new BooleanValue(not);
         }
         if (object instanceof Object[]) {
             return new BooleanValue(Arrays.equals((Object[]) object, targetListValue.get(0)));
@@ -55,7 +58,12 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
             if (targetListValue.get(0).length != 1) {
                 throw new PartitionSystemException("targetListValue.get(0).length != 1,只能返回一行一列");
             }
-            return new BooleanValue(object.equals(targetListValue.get(0)[0]));
+            if (not) {
+                return new BooleanValue(!object.equals(targetListValue.get(0)[0]));
+            } else {
+                return new BooleanValue(object.equals(targetListValue.get(0)[0]));
+            }
+
         }
     }
 
@@ -100,4 +108,8 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         return (SQLInListExpr) super.getOriginalSqlExpr();
     }
 
+
+    public boolean isNot() {
+        return not;
+    }
 }

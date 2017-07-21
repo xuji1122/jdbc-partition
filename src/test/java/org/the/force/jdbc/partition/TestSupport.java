@@ -13,6 +13,7 @@ import java.text.MessageFormat;
 
 /**
  * Created by xuji on 2017/7/21.
+ *  测试优先级 配置初始化100  建表ddl 200  纯测试解析类 300  dml 400  查询 500
  */
 public final class TestSupport {
 
@@ -24,6 +25,9 @@ public final class TestSupport {
 
     public static SqlDialect sqlDialect;
 
+    public static String test_cases_basic_path;
+
+    public static String test_cases_basic_schema_path;
 
     public static final TestJdbcSupport singleDb;
 
@@ -33,8 +37,11 @@ public final class TestSupport {
         sqlDialectName = System.getProperty("db.dialect", "mysql");
         sqlDialect = SqlDialect.getByName(sqlDialectName);
         projectBasePath = System.getProperty("project.base.path", System.getProperty("user.dir"));
+        test_cases_basic_path = System.getProperty("test.cases.basic.path", "test_cases_basic");
+        test_cases_basic_schema_path = test_cases_basic_path + "/schema/" + sqlDialectName;
         logger.info("sqlDialectName=" + sqlDialectName);
         logger.info("projectBasePath=" + projectBasePath);
+        logger.info("test_cases_basic_schema_path=" + test_cases_basic_schema_path);
         singleDb = new TestJdbcSupport();
         partitionDb = new TestJdbcPartitionSupport();
 
@@ -47,12 +54,20 @@ public final class TestSupport {
      * @return
      */
     public static String[] loadSqlFromFile(String filePath) {
-        filePath = projectBasePath + "/doc/" + sqlDialectName + "/" + filePath;
+        if (filePath.startsWith("/")) {
+            filePath = projectBasePath + filePath;
+        } else {
+            filePath = projectBasePath + "/" + filePath;
+        }
         return PartitionSqlUtils.loadSqlFromFile(filePath, sqlDialect);
     }
 
     public static File getYamlFromFile(String filePath) {
-        filePath = projectBasePath + "/doc/" + sqlDialectName + "/" + filePath;
+        if (filePath.startsWith("/")) {
+            filePath = projectBasePath + filePath;
+        } else {
+            filePath = projectBasePath + "/" + filePath;
+        }
         return new File(filePath);
     }
 

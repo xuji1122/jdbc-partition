@@ -19,13 +19,13 @@ import java.sql.Types;
  * Created by xuji on 2017/5/20.
  */
 @Test(priority = 300)
-public class UpdatePlanTest  {
+public class UpdateExecutorTest {
 
-    private static Log logger = LogFactory.getLog(UpdatePlanTest.class);
+    private static Log logger = LogFactory.getLog(UpdateExecutorTest.class);
 
     LogicDbConfig logicDbConfig = TestSupport.partitionDb.ymlLogicDbConfig;
 
-    public UpdatePlanTest() throws Exception {
+    public UpdateExecutorTest() throws Exception {
     }
 
     public void test1() throws Exception {

@@ -7,7 +7,6 @@ import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 
@@ -65,13 +64,13 @@ public abstract class QueriedSqlTable implements ConditionalSqlTable {
         return alias;
     }
 
-    private final Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> joinConditionMap = new LinkedHashMap<>();
+    private final Map<SqlRefer,List<Pair<ConditionalSqlTable,SqlRefer>>> equalReferMap = new LinkedHashMap<>();
 
     private SQLExpr tableOwnCondition;//归集到currentSqlTable的sql条件
 
 
-    public Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> getJoinConditionMap() {
-        return joinConditionMap;
+    public Map<SqlRefer,List<Pair<ConditionalSqlTable,SqlRefer>>> getEqualReferMap() {
+        return equalReferMap;
     }
 
     public SQLExpr getTableOwnCondition() {
@@ -82,15 +81,15 @@ public abstract class QueriedSqlTable implements ConditionalSqlTable {
         this.tableOwnCondition = tableOwnCondition;
     }
 
-    private final Map<SqlRefer, SqlExprEvaluator> columnValueMap = new LinkedHashMap<>();
+    private final Map<SqlRefer, List<SqlExprEvaluator>> columnConditionsMap = new LinkedHashMap<>();
 
-    private final Map<List<SQLExpr>, SQLInListEvaluator> columnInValueListMap = new LinkedHashMap<>();
+    private final Map<List<SQLExpr>, SQLInListEvaluator> columnInListConditionMap = new LinkedHashMap<>();
 
-    public Map<SqlRefer, SqlExprEvaluator> getColumnValueMap() {
-        return columnValueMap;
+    public Map<SqlRefer, List<SqlExprEvaluator>> getColumnConditionsMap() {
+        return columnConditionsMap;
     }
 
-    public Map<List<SQLExpr>, SQLInListEvaluator> getColumnInValueListMap() {
-        return columnInValueListMap;
+    public Map<List<SQLExpr>, SQLInListEvaluator> getColumnInListConditionMap() {
+        return columnInListConditionMap;
     }
 }

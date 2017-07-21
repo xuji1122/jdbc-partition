@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.engine.parser.table;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.common.tuple.Pair;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
@@ -20,20 +21,23 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLListExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xuji on 2017/5/21.
  * 对where子句的column value条件进行访问、筛选，主要功能如下
- * 1，判断指定的sqlTable的分库分表列的条件（通过{@link columnConditionStack}实现) 写入currentSqlTable
- * 2，归集sqlTable的查询条件（通过{@link tableOwnConditionStack}实现）,写入{@link currentSqlTable}
- * 3, 搜集可能出现在where条件中的join条件  写入{@link currentSqlTable}和{@link currentTableOwnCondition}
- * 4，从原始的where条件中 去除已经归集到tableSource的条件和join的条件，拼装新的where条件 输出{@link otherCondition}
- * 5，借助SubQueryResetParser 重置where表达式中的子查询为可以执行的子查询表达式
+ * 1，归集sqlTable的列的条件（通过{@linkplain columnConditionStack}实现) 写入currentSqlTable 为分库分表条件分析做准备
+ * 2，归集sqlTable的条件（可能包括多个不同的列）（通过{@linkplain tableOwnConditionStack}实现）,写入{@linkplain currentSqlTable}
+ * 3, 搜集可能出现在where条件中的join条件  写入{@linkplain joinConditionMap}，并判断join的table之间的列的条件等价关系
+ * 4，从原始的条件中 去除已经归集到tableSource的条件和join的条件，拼装新的条件 输出{@linkplain otherCondition}
+ * 5，借助SubQueryResetParser 重置条件表达式中的子查询为可以执行的子查询表达式
  */
 public class TableConditionParser extends PartitionAbstractVisitor {
     /**
@@ -64,6 +68,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
     private SQLExpr currentTableOwnCondition;//归集到currentSqlTable的sql条件
 
     private SQLExpr otherCondition;//originalWhere对象去除了currentTableCondition剩余的条件
+
+    private Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> joinConditionMap = new LinkedHashMap<>();
 
     public TableConditionParser(LogicDbConfig logicDbConfig, ConditionalSqlTable sqlTable, SQLExpr originalWhere) {
         this(logicDbConfig, originalWhere, 0, Lists.newArrayList(sqlTable));
@@ -98,8 +104,14 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         return otherCondition;
     }
 
+    public Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> getJoinConditionMap() {
+        return joinConditionMap;
+    }
+
+
     /**
      * 逻辑关系表达式
+     *
      * @param x
      * @return
      */
@@ -171,6 +183,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         }
     }
 
+
     private boolean visitRelationalExpr(SQLBinaryOpExpr x, SQLExpr left, SQLExpr right) {
         //保留当前条件 确保otherCondition尽量包含所有
         backupOtherCondition(x);
@@ -184,11 +197,11 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         boolean r = right instanceof SQLName;
         // > != 等二元操作符
         if (!l && !r) {
-            return true;
+            return false;
         }
-        if (l && r) {
+        if (l && r) {//可能join的条件
             //join的条件必须是两个都满足
-            if (!columnConditionStack.isAllTrue()) {//不在and语义下
+            if (!columnConditionStack.isAllTrue()) {//不在and语义下的join条件不算数
                 return false;
             }
             SqlRefer c1 = new SqlRefer((SQLName) left);
@@ -209,12 +222,21 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             if (orderedSqlTables.size() < 2 || !tableOwnConditionStack.isAllTrue()) {
                 return false;
             }
+            if (x.getOperator() == SQLBinaryOperator.Equality) {//等价条件
+                //c1的条件等价于c2的条件，设置到c1对应的sqlTable中
+                equalReferMap(c1, index1, c2, index2);
+                //c2的条件等价于c1的条件，设置到c2对应的sqlTable中
+                equalReferMap(c2, index2, c1, index1);
+            }
             boolean flag = index1 > index2;
             Pair<Integer, Integer> pair = new Pair<>(flag ? index2 : index1, flag ? index1 : index2);
-            if (!currentSqlTable.getJoinConditionMap().containsKey(pair)) {
-                currentSqlTable.getJoinConditionMap().put(pair, new ArrayList<>());
+            if (!joinConditionMap.containsKey(pair)) {
+                joinConditionMap.put(pair, new ArrayList<>());
             }
-            currentSqlTable.getJoinConditionMap().get(pair).add(x);
+            List<SQLBinaryOpExpr> list = joinConditionMap.get(pair);
+            if (!list.contains(x)) {
+                list.add(x);
+            }
             this.otherCondition = null;
             return false;
         }
@@ -240,19 +262,33 @@ public class TableConditionParser extends PartitionAbstractVisitor {
 
         resetTableOwnCondition(x);
 
-        SQLBinaryOperator operator = x.getOperator();
-        if (operator != SQLBinaryOperator.Equality) {
-            return false;
-        }
         if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-        currentSqlTable.getColumnValueMap().put(sqlRefer, logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(right));
+        addColumnCondition(currentSqlTable,sqlRefer, x,logicDbConfig);
+        return false;
+    }
+
+    public static void addColumnCondition(ConditionalSqlTable currentSqlTable, SqlRefer sqlRefer, SQLExpr sqlExpr,LogicDbConfig logicDbConfig) {
+        Map<SqlRefer, List<SqlExprEvaluator>> map = currentSqlTable.getColumnConditionsMap();
+        if (!map.containsKey(sqlRefer)) {
+            map.put(sqlRefer, new ArrayList<>());
+        }
+        List<SqlExprEvaluator> list = map.get(sqlRefer);
+        SqlExprEvaluator sqlExprEvaluator = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(sqlExpr);
+        if (!list.contains(sqlExprEvaluator)) {
+            list.add(sqlExprEvaluator);
+        }
+    }
+
+    public boolean visit(SQLNotExpr x) {
+        backupOtherCondition(x);
         return false;
     }
 
     /**
      * between 表达式
+     *
      * @param x
      * @return
      */
@@ -264,8 +300,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         if (!(sqlExpr instanceof SQLName)) {
             return true;
         }
-        SqlRefer c = new SqlRefer((SQLName) sqlExpr);
-        if (!checkCurrentSqlTableOwn(c)) {
+        SqlRefer sqlRefer = new SqlRefer((SQLName) sqlExpr);
+        if (!checkCurrentSqlTableOwn(sqlRefer)) {
             return false;
         }
         boolean copyStatus = hasSqlNameInValue;
@@ -278,9 +314,12 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             return false;
         }
         resetTableOwnCondition(x);
+        if (!columnConditionStack.isAllTrue()) {//不在and语义下
+            return false;
+        }
+        addColumnCondition(currentSqlTable,sqlRefer,x,logicDbConfig);
         return false;
     }
-
 
 
     /**
@@ -290,6 +329,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * c1 in (executor id from xxx)
      * (c1,c2) in (executor id,type from xxx)
      * 子查询的处理借助where条件重置{@link SubQueryResetParser}和{@link SQLInSubQueriedExpr}实现
+     *
      * @param x
      * @return
      */
@@ -327,7 +367,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
                 SqlRefer c = (SqlRefer) expr;
                 if (checkCurrentSqlTableOwn(c)) {
                     partitionColumnMatch = true;
-                }else{
+                } else {
                     tableOwnConditionMatch = false;
                 }
             } else {
@@ -350,23 +390,20 @@ public class TableConditionParser extends PartitionAbstractVisitor {
             return false;
         }
 
-        if(tableOwnConditionMatch){
+        if (tableOwnConditionMatch) {
             resetTableOwnCondition(x);
-        }
-        if (x.isNot()) {
-            return false;
         }
         if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-
-        SQLInListEvaluator sqlExprEvaluator = (SQLInListEvaluator)logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(x);
-        currentSqlTable.getColumnInValueListMap().put(listKey, sqlExprEvaluator);
+        SQLInListEvaluator sqlExprEvaluator = (SQLInListEvaluator) logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(x);
+        currentSqlTable.getColumnInListConditionMap().put(listKey, sqlExprEvaluator);
         return false;
     }
 
     /**
      * in 子查询表达式  in not in
+     *
      * @param x
      * @return
      */
@@ -433,6 +470,19 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         return parent;
     }
 
+
+    private void equalReferMap(SqlRefer sqlRefer, int index, SqlRefer target, int targetIndex) {
+        Map<SqlRefer, List<Pair<ConditionalSqlTable, SqlRefer>>> equalReferMap = orderedSqlTables.get(index).getEqualReferMap();
+        if (!equalReferMap.containsKey(sqlRefer)) {
+            equalReferMap.put(sqlRefer, new ArrayList<>());
+        }
+        List<Pair<ConditionalSqlTable, SqlRefer>> list = equalReferMap.get(sqlRefer);
+        Pair<ConditionalSqlTable, SqlRefer> newPair = new Pair<>(orderedSqlTables.get(targetIndex), target);
+        if (!list.contains(newPair)) {
+            list.add(newPair);
+        }
+    }
+
     //=========sqlRefer check相关======
 
     public boolean visit(SQLIdentifierExpr x) {
@@ -463,6 +513,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
 
     /**
      * 检查某一个SqlRefer是否归属于某一个表，并判断sql改写时是否需要增加tableSource的简称
+     *
      * @param c
      * @return
      */
@@ -479,7 +530,6 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         }
         throw new SqlParseException("无法匹配table source");
     }
-
 
 
     /**

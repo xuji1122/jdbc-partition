@@ -35,7 +35,7 @@ public class LogicBlockQueryExecutor extends SQLTableSourceImpl implements Block
     public LogicBlockQueryExecutor(LogicDbConfig logicDbConfig, SQLSelectQueryBlock sqlSelectQueryBlock) {
         this.logicDbConfig = logicDbConfig;
         this.sqlSelectQueryBlock = sqlSelectQueryBlock;
-        BlockQueryExecutor source = (LogicBlockQueryExecutor)sqlSelectQueryBlock.getFrom();
+        BlockQueryExecutor source = (BlockQueryExecutor)sqlSelectQueryBlock.getFrom();
         sqlTable = new QueriedSqlTable(source) {
             public List<String> getReferLabels() {
                 return new ArrayList<>();
