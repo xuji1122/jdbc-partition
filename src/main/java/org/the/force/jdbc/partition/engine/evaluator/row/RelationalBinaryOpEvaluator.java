@@ -3,6 +3,10 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.value.SqlNull;
+import org.the.force.jdbc.partition.engine.value.SqlNumber;
+import org.the.force.jdbc.partition.engine.value.SqlValue;
+import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
@@ -28,25 +32,23 @@ public class RelationalBinaryOpEvaluator extends AbstractSqlExprEvaluator {
         this.operator = originalSqlExpr.getOperator();
     }
 
-    public Object eval(SqlExprEvalContext sqlExprEvalContext, Object rows) throws SQLException {
-        Object leftValue = this.left.eval(sqlExprEvalContext, rows);
-        Object rightValue = this.right.eval(sqlExprEvalContext, rows);
+    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object rows) throws SQLException {
+        SqlValue leftValue = (SqlValue)this.left.eval(sqlExprEvalContext, rows);
+        Object rightValue = (SqlValue)this.right.eval(sqlExprEvalContext, rows);
         if (leftValue == null || rightValue == null) {
-            return false;
-        }
-        if (operator == SQLBinaryOperator.NotEqual) {
-            return !leftValue.equals(rightValue);
+            return new BooleanValue(false);
         }
         if (operator == SQLBinaryOperator.Is) {
-            if (rightValue == EVAL_VALUE_NULL) {
-                return true;
-            }
-            return null;
-        } else if (operator == SQLBinaryOperator.IsNot) {
-            if (rightValue == EVAL_VALUE_NULL) {
-                return false;
-            }
-            return null;
+            return new BooleanValue((rightValue instanceof SqlNull));
+        }
+        if (operator == SQLBinaryOperator.IsNot) {
+            return new BooleanValue(!(rightValue instanceof SqlNull));
+        }
+        if (leftValue instanceof SqlNull || rightValue instanceof SqlNull) {
+            return new BooleanValue(false);
+        }
+        if (operator == SQLBinaryOperator.NotEqual) {
+            return new BooleanValue(!leftValue.equals(rightValue));
         }
         if (!(leftValue instanceof Comparable<?>) || !(rightValue instanceof Comparable<?>)) {
             throw new PartitionSystemException("!(leftValue instanceof Comparable<?>) || !(rightValue instanceof Comparable<?>)");
@@ -56,13 +58,13 @@ public class RelationalBinaryOpEvaluator extends AbstractSqlExprEvaluator {
         int result = c1.compareTo(c2);
         switch (operator) {
             case GreaterThan:
-                return result > 0;
+                return new BooleanValue(result > 0);
             case GreaterThanOrEqual:
-                return result >= 0;
+                return new BooleanValue(result >= 0);
             case LessThan:
-                return result < 0;
+                return new BooleanValue(result < 0);
             case LessThanOrEqual:
-                return result <= 0;
+                return new BooleanValue(result <= 0);
             //TODO 各种条件判断  like not like
             default:
                 throw new PartitionSystemException("not expected operator");

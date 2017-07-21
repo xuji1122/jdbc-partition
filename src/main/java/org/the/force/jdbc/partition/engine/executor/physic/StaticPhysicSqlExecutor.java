@@ -53,7 +53,7 @@ public class StaticPhysicSqlExecutor implements PhysicSqlExecutor {
             template.collectResult(lineNumMap, result, statement);
         } finally {
             clearBatch();
-            statement.close();
+            statement.clearBatch();
         }
     }
 
@@ -105,7 +105,7 @@ public class StaticPhysicSqlExecutor implements PhysicSqlExecutor {
             return executeQueryTemplate.executeQuery(statement, linedSqls.peekLast().getSql());
         } finally {
             if (statement != null) {
-                statement.close();
+                statement.clearBatch();
             }
             linedSqls.clear();
         }

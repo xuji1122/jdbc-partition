@@ -3,6 +3,8 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.value.SqlValue;
+import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBetweenExpr;
 
@@ -29,19 +31,19 @@ public class SQLBetweenEvaluator extends AbstractSqlExprEvaluator {
         endSqlExprEvaluator = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getEndExpr());
     }
 
-    public Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public SqlValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         Comparable<Object> testValue = (Comparable<Object>) testSqlExprEvaluator.eval(sqlExprEvalContext, data);
         Comparable<Object> beginValue = (Comparable<Object>) beginSqlExprEvaluator.eval(sqlExprEvalContext, data);
         Comparable<Object> endValue = (Comparable<Object>) endSqlExprEvaluator.eval(sqlExprEvalContext, data);
         if (testValue == null) {
-            return not;
+            return new BooleanValue(not);
         }
         if (testValue.compareTo(beginValue) < 0) {
-            return not;
+            return new BooleanValue(not);
         }
         if (testValue.compareTo(endValue) > 0) {
-            return not;
+            return new BooleanValue(not);
         }
-        return !not;
+        return new BooleanValue(!not);
     }
 }

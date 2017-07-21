@@ -7,7 +7,7 @@ import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQuerie
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.ParserUtils;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionAbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;

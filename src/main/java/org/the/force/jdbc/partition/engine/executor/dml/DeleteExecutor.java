@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dml;
 
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
-import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.rule.PartitionEvent;

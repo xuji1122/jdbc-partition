@@ -4,13 +4,13 @@ import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
-import org.the.force.jdbc.partition.engine.sql.SqlParameter;
-import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartitionSql;
-import org.the.force.jdbc.partition.engine.router.output.MySqlPartitionSqlOutput;
+import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.Partition;
@@ -22,6 +22,7 @@ import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class DefaultTableRouter implements TableRouter {
     }
 
     public Map<Partition, SqlTablePartitionSql> route(RouteEvent routeEvent) throws SQLException {
-        ExprConditionalSqlTable exprConditionalSqlTable =  exprSqlTable;
+        ExprConditionalSqlTable exprConditionalSqlTable = exprSqlTable;
 
         Set<String> partitionColumnNames = routeEvent.getLogicTableConfig().getPartitionColumnNames();
 
@@ -95,6 +96,7 @@ public class DefaultTableRouter implements TableRouter {
         SortedSet<Partition> partitions = logicTableConfig.getPartitions();
         return sqlTablePartitions;
     }
+
     /**
      * 分区路由核心方法
      * 没有in表达式 只有 列=value的 分区条件
@@ -113,7 +115,7 @@ public class DefaultTableRouter implements TableRouter {
         SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
 
         for (Map.Entry<SqlRefer, SqlExprEvaluator> entry2 : partitionColumnValueMap.entrySet()) {
-            Object value = entry2.getValue().eval(sqlExprEvalContext, null);
+            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExprEvalContext, null);
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getName(), value);
             partitionColumnValueTreeSet.add(columnValueInner);
         }
@@ -169,6 +171,10 @@ public class DefaultTableRouter implements TableRouter {
                 }
                 for (Pair<SQLInListExpr, Object[]> pair : map.values()) {
                     List<Object[]> list = pairList.get(pair.getLeft());
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        pairList.put(pair.getLeft(), list);
+                    }
                     Object[] rowValue = pair.getRight();
                     list.add(rowValue);
                 }

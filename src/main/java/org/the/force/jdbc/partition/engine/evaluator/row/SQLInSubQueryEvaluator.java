@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.sql.SQLException;
@@ -19,7 +20,7 @@ public class SQLInSubQueryEvaluator extends SQLInListEvaluator {
         this.valuesEvaluator = originalSqlExpr;
     }
 
-    public Boolean eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
 
         return null;
     }

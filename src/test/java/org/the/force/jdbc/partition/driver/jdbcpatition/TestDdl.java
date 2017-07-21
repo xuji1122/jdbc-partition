@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.driver.jdbcpatition;
 
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.TestJdbcPartitionBase;
+import org.the.force.jdbc.partition.TestSupport;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,26 +11,26 @@ import java.text.MessageFormat;
 /**
  * Created by xuji on 2017/6/19.
  */
-@Test(priority = 100)
-public class TestDdl extends TestJdbcPartitionBase {
+@Test(priority = 200)
+public class TestDdl {
 
 
     public void testDropCreateTable() throws Exception {
-        Connection connection = super.getConnection();
+        Connection connection = TestSupport.partitionDb.getConnection();
         connection.close();
-        connection = DriverManager.getConnection(dbConnectionUrl, user, password);
+        connection = TestSupport.partitionDb.getConnection();
         String[] tableNames = new String[] {"user/t_user", "order/t_order", "order/t_order_sku"};
         for (int i = 0; i < tableNames.length; i++) {
             String tableName = tableNames[i].substring(tableNames[i].lastIndexOf('/') + 1);
-            String path = tableNames[i] + ".executor";
-            String[] sqls = super.loadSqlFromFile(path);
+            String path = tableNames[i] + ".sql";
+            String[] sqls = TestSupport.loadSqlFromFile(path);
             PreparedStatement preparedStatement = connection.prepareStatement(sqls[0]);
             int result = preparedStatement.executeUpdate();
             preparedStatement.close();
-            logger.info(MessageFormat.format("drop executor {0} result={1}", tableName, result));
+            TestSupport.logger.info(MessageFormat.format("drop table {0} result={1}", tableName, result));
             preparedStatement = connection.prepareStatement(sqls[1]);
             result = preparedStatement.executeUpdate();
-            logger.info(MessageFormat.format("create executor {0} result={1}", tableName, result));
+            TestSupport.logger.info(MessageFormat.format("create table {0} result={1}", tableName, result));
             preparedStatement.close();
         }
         connection.close();

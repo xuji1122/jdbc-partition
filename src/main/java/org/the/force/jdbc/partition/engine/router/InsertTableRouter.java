@@ -2,14 +2,14 @@ package org.the.force.jdbc.partition.engine.router;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.sql.SqlParameter;
-import org.the.force.jdbc.partition.engine.sql.elements.table.InsertSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartitionSql;
-import org.the.force.jdbc.partition.engine.router.output.MySqlPartitionSqlOutput;
+import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
+import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
+import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -67,9 +67,9 @@ public class InsertTableRouter implements TableRouter {
             int size = sqlExprList.size();
             TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
             for (int i = 0; i < size; i++) {
-                count++;
                 SqlRefer sqlRefer = insertSqlTable.getColumnMap().get(i);
                 if (!sortedSet.contains(sqlRefer.getName().toLowerCase())) {
+                    count++;
                     continue;
                 }
                 if (i == size - 1) {
@@ -80,11 +80,13 @@ public class InsertTableRouter implements TableRouter {
                     sqlExprEvaluator = sqlExprEvaluatorFactory.matchSqlExprEvaluator(sqlExprList.get(i));
                 }
 
-                Object value = sqlExprEvaluator.eval(sqlExprEvalContext, null);
+                SqlValue value = (SqlValue) sqlExprEvaluator.eval(sqlExprEvalContext, null);
                 if (value == null) {
                     throw new SqlParseException("partition value == null");
                 }
                 partitionColumnValueTreeSet.add(new SqlColumnValue(sqlRefer.getName(), value));
+                count++;
+
             }
             PartitionRule partitionRule = logicTableConfig.getPartitionRule();
 

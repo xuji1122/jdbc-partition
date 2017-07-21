@@ -1,15 +1,15 @@
 package org.the.force.jdbc.partition.engine.executor.dml;
 
-import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
-import org.the.force.jdbc.partition.engine.sql.elements.table.InsertSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
 import org.the.force.jdbc.partition.engine.router.InsertTableRouter;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.router.TableRouter;

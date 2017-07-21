@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -35,7 +36,7 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         }
     }
 
-    public Boolean eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
 
         List<Object[]> targetListValue = getTargetListValue(sqlExprEvalContext, data);
         Object object = exprEvaluator.eval(sqlExprEvalContext, data);
@@ -43,30 +44,33 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
             throw new PartitionSystemException("targetListValue.size() > 1,只能返回一行");
         }
         if (targetListValue.isEmpty()) {
-            return false;
+            return new BooleanValue(false);
         }
         if (object == null) {
-            return false;
+            return new BooleanValue(false);
         }
         if (object instanceof Object[]) {
-            return Arrays.equals((Object[]) object, targetListValue.get(0));
+            return new BooleanValue(Arrays.equals((Object[]) object, targetListValue.get(0)));
         } else {
             if (targetListValue.get(0).length != 1) {
                 throw new PartitionSystemException("targetListValue.get(0).length != 1,只能返回一行一列");
             }
-            return object.equals(targetListValue.get(0)[0]);
+            return new BooleanValue(object.equals(targetListValue.get(0)[0]));
         }
     }
 
     public List<Object[]> getTargetListValue(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
-        List<Object[]> targetValues = new ArrayList<>(1);
-        Object[] array = new Object[targetListEvaluator.size()];
-        for (int i = 0; i < array.length; i++) {
-            SqlExprEvaluator function = targetListEvaluator.get(i);
-            Object value = function.eval(sqlExprEvalContext, data);
-            array[i] = value;
+        List<Object[]> targetValues = new ArrayList<>();
+        int size = targetListEvaluator.size();
+        for (int i = 0; i < size; i++) {
+            SqlExprEvaluator evaluator = targetListEvaluator.get(i);
+            Object value = evaluator.eval(sqlExprEvalContext, data);
+            if (value instanceof Object[]) {
+                targetValues.add((Object[]) value);
+            } else {
+                targetValues.add(new Object[] {value});
+            }
         }
-        targetValues.add(array);
         return targetValues;
     }
 

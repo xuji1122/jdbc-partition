@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor;
 
-import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutor;
 

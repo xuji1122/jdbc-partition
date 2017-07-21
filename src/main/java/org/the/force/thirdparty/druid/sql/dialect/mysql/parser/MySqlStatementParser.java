@@ -3411,7 +3411,7 @@ public class MySqlStatementParser extends SQLStatementParser {
 
                 parameter.setDataType(this.exprParser.parseDataType());
             } else {
-                parameter.setParamType(SQLParameter.ParameterType.DEFAULT);// default parameter type is in
+                parameter.setParamType(SQLParameter.ParameterType.DEFAULT);// default value type is in
                 parameter.setName(this.exprParser.name());
                 parameter.setDataType(this.exprParser.parseDataType());
 

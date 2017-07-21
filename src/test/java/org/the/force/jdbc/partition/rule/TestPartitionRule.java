@@ -1,18 +1,13 @@
 package org.the.force.jdbc.partition.rule;
 
 import com.google.common.collect.Sets;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.TestJdbcPartitionBase;
-import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlColumnValue;
+import org.the.force.jdbc.partition.TestSupport;
+import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.value.types.IntValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.comparator.NameComparator;
-import org.the.force.jdbc.partition.rule.config.DataNode;
-import org.the.force.jdbc.partition.rule.config.ZKDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -26,25 +21,20 @@ import java.util.TreeSet;
  * Created by xuji on 2017/6/19.
  */
 @Test(priority = 300)
-public class TestPartitionRule extends TestJdbcPartitionBase {
+public class TestPartitionRule {
 
     private Log logger = LogFactory.getLog(TestPartitionRule.class);
 
     @Test(priority = 301)
     public void test2() throws Exception {
-        ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(500, 3);
-        CuratorFramework curatorFramework =
-            CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace(zkRootPath).connectionTimeoutMs(15000).sessionTimeoutMs(20000).retryPolicy(retryPolicy).build();
-        curatorFramework.start();
-        DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
-        LogicDbManager logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
+        LogicDbManager logicDbConfig = TestSupport.partitionDb.ymlLogicDbConfig;
         LogicTableConfig logicTableConfig = logicDbConfig.getLogicTableManager("t_user").getLogicTableConfig()[0];
         PartitionEvent partitionEvent =
             new PartitionEvent("t_user", PartitionEvent.EventType.INSERT, PartitionRule.PartitionSortType.BY_TABLE, logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         TreeSet<PartitionColumnValue> set = new TreeSet<>();
-        set.add(new SqlColumnValue("id", 5));
+        set.add(new SqlColumnValue("id", new IntValue(7)));
         DefaultPartitionRule defaultPartitionRule = new DefaultPartitionRule();
         SortedSet<Partition> partitions = defaultPartitionRule.selectPartitions(partitionEvent, set);
         logger.info("partitions:" + partitions.toString());

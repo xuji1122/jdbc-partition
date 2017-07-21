@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
@@ -26,22 +27,22 @@ public class LogicBooleanEvaluator extends AbstractSqlExprEvaluator {
         this.operator = originalSqlExpr.getOperator();
     }
 
-    public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
+    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
         Object leftValue = this.left.eval(sqlExprEvalContext, rows);
         Object rightValue = this.right.eval(sqlExprEvalContext, rows);
         if (leftValue == null || rightValue == null) {
-            return false;
+            return new BooleanValue(false);
         }
-        if (!(leftValue instanceof Boolean)) {
-            throw new PartitionSystemException("!(leftValue instanceof Boolean)");
+        if (!(leftValue instanceof BooleanValue)) {
+            throw new PartitionSystemException("!(leftValue instanceof BooleanValue)");
         }
-        if (!(rightValue instanceof Boolean)) {
-            throw new PartitionSystemException("!(leftValue instanceof Boolean)");
+        if (!(rightValue instanceof BooleanValue)) {
+            throw new PartitionSystemException("!(leftValue instanceof BooleanValue)");
         }
         if (operator == SQLBinaryOperator.BooleanAnd) {
-            return ((Boolean) leftValue) && ((Boolean) rightValue);
+            return new BooleanValue(((BooleanValue) leftValue).getValue() && ((BooleanValue) rightValue).getValue());
         } else if (operator == SQLBinaryOperator.BooleanOr || operator == SQLBinaryOperator.BooleanXor) {
-            return ((Boolean) leftValue) || ((Boolean) rightValue);
+            return new BooleanValue(((BooleanValue) leftValue).getValue() || ((BooleanValue) rightValue).getValue());
         }
         throw new PartitionSystemException("operator not match");
     }

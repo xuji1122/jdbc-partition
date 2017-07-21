@@ -1,7 +1,7 @@
 package org.the.force.thirdparty.druid;
 
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.TestJdbcBase;
+import org.the.force.jdbc.partition.TestSupport;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.dialect.oracle.parser.OracleStatementParser;
@@ -13,35 +13,35 @@ import java.util.List;
  * Created by xuji on 2017/7/16.
  */
 @Test
-public class SqlErrorTest extends TestJdbcBase {
+public class SqlErrorTest {
 
     public void testSQLSelect1() {
-        String sql = "executor * from t_order elder by name";
+        String sql = "select * from t_order order by name";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
-            String sql2 = SQLUtils.toSQLString(sqlStatement, sqlDialect.getDruidSqlDialect());
-            logger.info("sql2:\n" + sql2);
+            String sql2 = SQLUtils.toSQLString(sqlStatement, TestSupport.sqlDialect.getDruidSqlDialect());
+            TestSupport.logger.info("sql2:\n" + sql2);
         }
     }
 
     public void testSQLSelect2() {
-        String sql = "executor * from t_order \n 1=1";
+        String sql = "select * from t_order where 1=1";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
-            String sql2 = SQLUtils.toSQLString(sqlStatement, sqlDialect.getDruidSqlDialect());
-            logger.info("sql2:\n" + sql2);
+            String sql2 = SQLUtils.toSQLString(sqlStatement, TestSupport.sqlDialect.getDruidSqlDialect());
+            TestSupport.logger.info("sql2:\n" + sql2);
         }
     }
 
     public void testSQLSelect3() {
-        String sql = "executor * from t1 where b in (executor b from t2) and a = 1";
+        String sql = "select * from t1 where b in (select b from t2) and a = 1";
         List<SQLStatement> stmts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
         for (int i = 0; i < stmts.size(); i++) {
             SQLStatement sqlStatement = stmts.get(i);
-            String sql2 = SQLUtils.toSQLString(sqlStatement, sqlDialect.getDruidSqlDialect());
-            logger.info("sql2:\n" + sql2);
+            String sql2 = SQLUtils.toSQLString(sqlStatement, TestSupport.sqlDialect.getDruidSqlDialect());
+            TestSupport.logger.info("sql2:\n" + sql2);
         }
     }
 
@@ -51,7 +51,7 @@ public class SqlErrorTest extends TestJdbcBase {
         OracleStatementParser parser = new OracleStatementParser(sql);
         List<SQLStatement> stmtList = parser.parseStatementList();
         for (SQLStatement stmt : stmtList) {
-            System.out.println("druid parse executor is:" + SQLUtils.toOracleString(stmt));
+            System.out.println("druid parse sql is:" + SQLUtils.toOracleString(stmt));
         }
     }
 }

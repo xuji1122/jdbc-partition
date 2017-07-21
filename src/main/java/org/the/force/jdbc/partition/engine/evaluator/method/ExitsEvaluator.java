@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.evaluator.method;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
 
@@ -16,8 +17,8 @@ public class ExitsEvaluator extends AbstractMethodEvaluator {
         super(logicDbConfig, originalSqlExpr);
     }
 
-    public Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         List<Object> value = evalArguments(sqlExprEvalContext, data);
-        return value != null && !value.isEmpty();
+        return new BooleanValue(value != null && !value.isEmpty());
     }
 }

@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.driver.jdbc;
 
-import org.the.force.jdbc.partition.TestJdbcBase;
+import org.the.force.jdbc.partition.TestSupport;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,17 +15,17 @@ import java.time.LocalDate;
  * 4，statement是否需要缓存的问题 不缓存 很少使用 无法预见sql 预编译也不存在
  */
 //@Test(priority = 20)
-public class TestStatement extends TestJdbcBase {
+public class TestStatement  {
 
     private String testSql = "INSERT INTO  t_user(id,channel,app_id,identifier,birth_date,status) VALUES(?,?,?,?,?,?)  ON DUPLICATE KEY UPDATE app_id=app_id,status=status";
 
     public void testBatch() throws Exception {
         long start = System.currentTimeMillis();
-        Connection connection = getConnection();
+        Connection connection = TestSupport.singleDb.getConnection();
         connection.setAutoCommit(false);
         PreparedStatement preparedStatement = connection.prepareStatement(testSql);
         int startIndex = 0;
-        int total = startIndex + 200;
+        int total = startIndex + 2000;
         for (int i = startIndex; i < total; i++) {
             preparedStatement.setInt(1, i);
             preparedStatement.setInt(2, 0);
@@ -36,13 +36,13 @@ public class TestStatement extends TestJdbcBase {
             preparedStatement.addBatch();
             if (i > 0 && i % 200 == 0) {//10
                 int[] array = preparedStatement.executeBatch();
-                logger.info(MessageFormat.format("number={0},size={1}", i, array.length));
+                TestSupport.logger.info(MessageFormat.format("number={0},size={1}", i, array.length));
             }
         }
         int[] array = preparedStatement.executeBatch();
-        logger.info("size="+ array.length);
+        TestSupport.logger.info("size="+ array.length);
         connection.commit();
-        logger.info("耗时=" + (System.currentTimeMillis() - start));
+        TestSupport.logger.info("耗时=" + (System.currentTimeMillis() - start));
         connection.close();
     }
 

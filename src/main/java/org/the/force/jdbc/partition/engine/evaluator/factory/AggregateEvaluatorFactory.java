@@ -34,7 +34,7 @@ public class AggregateEvaluatorFactory {
         classMap.put("SUM", SumAggregateEvaluator.class);
     }
 
-    public SqlExprEvaluator matchSqlExprEvalFunction(SQLAggregateExpr sqlAggregateExpr) {
+    public SqlExprEvaluator matchSqlExprEvaluator(SQLAggregateExpr sqlAggregateExpr) {
         String methodName = sqlAggregateExpr.getMethodName();
         Class<? extends AggregateEvaluator> clazz = classMap.get(methodName.toUpperCase());
         try {

@@ -4,8 +4,9 @@ import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -95,7 +96,7 @@ class ColumnInValueListRouter {
 
         columnValueList = new ArrayList<>();
         for (Map.Entry<SqlRefer, SqlExprEvaluator> entry2 : partitionColumnValueMap.entrySet()) {
-            Object value = entry2.getValue().eval(sqlExprEvalContext, null);
+            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExprEvalContext, null);
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getName(), value);
             columnValueList.add(columnValueInner);
         }
@@ -126,7 +127,7 @@ class ColumnInValueListRouter {
         if (end) {
             return false;
         }
-        if (add(cursors.length - 1)) {
+        if (!add(cursors.length - 1)) {
             end = true;
             return false;
         }
@@ -135,7 +136,7 @@ class ColumnInValueListRouter {
             Object[] columnArray = list.get(cursors[i]);
             List<Pair<SqlRefer, Integer>> slqReferIndex = partitionColumnIndexes.get(i);
             for (Pair<SqlRefer, Integer> pair : slqReferIndex) {
-                SqlColumnValue sqlColumnValue = new SqlColumnValue(pair.getLeft().getName().toLowerCase(), columnArray[pair.getRight().intValue()]);
+                SqlColumnValue sqlColumnValue = new SqlColumnValue(pair.getLeft().getName().toLowerCase(), (SqlValue) columnArray[pair.getRight().intValue()]);
                 partitionColumnValueTreeSet.add(sqlColumnValue);
             }
             Pair<SQLInListExpr, Object[]> pair = new Pair<>(tableGetters.get(i).getOriginalSqlExpr(), columnArray);

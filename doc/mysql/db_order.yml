@@ -13,9 +13,9 @@ db_order:
             #物理库节点的名字被当做一个指针，在定义表格分区时使用
             children:
                 db_order_0:
-                    url:  jdbc:mysql://dev.executor:3306/db_order_0
+                    url:  jdbc:mysql://dev.db:3306/db_order_0
                 db_order_1:
-                    url:  jdbc:mysql://dev.executor:3306/db_order_1
+                    url:  jdbc:mysql://dev.db:3306/db_order_1
         # 逻辑表列表，只有子节点，没有data
         logic_tables:
             children:
@@ -46,12 +46,8 @@ db_order:
                             children:
                                     - {physicDbName: 'db_order_0',physicTableName: 't_user_0'}
                                     - {physicDbName: 'db_order_0',physicTableName: 't_user_1'}
-                                    - {physicDbName: 'db_order_0',physicTableName: 't_user_2'}
-                                    - {physicDbName: 'db_order_0',physicTableName: 't_user_3'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_4'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_5'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_6'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_7'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_2'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_user_3'}
                 t_order:
                     children:
                         #老版本物理表配置，可以有new子节点，用于数据在线迁移时重新定义一套物理存储的规则
@@ -78,12 +74,8 @@ db_order:
                             children:
                                     - {physicDbName: 'db_order_0',physicTableName: 't_order_0'}
                                     - {physicDbName: 'db_order_0',physicTableName: 't_order_1'}
-                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_2'}
-                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_3'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_4'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_5'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_6'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_7'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_2'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_3'}
                 t_order_sku:
                     children:
                         #老版本物理表配置，可以有new子节点，用于数据在线迁移时重新定义一套物理存储的规则
@@ -109,10 +101,6 @@ db_order:
                             children:
                                     - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_0'}
                                     - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_1'}
-                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_2'}
-                                    - {physicDbName: 'db_order_0',physicTableName: 't_order_sku_3'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_4'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_5'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_6'}
-                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_7'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_2'}
+                                    - {physicDbName: 'db_order_1',physicTableName: 't_order_sku_3'}
 

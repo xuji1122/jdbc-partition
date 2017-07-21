@@ -3,11 +3,11 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.executor.BlockQueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.elements.JoinConnector;
-import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.sql.JoinConnector;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
@@ -23,6 +23,11 @@ import java.util.Map;
 
 /**
  * Created by xuji on 2017/7/18.
+ * TODO
+ * 表关联查询
+ *  1，逻辑上拆成了多个表  binding关系
+ *  2，join的条件其中一个表已经指定了value  优化join条件的问题
+ *  3，小表广播的方式
  */
 public class JoinedTableSourceExecutor extends SQLJoinTableSource implements BlockQueryExecutor {
 

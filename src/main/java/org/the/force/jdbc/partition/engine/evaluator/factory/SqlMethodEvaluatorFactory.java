@@ -25,7 +25,7 @@ public class SqlMethodEvaluatorFactory {
         classMap.put("EXITS", ExitsEvaluator.class);
     }
 
-    public SqlExprEvaluator matchSqlExprEvalFunction(SQLMethodInvokeExpr sqlAggregateExpr) {
+    public SqlExprEvaluator matchSqlExprEvaluator(SQLMethodInvokeExpr sqlAggregateExpr) {
         String methodName = sqlAggregateExpr.getMethodName();
         Class<? extends AbstractMethodEvaluator> clazz = classMap.get(methodName.toUpperCase());
         try {

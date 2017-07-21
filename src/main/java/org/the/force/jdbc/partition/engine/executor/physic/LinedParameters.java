@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
-import org.the.force.jdbc.partition.engine.sql.SqlParameter;
+import org.the.force.jdbc.partition.engine.value.SqlParameter;
 
 import java.util.List;
 

@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.evaluator;
 
-import org.the.force.jdbc.partition.engine.sql.parameter.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.executor.Command;
-import org.the.force.jdbc.partition.engine.sql.elements.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
 import java.util.List;

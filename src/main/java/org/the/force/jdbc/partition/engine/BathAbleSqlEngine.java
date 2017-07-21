@@ -141,7 +141,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
             WriteCommand template = buildWriteCommand(executorConfig, updateMerger);
             logicSqlParameterHolder.resetLineNumber();
             if (logger.isDebugEnabled()) {
-                //logger.debug("sql解析结果:{}", batchAbleSqlExecutor.getTableExecutorRouter().toString());
+                //logger.debug(MessageFormat.format("sql解析结果:{0}", physicDbExecutor.toString()));
             }
             physicDbExecutor.executeWrite(template);
             if (forceTransaction) {

@@ -1,15 +1,15 @@
 package org.the.force.jdbc.partition.engine.executor.dql.factory;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.executor.dql.executor.BlockQueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.executor.DbBlockQueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.executor.LogicBlockQueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.partition.PartitionBlockQueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.logic.LogicBlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
-import org.the.force.jdbc.partition.engine.sql.elements.query.ExecutorNodeType;
-import org.the.force.jdbc.partition.engine.sql.elements.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.query.ExecutorNodeType;
+import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -84,7 +84,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
             return root;
         } else {
             //由db处理结果集的嵌套关系，只需要将最外层的查询发给db即可。
-            return new DbBlockQueryExecutor(logicDbConfig, sqlSelectQueryBlockList.get(0), executorNodeType.getExprConditionalSqlTable());
+            return new PartitionBlockQueryExecutor(logicDbConfig, sqlSelectQueryBlockList.get(0), executorNodeType.getExprConditionalSqlTable());
         }
 
     }
@@ -130,8 +130,10 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
 
     protected ExecutorNodeType checkExprTableSource(SQLSelectQueryBlock selectQueryBlock) {
         ExprConditionalSqlTable exprConditionalSqlTable = (ExprConditionalSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(selectQueryBlock.getFrom());
-        TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
-        selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
+        if(selectQueryBlock.getWhere()!=null){
+            TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
+            selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
+        }
         return new ExecutorNodeType(false, exprConditionalSqlTable);
     }
 

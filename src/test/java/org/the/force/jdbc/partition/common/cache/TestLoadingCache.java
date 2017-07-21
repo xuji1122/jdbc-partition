@@ -7,7 +7,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.TestJdbcPartitionBase;
+import org.the.force.jdbc.partition.TestJdbcPartitionSupport;
+import org.the.force.jdbc.partition.TestSupport;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
@@ -20,7 +21,7 @@ import org.the.force.thirdparty.druid.support.logging.LogFactory;
 /**
  * Created by xuji on 2017/6/2.
  */
-public class TestLoadingCache extends TestJdbcPartitionBase {
+public class TestLoadingCache {
 
     private static Log logger = LogFactory.getLog(TestLoadingCache.class);
 
@@ -29,7 +30,7 @@ public class TestLoadingCache extends TestJdbcPartitionBase {
         LoadingCache<String, String> loadingCache =
             CacheBuilder.newBuilder().maximumSize(1024).concurrencyLevel(1024).initialCapacity(512).build(new CacheLoader<String, String>() {
                 public String load(String key) throws Exception {
-                    logger.info("load "+key);
+                    logger.info("load " + key);
                     return key + "_value";
                 }
             });
@@ -45,12 +46,8 @@ public class TestLoadingCache extends TestJdbcPartitionBase {
 
     @Test
     public void test2() throws Exception {
-        ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(500, 3);
-        CuratorFramework curatorFramework =
-            CuratorFrameworkFactory.builder().connectString(zkConnectStr).namespace(zkRootPath).connectionTimeoutMs(15000).sessionTimeoutMs(20000).retryPolicy(retryPolicy).build();
-        curatorFramework.start();
-        DataNode zkDataNode = new ZKDataNode(null, logicDbName, curatorFramework);
-        LogicDbConfig logicDbConfig = new LogicDbManager(zkDataNode, SqlDialect.MySql, paramStr, propInfo);
+
+        LogicDbConfig logicDbConfig = TestSupport.partitionDb.ymlLogicDbConfig;
         SqlExecutorManager sqlExecutorManager = new SqlExecutorManager(logicDbConfig);
         String sql = "update  t_order set status=? where order_id=?";
         sqlExecutorManager.getSqlExecutor(sql);

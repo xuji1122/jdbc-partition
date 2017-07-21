@@ -1,61 +1,40 @@
 package org.the.force.jdbc.partition.rule;
 
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.BackgroundCallback;
-import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.KeeperException;
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.TestJdbcPartitionBase;
-import org.the.force.jdbc.partition.common.BeanUtils;
-import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.resource.db.LogicDbManager;
-import org.the.force.thirdparty.druid.support.logging.Log;
-import org.the.force.thirdparty.druid.support.logging.LogFactory;
+import org.the.force.jdbc.partition.TestSupport;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 
 /**
  * Created by xuji on 2017/5/16.
  */
-@Test(priority = 200)
-public class TestZookeeperConfig extends TestJdbcPartitionBase {
+@Test(priority = 100)
+public class TestZookeeperConfig {
 
-    private Log logger = LogFactory.getLog(TestZookeeperConfig.class);
-
-    BackgroundCallback backgroundCallback;
-
-    CuratorFramework curatorFramework;
+    CuratorFramework curatorFramework = TestSupport.partitionDb.getZk();
 
     public TestZookeeperConfig() {
-        backgroundCallback = (client, event) -> logger.info("crete-result:" + event.getType().name());
-        ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
-        curatorFramework =
-            CuratorFrameworkFactory.builder().namespace(zkRootPath).connectString(zkConnectStr).connectionTimeoutMs(15000).sessionTimeoutMs(20000).retryPolicy(retryPolicy).build();
-        curatorFramework.start();
+
     }
 
-    @Test(priority = 202)
+    @Test(priority = 50)
     public void initConfig() throws Exception {
-        super.jsonDbDataNode.writeToZk(curatorFramework);
+        try {
+            curatorFramework.delete().deletingChildrenIfNeeded().forPath("/" + TestSupport.partitionDb.logicDbName);
+        } catch (KeeperException.NoNodeException exception) {
+
+        }
+        TestSupport.partitionDb.jsonDbDataNode.writeToZk(curatorFramework);
     }
 
 
-
-    @Test(priority = 203)
+    @Test(priority = 51)
     public void testConnectDriver() throws Exception {
         Class.forName("org.the.force.jdbc.partition.driver.JdbcPartitionDriver");
-        Connection connection = DriverManager.getConnection(dbConnectionUrl, user, password);
+        Connection connection = TestSupport.partitionDb.getConnection();
         connection.close();
     }
-
-
-    @Test(priority = 201)
-    public void testYmlConfig() throws Exception {
-        LogicDbManager logicDbConfig = new LogicDbManager(jsonDbDataNode, SqlDialect.MySql, paramStr, propInfo);
-        String json = BeanUtils.toJson(logicDbConfig);
-        logger.info("1:\n" + json);
-    }
-
 
 }

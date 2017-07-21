@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.resource.db;
 
 import org.the.force.jdbc.partition.driver.SqlDialect;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluatorFactory;
+import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.resource.table.LogicTableManager;
 
 import java.util.Properties;
