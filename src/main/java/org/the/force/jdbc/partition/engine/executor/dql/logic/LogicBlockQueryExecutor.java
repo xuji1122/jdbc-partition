@@ -1,62 +1,59 @@
 package org.the.force.jdbc.partition.engine.executor.dql.logic;
 
+import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.table.QueriedSqlTable;
 import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSourceImpl;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by xuji on 2017/7/18.
  * client端执行的sql
  */
-public class LogicBlockQueryExecutor extends SQLTableSourceImpl implements BlockQueryExecutor {
+public class LogicBlockQueryExecutor extends SQLExprTableSource implements BlockQueryExecutor {
 
     private final LogicDbConfig logicDbConfig;
 
-    private final ConditionalSqlTable sqlTable;
-
     private final SQLSelectQueryBlock sqlSelectQueryBlock;
-
 
     public LogicBlockQueryExecutor(LogicDbConfig logicDbConfig, SQLSelectQueryBlock sqlSelectQueryBlock) {
         this.logicDbConfig = logicDbConfig;
         this.sqlSelectQueryBlock = sqlSelectQueryBlock;
-        BlockQueryExecutor source = (BlockQueryExecutor)sqlSelectQueryBlock.getFrom();
-        sqlTable = new QueriedSqlTable(source) {
-            public List<String> getReferLabels() {
-                return new ArrayList<>();
-            }
-        };
     }
 
     protected void accept0(SQLASTVisitor visitor) {
-        if (visitor instanceof PartitionSqlASTVisitor) {
-            ((PartitionSqlASTVisitor) visitor).visit(this);
-        } else {
-            sqlTable.getSQLTableSource().accept(visitor);
-        }
+        sqlSelectQueryBlock.accept(visitor);
+    }
+
+    public SQLSelectQuery getStatement() {
+        return sqlSelectQueryBlock;
     }
 
     public ResultSet execute(QueryCommand queryCommand, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
         return null;
     }
 
+    public SQLExpr getExpr() {
+        return null;
+    }
+
+    public void setExpr(SQLExpr expr) {
+    }
+
     public String getAlias() {
-        return sqlTable.getSQLTableSource().getAlias();
+
+        throw new UnsupportedOperationException("getAlias()");
     }
 
     public void setAlias(String alias) {
@@ -64,18 +61,18 @@ public class LogicBlockQueryExecutor extends SQLTableSourceImpl implements Block
     }
 
     public int getHintsSize() {
-        return sqlTable.getSQLTableSource().getHints().size();
+        throw new UnsupportedOperationException("getAlias()");
     }
 
     public List<SQLHint> getHints() {
-        return sqlTable.getSQLTableSource().getHints();
+        throw new UnsupportedOperationException("getHints()");
     }
 
     public void setHints(List<SQLHint> hints) {
 
     }
 
-    public SQLTableSource clone() {
+    public SQLExprTableSource clone() {
         throw new UnsupportedOperationException(this.getClass().getName());
     }
 
@@ -84,7 +81,8 @@ public class LogicBlockQueryExecutor extends SQLTableSourceImpl implements Block
     }
 
     public SQLExpr getFlashback() {
-        return sqlTable.getSQLTableSource().getFlashback();
+
+        throw new UnsupportedOperationException("getFlashback()");
     }
 
     public void setFlashback(SQLExpr flashback) {
@@ -94,11 +92,13 @@ public class LogicBlockQueryExecutor extends SQLTableSourceImpl implements Block
         return logicDbConfig;
     }
 
-    public ConditionalSqlTable getSqlTable() {
-        return sqlTable;
-    }
 
     public SQLSelectQueryBlock getSqlSelectQueryBlock() {
         return sqlSelectQueryBlock;
+    }
+
+
+    public String toString() {
+        return PartitionSqlUtils.toSql(sqlSelectQueryBlock, logicDbConfig.getSqlDialect());
     }
 }

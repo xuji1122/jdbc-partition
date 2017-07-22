@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectReferLabelParser;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
@@ -33,7 +33,7 @@ public class SqlTableParser {
         if (tableSource instanceof SQLExprTableSource) {
             ExprConditionalSqlTable sqlTable = new ExprConditionalSqlTable(logicDbConfig, (SQLExprTableSource) tableSource);
             return sqlTable;
-        } else if (tableSource instanceof JoinedTableSourceExecutor) {
+        } else if (tableSource instanceof JoinedTableSource) {
 
         } else if (tableSource instanceof SQLJoinTableSource) {
             throw new SqlParseException("SQLJoinTableSource 不能用于获取SqlTable");

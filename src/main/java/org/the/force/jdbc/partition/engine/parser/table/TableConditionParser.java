@@ -15,6 +15,7 @@ import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
+import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBetweenExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
@@ -109,6 +110,15 @@ public class TableConditionParser extends PartitionAbstractVisitor {
     }
 
 
+    public void preVisit(SQLObject sqlObject) {
+        if (sqlObject instanceof SQLBinaryOpExpr) {
+            return;
+        }
+        if (sqlObject instanceof SQLExpr) {
+            backupOtherCondition((SQLExpr) sqlObject);
+        }
+    }
+
     /**
      * 逻辑关系表达式
      *
@@ -183,6 +193,14 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         }
     }
 
+    public boolean visit(SQLNotExpr x) {
+        columnConditionStack.push(false);
+        tableOwnConditionStack.push(false);
+        x.getExpr().accept(this);
+        columnConditionStack.pop();
+        tableOwnConditionStack.pop();
+        return false;
+    }
 
     private boolean visitRelationalExpr(SQLBinaryOpExpr x, SQLExpr left, SQLExpr right) {
         //保留当前条件 确保otherCondition尽量包含所有
@@ -259,17 +277,15 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         if (b) {
             return false;
         }
-
         resetTableOwnCondition(x);
-
         if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-        addColumnCondition(currentSqlTable,sqlRefer, x,logicDbConfig);
+        addColumnCondition(currentSqlTable, sqlRefer, x, logicDbConfig);
         return false;
     }
 
-    public static void addColumnCondition(ConditionalSqlTable currentSqlTable, SqlRefer sqlRefer, SQLExpr sqlExpr,LogicDbConfig logicDbConfig) {
+    public static void addColumnCondition(ConditionalSqlTable currentSqlTable, SqlRefer sqlRefer, SQLExpr sqlExpr, LogicDbConfig logicDbConfig) {
         Map<SqlRefer, List<SqlExprEvaluator>> map = currentSqlTable.getColumnConditionsMap();
         if (!map.containsKey(sqlRefer)) {
             map.put(sqlRefer, new ArrayList<>());
@@ -281,10 +297,6 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         }
     }
 
-    public boolean visit(SQLNotExpr x) {
-        backupOtherCondition(x);
-        return false;
-    }
 
     /**
      * between 表达式
@@ -317,7 +329,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
-        addColumnCondition(currentSqlTable,sqlRefer,x,logicDbConfig);
+        addColumnCondition(currentSqlTable, sqlRefer, x, logicDbConfig);
         return false;
     }
 
@@ -336,45 +348,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
     public boolean visit(SQLInListExpr x) {
         SQLExpr sqlExpr = x.getExpr();
         backupOtherCondition(x);
-
-        List<SQLExpr> listKey = new ArrayList<>();
-
-        if (sqlExpr instanceof SQLListExpr) {
-            //表达式是多列的情况
-            SQLListExpr sqlListExpr = (SQLListExpr) sqlExpr;
-            boolean match = false;
-            for (SQLExpr expr : sqlListExpr.getItems()) {
-                if (expr instanceof SQLName) {
-                    listKey.add(new SqlRefer((SQLName) expr));
-                    match = true;
-                } else {
-                    listKey.add(expr);
-                }
-            }
-            if (!match) {
-                return false;
-            }
-        } else {
-            if (!(sqlExpr instanceof SQLName)) {
-                return false;
-            }
-            listKey.add(new SqlRefer((SQLName) sqlExpr));
-        }
-        boolean tableOwnConditionMatch = true;//list key的多列是否都归属currentSqlTable
-        boolean partitionColumnMatch = false;
-        for (SQLExpr expr : listKey) {
-            if (expr instanceof SqlRefer) {
-                SqlRefer c = (SqlRefer) expr;
-                if (checkCurrentSqlTableOwn(c)) {
-                    partitionColumnMatch = true;
-                } else {
-                    tableOwnConditionMatch = false;
-                }
-            } else {
-                tableOwnConditionMatch = false;
-            }
-        }
-        if (!partitionColumnMatch) {
+        List<SQLExpr> listKey = matchListKey(sqlExpr);
+        if (listKey == null || listKey.isEmpty()) {
             return false;
         }
         //检查取值表达式中有无sqlName变量
@@ -389,16 +364,49 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         if (b) {
             return false;
         }
-
-        if (tableOwnConditionMatch) {
-            resetTableOwnCondition(x);
-        }
+        resetTableOwnCondition(x);
         if (!columnConditionStack.isAllTrue()) {//不在and语义下
             return false;
         }
         SQLInListEvaluator sqlExprEvaluator = (SQLInListEvaluator) logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(x);
         currentSqlTable.getColumnInListConditionMap().put(listKey, sqlExprEvaluator);
         return false;
+    }
+
+    private List<SQLExpr> matchListKey(SQLExpr sqlExpr) {
+        List<SQLExpr> listKey = new ArrayList<>();
+        if (sqlExpr instanceof SQLListExpr) {
+            //表达式是多列的情况
+            SQLListExpr sqlListExpr = (SQLListExpr) sqlExpr;
+            boolean match = false;
+            for (SQLExpr expr : sqlListExpr.getItems()) {
+                if (expr instanceof SQLName) {
+                    listKey.add(new SqlRefer((SQLName) expr));
+                    match = true;
+                } else {
+                    listKey.add(expr);
+                }
+            }
+            if (!match) {
+                return null;
+            }
+        } else {
+            if (!(sqlExpr instanceof SQLName)) {
+                return null;
+            }
+            listKey.add(new SqlRefer((SQLName) sqlExpr));
+        }
+        for (SQLExpr expr : listKey) {
+            if (expr instanceof SqlRefer) {
+                SqlRefer c = (SqlRefer) expr;
+                if (!checkCurrentSqlTableOwn(c)) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+        return listKey;
     }
 
     /**
@@ -408,8 +416,19 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * @return
      */
     public boolean visit(SQLInSubQueriedExpr x) {
-        SQLInListExpr sqlInListExpr = x;
-        return visit(sqlInListExpr);
+        SQLExpr sqlExpr = x.getExpr();
+        backupOtherCondition(x);
+        List<SQLExpr> listKey = matchListKey(sqlExpr);
+        if (listKey == null || listKey.isEmpty()) {
+            return false;
+        }
+        resetTableOwnCondition(x);
+        if (!columnConditionStack.isAllTrue()) {//不在and语义下
+            return false;
+        }
+        SQLInListEvaluator sqlExprEvaluator = (SQLInListEvaluator) logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(x);
+        currentSqlTable.getColumnInListConditionMap().put(listKey, sqlExprEvaluator);
+        return false;
     }
 
     public boolean visit(SubQueriedExpr x) {

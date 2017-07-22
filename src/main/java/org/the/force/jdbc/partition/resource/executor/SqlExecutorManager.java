@@ -63,10 +63,10 @@ public class SqlExecutorManager {
             SQLStatement sqlStatement = stmtList.get(0);
             sqlStatement.accept(sqlExecutorFactory);
             SqlExecutor sqlExecutor = sqlExecutorFactory.getSqlExecutor();
-            logger.info(MessageFormat.format("\n\t\t\t\tlogic executor:{0} \n\t\t\t\texecutor execution factory:{1}", sql, sqlExecutor.toString()));
+            logger.info(MessageFormat.format("\n\t\t\t\tlogic sql:{0} \n\t\t\t\texecutor sql:{1}", sql, sqlExecutor.toString()));
             return sqlExecutor;
         } catch (Exception e) {
-            logger.error("logic factory:" + sqlKey.getSql(), e);
+            logger.error("logic sql:" + sqlKey.getSql(), e);
             if (e.getCause() instanceof SQLException) {
                 throw new SqlParseException(sqlKey.getSql(), e.getCause());
             } else {

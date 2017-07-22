@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.engine.sql;
 
 import org.the.force.jdbc.partition.engine.sql.table.ExprSqlTable;
 import org.the.force.jdbc.partition.rule.Partition;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLInsertStatement;
 
@@ -21,7 +22,7 @@ public class SqlTablePartition {
     private final Partition partition;
 
 
-    private Map<SQLInListExpr, List<Object[]>> subInListExpr;//in values 路由的结果
+    private Map<SQLExpr, List<Object[]>> subInListExpr;//in values 路由的结果
 
     private List<SQLInsertStatement.ValuesClause> valuesClauses;//insert 的 values 路由结果
 
@@ -52,7 +53,7 @@ public class SqlTablePartition {
         return getPartition().equals(that.getPartition());
     }
 
-    public Map<SQLInListExpr, List<Object[]>> getSubInListExpr() {
+    public Map<SQLExpr, List<Object[]>> getSubInListExpr() {
         if (subInListExpr == null) {
             subInListExpr = new LinkedHashMap<>();
         }

@@ -6,7 +6,7 @@ import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFac
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
 import org.the.force.jdbc.partition.engine.executor.dql.logic.LogicBlockQueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.value.SqlLiteral;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
@@ -16,6 +16,7 @@ import org.the.force.jdbc.partition.engine.value.types.IntValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.rule.Partition;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLVariantRefExpr;
@@ -57,9 +58,18 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return sqlParameterList;
     }
 
+    /**
+     * tableSource重写的逻辑
+     *
+     * @param x
+     * @return
+     */
     public boolean visit(SQLExprTableSource x) {
 
         ExprSqlTable exprSqlTable = sqlTablePartition.getExprSqlTable();
+        if (!exprSqlTable.getSQLTableSource().equals(x)) {
+            return super.visit(x);
+        }
         Partition partition = sqlTablePartition.getPartition();
         if (!exprSqlTable.getSchema().equals(PartitionJdbcConstants.EMPTY_NAME)) {
             print(partition.getPhysicDbName());
@@ -73,57 +83,40 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    protected void printValuesList(MySqlInsertStatement x) {
-
-        List<SQLInsertStatement.ValuesClause> valuesList = sqlTablePartition.getValuesClauses();
-
-        if (parameterized) {
-            print0(ucase ? "VALUES " : "values ");
-            incrementIndent();
-            valuesList.get(0).accept(this);
-            decrementIndent();
-            if (valuesList.size() > 1) {
-                this.incrementReplaceCunt();
-            }
-            return;
-        }
-
-        print0(ucase ? "VALUES " : "values ");
-        if (x.getValuesList().size() > 1) {
-            incrementIndent();
-        }
-        for (int i = 0, size = valuesList.size(); i < size; ++i) {
-            if (i != 0) {
-                print(',');
-                println();
-            }
-            valuesList.get(i).accept(this);
-        }
-        if (valuesList.size() > 1) {
-            decrementIndent();
-        }
+    /**
+     * insert values的输出的逻辑
+     *
+     * @param x
+     * @return
+     */
+    protected List<SQLInsertStatement.ValuesClause> getValuesList(MySqlInsertStatement x) {
+        return sqlTablePartition.getValuesClauses();
     }
 
+    /**
+     * in 表达式输出的逻辑
+     *
+     * @param x
+     * @return
+     */
     public boolean visit(SQLInListExpr x) {
-        Map<SQLInListExpr, List<Object[]>> map = sqlTablePartition.getSubInListExpr();
+        Map<SQLExpr, List<Object[]>> map = sqlTablePartition.getSubInListExpr();
         List<Object[]> targetList = map.get(x);
-
         if (targetList == null) {
-            if (x instanceof SQLInSubQueriedExpr) {
-                //TODO 触发子查询
-            } else {
-                return super.visit(x);
-            }
+            return super.visit(x);
         }
         x.getExpr().accept(this);
-
         if (x.isNot()) {
             print0(ucase ? " NOT IN (" : " not in (");
         } else {
             print0(ucase ? " IN (" : " in (");
         }
-
         final List<Object[]> list = targetList;
+        printInValues(list);
+        return false;
+    }
+
+    protected void printInValues(final List<Object[]> list) {
         int rowSize = list.size();
 
         for (int rowCount = 0; rowCount < rowSize; rowCount++) {
@@ -141,6 +134,7 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
                 Object value = columnArray[columnCount];
                 if (value instanceof SqlParameter) {
                     print0("?");
+                    parametric = true;
                     sqlParameterList.add((SqlParameter) value);
                 } else if (value instanceof SqlLiteral) {
                     print0(((SqlLiteral) value).toSql());
@@ -154,7 +148,6 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         }
 
         print(')');
-        return false;
     }
 
     public boolean visit(SQLVariantRefExpr x) {
@@ -205,6 +198,7 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
     }
 
     /**
+     * TODO
      * 需要执行查询，
      * 查询的结果需要关联语境输出sql?
      * 一行一列
@@ -218,7 +212,25 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    public boolean visit(JoinedTableSourceExecutor joinedTableSourceExecutor) {
+    /**
+     * TODO
+     *
+     * @param x
+     * @return
+     */
+    public boolean visit(SQLInSubQueriedExpr x) {
+        Map<SQLExpr, List<Object[]>> map = sqlTablePartition.getSubInListExpr();
+        List<Object[]> targetList = map.get(x);
+        if (targetList == null) {
+
+        } else {
+
+        }
+        x.getExpr().accept(this);
+        return false;
+    }
+
+    public boolean visit(JoinedTableSource joinedTableSource) {
         return false;
     }
 

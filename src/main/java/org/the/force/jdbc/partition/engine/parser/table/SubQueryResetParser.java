@@ -193,10 +193,6 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
     }
 
     public boolean visit(SQLInListExpr x) {
-        if (x instanceof SQLInSubQueriedExpr) {
-            subQueryList.add(x);
-            return false;
-        }
         return true;
     }
 

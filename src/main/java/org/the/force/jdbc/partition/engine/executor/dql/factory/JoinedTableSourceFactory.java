@@ -4,7 +4,7 @@ import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
@@ -66,18 +66,18 @@ public class JoinedTableSourceFactory {
     /**
      * 输出
      */
-    private JoinedTableSourceExecutor joinedTableSourceExecutor;
+    private JoinedTableSource joinedTableSource;
 
     public JoinedTableSourceFactory(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
         this.logicDbConfig = logicDbConfig;
         this.otherCondition = originalWhere;
-        joinedTableSourceExecutor = new JoinedTableSourceExecutor(logicDbConfig, sqlJoinTableSource);
-        parseTableSource(joinedTableSourceExecutor.getSqlJoinTableSource());
+        joinedTableSource = new JoinedTableSource(logicDbConfig, sqlJoinTableSource);
+        parseTableSource(joinedTableSource.getSqlJoinTableSource());
         parseCondition();
         buildJoin();
-        joinedTableSourceExecutor.getSqlTables().addAll(sqlTables);
-        joinedTableSourceExecutor.getQueryExecutors().addAll(this.queryExecutors);
-        joinedTableSourceExecutor.getJoinConnectorMap().putAll(joinConnectorMap);
+        joinedTableSource.getSqlTables().addAll(sqlTables);
+        joinedTableSource.getQueryExecutors().addAll(this.queryExecutors);
+        joinConnectorMap.values().forEach(joinConnector -> joinedTableSource.getJoinConnectorList().add(joinConnector));
     }
 
     private void parseTableSource(SQLJoinTableSource sqlJoinTableSource) {
@@ -86,11 +86,11 @@ public class JoinedTableSourceFactory {
         if (left instanceof SQLJoinTableSource) {
             parseTableSource((SQLJoinTableSource) left);
         } else {
-            left.setParent(joinedTableSourceExecutor);
+            left.setParent(joinedTableSource);
             ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
             sqlTables.add(sqlTable);
         }
-        right.setParent(joinedTableSourceExecutor);
+        right.setParent(joinedTableSource);
         ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
         sqlTables.add(sqlTable);
         JoinConnector joinConnector = new JoinConnector(sqlJoinTableSource.getJoinType(), sqlJoinTableSource.getCondition());
@@ -204,10 +204,10 @@ public class JoinedTableSourceFactory {
             if (sqlOrderByItemForJoin.isEmpty()) {
                 throw new SqlParseException("join的条件sqlProperties.isEmpty()");
             }
-            SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, joinedTableSourceExecutor.getSqlJoinTableSource().getParent(), sqlTable).getSqlTableRefers();
+            SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, joinedTableSource.getSqlJoinTableSource().getParent(), sqlTable).getSqlTableRefers();
             SQLSelectQueryBlock sqlSelectQueryBlock = buildSQLSelectQueryBlock(sqlTable, sqlTableRefers, sqlOrderByItemForJoin);
             QueryExecutor queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, sqlSelectQueryBlock).build();
-            queryExecutor.setParent(joinedTableSourceExecutor.getSqlJoinTableSource().getParent());
+            queryExecutor.setParent(joinedTableSource.getSqlJoinTableSource().getParent());
             queryExecutors.add(queryExecutor);
         }
 
@@ -215,7 +215,7 @@ public class JoinedTableSourceFactory {
 
     private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableRefers sqlTableRefers, List<SqlRefer> sqlOrderByItemForJoin) {
         MySqlSelectQueryBlock mySqlSelectQueryBlock = new MySqlSelectQueryBlock();
-        mySqlSelectQueryBlock.setParent(joinedTableSourceExecutor.getSqlJoinTableSource());
+        mySqlSelectQueryBlock.setParent(joinedTableSource.getSqlJoinTableSource());
         mySqlSelectQueryBlock.setFrom(sqlTable.getSQLTableSource());
         if (sqlTable.getAlias() != null) {
             sqlTable.getSQLTableSource().setAlias(sqlTable.getAlias());
@@ -299,7 +299,7 @@ public class JoinedTableSourceFactory {
         return otherCondition;
     }
 
-    public JoinedTableSourceExecutor getJoinedTableSourceExecutor() {
-        return joinedTableSourceExecutor;
+    public JoinedTableSource getJoinedTableSource() {
+        return joinedTableSource;
     }
 }

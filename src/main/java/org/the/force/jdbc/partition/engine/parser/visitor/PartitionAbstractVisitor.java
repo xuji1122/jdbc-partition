@@ -1,7 +1,8 @@
 package org.the.force.jdbc.partition.engine.parser.visitor;
 
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSourceExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
 import org.the.force.jdbc.partition.engine.executor.dql.logic.LogicBlockQueryExecutor;
 
 /**
@@ -13,17 +14,13 @@ public abstract class PartitionAbstractVisitor extends AbstractVisitor implement
         return isContinue();
     }
 
-    //    public boolean visit(SQLInSubQueriedExpr x) {
-    //        return isContinue();
-    //    }
-
-    public boolean visit(JoinedTableSourceExecutor joinedTableSourceExecutor) {
+    public boolean visit(SQLInSubQueriedExpr x) {
         return isContinue();
     }
 
-
-    public boolean visit(LogicBlockQueryExecutor logicBlockQueryExecutor) {
+    public boolean visit(JoinedTableSource joinedTableSource) {
         return isContinue();
     }
+
 
 }

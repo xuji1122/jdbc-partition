@@ -151,7 +151,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         if (newWhere != null) {
             newWhere = (SQLExpr) new SubQueryResetParser(logicDbConfig, newWhere).getSubQueryResetSqlObject();
         }
-        selectQueryBlock.setFrom(joinedTableSourceFactory.getJoinedTableSourceExecutor());
+        selectQueryBlock.setFrom(joinedTableSourceFactory.getJoinedTableSource());
         selectQueryBlock.setWhere(newWhere);
         return new ExecutorNodeType(true, null);
     }

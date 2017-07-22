@@ -1,35 +1,30 @@
 package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
-import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.LogicTableSource;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.JoinConnector;
-import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelect;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by xuji on 2017/7/18.
  * TODO
  * 表关联查询
- *  1，逻辑上拆成了多个表  binding关系
- *  2，join的条件其中一个表已经指定了value  优化join条件的问题
- *  3，小表广播的方式
+ * 1，逻辑上拆成了多个表  binding关系
+ * 2，join的条件其中一个表已经指定了value  优化join条件的问题
+ * 3，小表广播的方式
  */
-public class JoinedTableSourceExecutor extends SQLJoinTableSource implements BlockQueryExecutor {
+public class JoinedTableSource extends SQLJoinTableSource implements LogicTableSource {
 
     private final LogicDbConfig logicDbConfig;
 
@@ -39,37 +34,43 @@ public class JoinedTableSourceExecutor extends SQLJoinTableSource implements Blo
 
     private final List<QueryExecutor> queryExecutors = new ArrayList<>();
 
-    private final Map<Pair<Integer, Integer>, JoinConnector> joinConnectorMap = new LinkedHashMap<>();
+    private final List<JoinConnector> joinConnectorList = new ArrayList<>();
 
 
-    public JoinedTableSourceExecutor(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource) {
+    public JoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource) {
         this.logicDbConfig = logicDbConfig;
         this.sqlJoinTableSource = sqlJoinTableSource;
         this.setParent(sqlJoinTableSource.getParent());
     }
 
-    public ResultSet execute(QueryCommand queryCommand, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
-        return null;
+    private SQLSubqueryTableSource buildSQLSubqueryTableSource(ConditionalSqlTable conditionalSqlTable, QueryExecutor queryExecutor) {
+        SQLSelect sqlSelect = new SQLSelect(queryExecutor.getStatement());
+        SQLSubqueryTableSource subqueryTableSource = new SQLSubqueryTableSource(sqlSelect);
+        subqueryTableSource.setAlias(conditionalSqlTable.getRelativeKey());
+        return subqueryTableSource;
+    }
+
+    private SQLJoinTableSource buildSQLJoinTableSource(SQLTableSource left, SQLSubqueryTableSource sqlSubqueryTableSource, JoinConnector joinConnector) {
+        return new SQLJoinTableSource(left, joinConnector.getJoinType(), sqlSubqueryTableSource, joinConnector.getJoinCondition());
     }
 
     protected void accept0(SQLASTVisitor visitor) {
-        if (visitor instanceof PartitionSqlASTVisitor) {
-            PartitionSqlASTVisitor partitionSqlASTVisitor = (PartitionSqlASTVisitor) visitor;
-            partitionSqlASTVisitor.visit(this);
-        } else {
-            sqlJoinTableSource.accept(visitor);
+        SQLTableSource left = buildSQLSubqueryTableSource(sqlTables.get(0), queryExecutors.get(0));
+        for (int i = 1; i < queryExecutors.size(); i++) {
+            SQLSubqueryTableSource right = buildSQLSubqueryTableSource(sqlTables.get(i), queryExecutors.get(i));
+            left = buildSQLJoinTableSource(left, right, joinConnectorList.get(i - 1));
         }
+        left.accept(visitor);
     }
 
-    public void add(ConditionalSqlTable conditionalSqlTable) {
-        conditionalSqlTable.getSQLTableSource().setParent(this);
-        sqlTables.add(conditionalSqlTable);
-    }
 
     public List<ConditionalSqlTable> getSqlTables() {
         return sqlTables;
     }
 
+    public List<JoinConnector> getJoinConnectorList() {
+        return joinConnectorList;
+    }
 
     public LogicDbConfig getLogicDbConfig() {
         return logicDbConfig;
@@ -79,9 +80,6 @@ public class JoinedTableSourceExecutor extends SQLJoinTableSource implements Blo
         return sqlJoinTableSource;
     }
 
-    public Map<Pair<Integer, Integer>, JoinConnector> getJoinConnectorMap() {
-        return joinConnectorMap;
-    }
 
     public List<QueryExecutor> getQueryExecutors() {
         return queryExecutors;
@@ -142,7 +140,6 @@ public class JoinedTableSourceExecutor extends SQLJoinTableSource implements Blo
     public boolean replace(SQLExpr expr, SQLExpr target) {
         throw new UnsupportedOperationException(this.getClass().getName());
     }
-
 
 
 }

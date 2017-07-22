@@ -44,7 +44,7 @@ class ColumnInValueListRouter {
 
     private boolean end;
 
-    private Map<List<SQLExpr>, Pair<SQLInListExpr, Object[]>> currentRowColumnValues = new HashMap<>();
+    private Map<List<SQLExpr>, Pair<SQLExpr, Object[]>> currentRowColumnValues = new HashMap<>();
 
     public ColumnInValueListRouter(SqlExprEvalContext sqlExprEvalContext, Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap,
         Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap) throws SQLException {
@@ -139,7 +139,7 @@ class ColumnInValueListRouter {
                 SqlColumnValue sqlColumnValue = new SqlColumnValue(pair.getLeft().getName().toLowerCase(), (SqlValue) columnArray[pair.getRight().intValue()]);
                 partitionColumnValueTreeSet.add(sqlColumnValue);
             }
-            Pair<SQLInListExpr, Object[]> pair = new Pair<>(tableGetters.get(i).getOriginalSqlExpr(), columnArray);
+            Pair<SQLExpr, Object[]> pair = new Pair<>(tableGetters.get(i).getOriginalSqlExpr(), columnArray);
             currentRowColumnValues.put(tables.get(i), pair);
         }
 
@@ -152,7 +152,7 @@ class ColumnInValueListRouter {
         return partitionColumnValueTreeSet;
     }
 
-    public Map<List<SQLExpr>, Pair<SQLInListExpr, Object[]>> getCurrentRowColumnValues() {
+    public Map<List<SQLExpr>, Pair<SQLExpr, Object[]>> getCurrentRowColumnValues() {
         return currentRowColumnValues;
     }
 

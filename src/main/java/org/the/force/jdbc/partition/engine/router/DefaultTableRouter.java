@@ -177,21 +177,21 @@ public class DefaultTableRouter implements TableRouter {
 
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-        Map<Partition, Map<SQLInListExpr, List<Object[]>>> partitionColumnsMap = new HashMap<>();
+        Map<Partition, Map<SQLExpr, List<Object[]>>> partitionColumnsMap = new HashMap<>();
         while (columnInValueListRouter.next()) {
             TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = columnInValueListRouter.getCurrentPartitionColumnValues();
             SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
             if (partitions.isEmpty()) {
                 continue;
             }
-            Map<List<SQLExpr>, Pair<SQLInListExpr, Object[]>> map = columnInValueListRouter.getCurrentRowColumnValues();
+            Map<List<SQLExpr>, Pair<SQLExpr, Object[]>> map = columnInValueListRouter.getCurrentRowColumnValues();
             for (Partition partition : partitions) {
-                Map<SQLInListExpr, List<Object[]>> pairList = partitionColumnsMap.get(partition);
+                Map<SQLExpr, List<Object[]>> pairList = partitionColumnsMap.get(partition);
                 if (pairList == null) {
                     pairList = new LinkedHashMap<>();
                     partitionColumnsMap.put(partition, pairList);
                 }
-                for (Pair<SQLInListExpr, Object[]> pair : map.values()) {
+                for (Pair<SQLExpr, Object[]> pair : map.values()) {
                     List<Object[]> list = pairList.get(pair.getLeft());
                     if (list == null) {
                         list = new ArrayList<>();
@@ -203,7 +203,7 @@ public class DefaultTableRouter implements TableRouter {
             }
         }
         Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
-        for (Map.Entry<Partition, Map<SQLInListExpr, List<Object[]>>> entry : partitionColumnsMap.entrySet()) {
+        for (Map.Entry<Partition, Map<SQLExpr, List<Object[]>>> entry : partitionColumnsMap.entrySet()) {
             Partition partition = entry.getKey();
             SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
             sqlTablePartition.setTotalPartitions(partitionColumnsMap.size());

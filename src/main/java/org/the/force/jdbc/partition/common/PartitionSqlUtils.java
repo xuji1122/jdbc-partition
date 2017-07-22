@@ -1,6 +1,8 @@
 package org.the.force.jdbc.partition.common;
 
 import org.the.force.jdbc.partition.driver.SqlDialect;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
@@ -16,12 +18,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by xuji on 2017/5/20.
  */
 public class PartitionSqlUtils {
-
 
 
     /**
@@ -34,8 +36,16 @@ public class PartitionSqlUtils {
      * @param sqlDialect
      */
     public static String toSql(SQLObject sqlStatement, SqlDialect sqlDialect) {
-        StringBuilder sb = new StringBuilder();
+        return toSql(sqlStatement, sqlDialect, null);
+    }
+
+    public static String toSql(SQLObject sqlStatement, SqlDialect sqlDialect, LogicSqlParameterHolder logicSqlParameterHolder) {
+        StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
         SQLASTOutputVisitor sqlastOutputVisitor;
+        List<Object> args = null;
+        if (logicSqlParameterHolder != null && logicSqlParameterHolder.hasParam()) {
+            args = logicSqlParameterHolder.getSqlParameters().stream().map(SqlValue::getValue).collect(Collectors.toList());
+        }
         if (sqlDialect.getDruidSqlDialect().equalsIgnoreCase(JdbcConstants.MYSQL)) {
             MySqlOutputVisitor mySqlOutputVisitor = new MySqlOutputVisitor(sb, false);//是否将直接量转为sql参数
             mySqlOutputVisitor.setShardingSupport(false);
@@ -47,8 +57,8 @@ public class PartitionSqlUtils {
         } else {
             sqlastOutputVisitor = new SQLASTOutputVisitor(sb, false);
         }
-        sqlastOutputVisitor.setParameters(null);
-        sqlastOutputVisitor.setPrettyFormat(false);
+        sqlastOutputVisitor.setInputParameters(args);
+        sqlastOutputVisitor.setPrettyFormat(true);
         sqlStatement.accept(sqlastOutputVisitor);
         return sb.toString();
     }

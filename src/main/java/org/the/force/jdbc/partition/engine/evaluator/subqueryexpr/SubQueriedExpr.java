@@ -53,10 +53,15 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
     protected void accept0(SQLASTVisitor visitor) {
         if (visitor instanceof PartitionSqlASTVisitor) {
             PartitionSqlASTVisitor partitionSqlASTVisitor = (PartitionSqlASTVisitor) visitor;
-            partitionSqlASTVisitor.visit(this);
+            if (partitionSqlASTVisitor.visit(this)) {
+                queryExecutor.accept(visitor);
+            }
         } else {
-            visitor.visit(sqlQueryExpr);
-
+            SQLQueryExpr sqlQueryExpr = this;
+            if (visitor.visit(sqlQueryExpr)) {
+                queryExecutor.getStatement().accept(visitor);
+            }
+            visitor.endVisit(sqlQueryExpr);
         }
     }
 

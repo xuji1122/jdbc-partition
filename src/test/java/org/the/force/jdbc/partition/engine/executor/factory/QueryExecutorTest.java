@@ -32,21 +32,21 @@ public class QueryExecutorTest {
 
     public void test2() throws Exception {
         String sql =
-            "select id,channel from t_order o join t_order_sku i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.id in (1,2,3) and o.abc=? order by o.id limit 20 ";
+            "select o.id,o.channel from t_order o join t_order_sku i on o.id=i.order_id where  o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.id in (1,2,3) and o.abc=? order by o.id limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
 
     public void test3() throws Exception {
         String sql =
-            "select id,channel from t_order o ,t_order_sku i  where o.id=i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.id in (1,2,3) and o.abc=? order by o.id limit 20 ";
+            "select o.id,o.channel from t_order o ,t_order_sku i  where o.id=i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.id in (1,2,3) and o.abc=? order by o.id limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
 
     public void test4() throws Exception {
         String sql =
-            "select id,channel from t_order o ,t_order_sku i  where o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=?  and o.status in (select status from t_user) order by id limit 20 ";
+            "select o.id,o.channel from t_order o ,t_order_sku i  where o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and o.name in (1,2,3) and o.abc=?  and o.status in (select status from t_user) order by id limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
@@ -66,7 +66,7 @@ public class QueryExecutorTest {
 
     public void test7() throws Exception {
         String sql =
-            "select t.id,t.channel,t.abc from ( select  t0.id,t0.name.t0.abc from (select id,name,abc from t_user where name =? order by id) t0 where 1=1 ) t   where  (t.status=1 or t.status=2  )  and  t.id in (1,2,3) and t.abc=?   order by t.id  limit 20 ";
+            "select t.id,t.channel,t.abc from ( select  t0.id,t0.name,t0.abc from (select id,name,abc from t_user where name =? order by id) t0 where 1=1 ) t   where  (t.status=1 or t.status=2  )  and  t.id in (1,2,3) and t.abc=?   order by t.id  limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }

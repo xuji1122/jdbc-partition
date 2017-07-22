@@ -4,16 +4,17 @@ import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelect;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
+import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,10 +24,9 @@ import java.util.List;
  * Created by xuji on 2017/6/4.
  * 叶子节点
  */
-public class SQLInSubQueriedExpr extends SQLInListExpr implements SqlExprEvaluator {
+public class SQLInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEvaluator {
     private final LogicDbConfig logicDbConfig;
     private final SQLInSubQueryExpr sqlInSubQueryExpr;
-
     private final QueryExecutor queryExecutor;
 
     public SQLInSubQueriedExpr(LogicDbConfig logicDbConfig, SQLInSubQueryExpr sqlInSubQueryExpr) {
@@ -41,6 +41,7 @@ public class SQLInSubQueriedExpr extends SQLInListExpr implements SqlExprEvaluat
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
             this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).build();
+            this.sqlInSubQueryExpr.setSubQuery(new SQLSelect(queryExecutor.getStatement()));
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
             throw new ParserException("SQLUnionQuery 不支持" + sqlSelectQuery.getClass());
             //this.queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery).build();
@@ -49,15 +50,18 @@ public class SQLInSubQueriedExpr extends SQLInListExpr implements SqlExprEvaluat
         }
     }
 
-    //    protected void accept0(SQLASTVisitor visitor) {
-    //        if (visitor instanceof PartitionSqlASTVisitor) {
-    //            PartitionSqlASTVisitor partitionSqlASTVisitor = (PartitionSqlASTVisitor) visitor;
-    //            partitionSqlASTVisitor.visit(this);
-    //            visitor.endVisit(this);
-    //        } else {
-    //            sqlInSubQueryExpr.accept(visitor);
-    //        }
-    //    }
+    protected void accept0(SQLASTVisitor visitor) {
+        if (visitor instanceof PartitionSqlASTVisitor) {
+            PartitionSqlASTVisitor partitionSqlASTVisitor = (PartitionSqlASTVisitor) visitor;
+            if (partitionSqlASTVisitor.visit(this)) {
+                this.getExpr().accept(visitor);
+                queryExecutor.getStatement().accept(visitor);
+            }
+            visitor.endVisit(this);
+        } else {
+            sqlInSubQueryExpr.accept(visitor);
+        }
+    }
 
     public QueryExecutor getQueryExecutor() {
         return queryExecutor;
