@@ -20,6 +20,7 @@ import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 
@@ -42,11 +43,11 @@ public class DefaultTableRouter implements TableRouter {
 
     protected final LogicDbConfig logicDbConfig;
 
-    private final SQLStatement sqlStatement;
+    private final SQLObject sqlStatement;
 
     protected final ExprConditionalSqlTable exprSqlTable;
 
-    public DefaultTableRouter(LogicDbConfig logicDbConfig, SQLStatement sqlStatement, ExprConditionalSqlTable exprSqlTable) {
+    public DefaultTableRouter(LogicDbConfig logicDbConfig, SQLObject sqlStatement, ExprConditionalSqlTable exprSqlTable) {
         this.logicDbConfig = logicDbConfig;
         this.sqlStatement = sqlStatement;
         this.exprSqlTable = exprSqlTable;

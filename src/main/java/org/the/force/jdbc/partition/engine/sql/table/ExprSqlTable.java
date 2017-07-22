@@ -5,6 +5,7 @@ import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.SqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.jdbc.partition.resource.table.LogicTableManager;
 import org.the.force.jdbc.partition.resource.table.model.LogicTable;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
@@ -88,12 +89,15 @@ public abstract class ExprSqlTable extends SQLExprTableSource implements SqlTabl
         this.logicTable = logicTable;
     }
 
-    public List<String> getReferLabels() {
+    public List<String> getAllReferAbleLabels() {
         if (logicDbConfig != null && getLogicTable() == null) {
             LogicTable logicTable;
             try {
-                logicTable = logicDbConfig.getLogicTableManager(tableName).getLogicTable();
-                setLogicTable(logicTable);
+                LogicTableManager logicTableManager = logicDbConfig.getLogicTableManager(tableName);
+                if (logicTableManager != null) {
+                    logicTable = logicDbConfig.getLogicTableManager(tableName).getLogicTable();
+                    setLogicTable(logicTable);
+                }
             } catch (SQLException e) {
                 logger.warn("could not get executor meta data,table_name=" + tableName, e);
             }
@@ -188,7 +192,6 @@ public abstract class ExprSqlTable extends SQLExprTableSource implements SqlTabl
     public Map<String, Object> getAttributes() {
         return sqlExprTableSource.getAttributes();
     }
-
 
 
     @Override

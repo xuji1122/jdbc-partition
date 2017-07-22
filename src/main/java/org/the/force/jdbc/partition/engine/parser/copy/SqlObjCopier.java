@@ -54,9 +54,13 @@ public class SqlObjCopier {
         replaceObjPairs.add(new Object[] {originObj, targetObj});
     }
 
-    public <T> T copy(T source) throws Exception {
+    public <T> T copy(T source) {
 
-        return copy(source, true);
+        try {
+            return copy(source, true);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private <T> T copy(T source, boolean inRootFields) throws Exception {

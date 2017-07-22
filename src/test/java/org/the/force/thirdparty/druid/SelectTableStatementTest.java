@@ -15,7 +15,7 @@ import java.util.List;
  * Created by xuji on 2017/6/3.
  */
 @Test
-public class SelectStatementTest {
+public class SelectTableStatementTest {
 
     private Log logger = LogFactory.getLog(UpdateStatementTest.class);
 

@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.sql.query;
 
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +10,20 @@ import java.util.List;
  */
 public class GroupBy {
 
-    private SQLExpr having;
+    private SqlExprEvaluator having;//返回true false
 
-    private List<GroupByItem> itemList;
+    private List<SqlExprEvaluator> itemList = new ArrayList<>();
 
-    public List<GroupByItem> getItemList() {
-        if (itemList == null) {
-            itemList = new ArrayList<>();
-        }
+    public SqlExprEvaluator getHaving() {
+        return having;
+    }
+
+    public void setHaving(SqlExprEvaluator having) {
+        this.having = having;
+    }
+
+    public List<SqlExprEvaluator> getItemList() {
         return itemList;
     }
+
 }

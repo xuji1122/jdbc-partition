@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/5/23.
+ * 从指定的sql表达式中获取属于某个sqlTable的引用的集合
  */
 public class SqlReferParser extends AbstractVisitor {
 

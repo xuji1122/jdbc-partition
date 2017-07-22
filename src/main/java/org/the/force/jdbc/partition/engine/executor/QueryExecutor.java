@@ -12,7 +12,7 @@ import java.sql.SQLException;
 /**
  * Created by xuji on 2017/7/12.
  */
-public interface QueryExecutor extends SqlExecutor, SQLTableSource {
+public interface QueryExecutor extends SqlExecutor, SQLTableSource,SQLSelectQuery {
 
     ResultSet execute(QueryCommand queryCommand, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException;
 

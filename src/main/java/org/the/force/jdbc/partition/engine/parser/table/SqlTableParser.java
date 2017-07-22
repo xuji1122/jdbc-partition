@@ -1,7 +1,8 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
+import org.the.force.jdbc.partition.engine.executor.dql.partition.PartitionBlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
-import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectReferLabelParser;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectLabelParser;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.table.QueriedSqlTable;
@@ -34,7 +35,7 @@ public class SqlTableParser {
             ExprConditionalSqlTable sqlTable = new ExprConditionalSqlTable(logicDbConfig, (SQLExprTableSource) tableSource);
             return sqlTable;
         } else if (tableSource instanceof JoinedTableSource) {
-
+            throw new SqlParseException("JoinedTableSource 不能用于获取SqlTable");
         } else if (tableSource instanceof SQLJoinTableSource) {
             throw new SqlParseException("SQLJoinTableSource 不能用于获取SqlTable");
         }
@@ -44,10 +45,10 @@ public class SqlTableParser {
             SQLSubqueryTableSource sqlSubqueryTableSource = (SQLSubqueryTableSource) tableSource;
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
             return new QueriedSqlTable(tableSource) {
-                public List<String> getReferLabels() {
+                public List<String> getAllReferAbleLabels() {
                     List<String> columns;
                     try {
-                        columns = new SelectReferLabelParser(logicDbConfig).parseSelectLabels(sqlSelectQuery);
+                        columns = new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlSelectQuery);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -57,10 +58,10 @@ public class SqlTableParser {
         } else if (tableSource instanceof SQLUnionQueryTableSource) {
             SQLUnionQueryTableSource sqlUnionQueryTableSource = (SQLUnionQueryTableSource) tableSource;
             return new QueriedSqlTable(tableSource) {
-                public List<String> getReferLabels() {
+                public List<String> getAllReferAbleLabels() {
                     List<String> columns;
                     try {
-                        columns = new SelectReferLabelParser(logicDbConfig).parseSelectLabels(sqlUnionQueryTableSource.getUnion());
+                        columns = new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlUnionQueryTableSource.getUnion());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }

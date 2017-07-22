@@ -19,6 +19,7 @@ public abstract class AggregateEvaluator extends AbstractSqlExprEvaluator {
 
     private final boolean distinct;
 
+
     public AggregateEvaluator(LogicDbConfig logicDbConfig, SQLAggregateExpr sqlAggregateExpr) {
         super(sqlAggregateExpr);
         List<SQLExpr> arguments = sqlAggregateExpr.getArguments();

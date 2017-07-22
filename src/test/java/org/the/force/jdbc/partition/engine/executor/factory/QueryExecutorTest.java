@@ -66,19 +66,30 @@ public class QueryExecutorTest {
 
     public void test7() throws Exception {
         String sql =
-            "select t.id,t.channel,t.abc from ( select  t0.id,t0.name,t0.abc from (select id,name,abc from t_user where name =? order by id) t0 where 1=1 ) t   where  (t.status=1 or t.status=2  )  and  t.id in (1,2,3) and t.abc=?   order by t.id  limit 20 ";
-        QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
-        logger.info(queryExecutor.toString());
-    }
-    public void test8() throws Exception {
-        String sql =
             "select o.id,o.channel from ( select  t0.id,t0.name from (select id,name from t_user where name =? order by id) t0 where 1=1 ) t,t_order o ,t_order_sku i  where t.id=o.user_id and o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and  o.user_id in (1,2,3) and o.abc=?  and o.status in (select status from t_user) and exits (select name from t_user) order by i.id limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
-    public void test9() throws Exception {
+
+    //子查询
+    public void test10() throws Exception {
         String sql =
             "select o.id,o.channel from (select id from t_user where id=? ) t,t_order o ,t_order_sku i  where t.id=o.user_id and o.id = i.order_id and o.id>0  and  (i.time>? or i.status=?) and (o.status=1 or o.status=2  )  and  o.user_id in (1,2,3) and o.abc=?  and o.status in (select status from t_user) and exits (select name from t_user) order by i.id limit 20 ";
+        QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
+        logger.info(queryExecutor.toString());
+    }
+
+    //子查询作为tableSource
+    public void test20() throws Exception {
+        String sql =
+            "select t.id,t.channel,t.abc from ( select  t0.id,t0.name,t0.abc from (select id,name,abc from t_user where name =? order by id) t0 where 1=1 ) t   where  (t.status=1 or t.status=2  )  and  t.id in (1,2,3) and t.abc=?   order by t.id  limit 20 ";
+        QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
+        logger.info(queryExecutor.toString());
+    }
+
+    public void test21() throws Exception {
+        String sql =
+            "select t.id,t.channel,t.abc from ( select  t0.id,t0.name,t0.abc from (select id,name,abc from t_user where name =? order by id) t0 where 1=1 limit 2,10 ) t   where  (t.status=1 or t.status=2  )  and  t.id in (1,2,3) and t.abc=?   order by t.id  limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }

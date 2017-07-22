@@ -321,66 +321,66 @@ public class SQLSelectQueryBlock extends SQLObjectImpl implements SQLSelectQuery
         return true;
     }
 
-    public SQLSelectQueryBlock clone() {
-        SQLSelectQueryBlock x = new SQLSelectQueryBlock();
-        cloneTo(x);
-        return x;
-    }
+//    public SQLSelectQueryBlock clone() {
+//        SQLSelectQueryBlock x = new SQLSelectQueryBlock();
+//        cloneTo(x);
+//        return x;
+//    }
 
-    public void cloneTo(SQLSelectQueryBlock x) {
-
-        x.distionOption = distionOption;
-
-        for (SQLSelectItem item : this.selectList) {
-            x.addSelectItem(item.clone());
-        }
-
-        if (from != null) {
-            x.setFrom(from.clone());
-        }
-
-        if (into != null) {
-            x.setInto(into.clone());
-        }
-
-        if (where != null) {
-            x.setWhere(where.clone());
-        }
-
-        if (startWith != null) {
-            x.setStartWith(startWith.clone());
-        }
-
-        if (connectBy != null) {
-            x.setConnectBy(connectBy.clone());
-        }
-
-        x.prior = prior;
-        x.noCycle = noCycle;
-
-        if (orderBySiblings != null) {
-            x.setOrderBySiblings(orderBySiblings.clone());
-        }
-
-        if (groupBy != null) {
-            x.setGroupBy(groupBy.clone());
-        }
-
-        if (orderBy != null) {
-            x.setOrderBy(orderBy.clone());
-        }
-
-        x.parenthesized = parenthesized;
-        x.forUpdate = forUpdate;
-        x.noWait = noWait;
-        if (waitTime != null) {
-            x.setWaitTime(waitTime.clone());
-        }
-
-        if (limit != null) {
-            x.setLimit(limit.clone());
-        }
-    }
+//    public void cloneTo(SQLSelectQueryBlock x) {
+//
+//        x.distionOption = distionOption;
+//
+//        for (SQLSelectItem item : this.selectList) {
+//            x.addSelectItem(item.clone());
+//        }
+//
+//        if (from != null) {
+//            x.setFrom(from.clone());
+//        }
+//
+//        if (into != null) {
+//            x.setInto(into.clone());
+//        }
+//
+//        if (where != null) {
+//            x.setWhere(where.clone());
+//        }
+//
+//        if (startWith != null) {
+//            x.setStartWith(startWith.clone());
+//        }
+//
+//        if (connectBy != null) {
+//            x.setConnectBy(connectBy.clone());
+//        }
+//
+//        x.prior = prior;
+//        x.noCycle = noCycle;
+//
+//        if (orderBySiblings != null) {
+//            x.setOrderBySiblings(orderBySiblings.clone());
+//        }
+//
+//        if (groupBy != null) {
+//            x.setGroupBy(groupBy.clone());
+//        }
+//
+//        if (orderBy != null) {
+//            x.setOrderBy(orderBy.clone());
+//        }
+//
+//        x.parenthesized = parenthesized;
+//        x.forUpdate = forUpdate;
+//        x.noWait = noWait;
+//        if (waitTime != null) {
+//            x.setWaitTime(waitTime.clone());
+//        }
+//
+//        if (limit != null) {
+//            x.setLimit(limit.clone());
+//        }
+//    }
 
     @Override
     public boolean isBracket() {

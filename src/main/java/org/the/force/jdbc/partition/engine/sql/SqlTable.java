@@ -21,7 +21,7 @@ public interface SqlTable {
      * 返回可以被引用的列名集合
      * @return
      */
-    List<String> getReferLabels();
+    List<String> getAllReferAbleLabels();
 
     SQLTableSource getSQLTableSource();
 

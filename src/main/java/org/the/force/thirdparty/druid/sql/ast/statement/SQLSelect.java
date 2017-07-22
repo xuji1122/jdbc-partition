@@ -155,44 +155,44 @@ public class SQLSelect extends SQLObjectImpl {
         return super.toString();
     }
 
-    public SQLSelect clone() {
-        SQLSelect x = new SQLSelect();
-
-        x.withSubQuery = this.withSubQuery;
-        x.query = this.query;
-        if (orderBy != null) {
-            x.setOrderBy(this.orderBy.clone());
-        }
-        if (restriction != null) {
-            x.setRestriction(restriction.clone());
-        }
-
-        if (this.hints != null) {
-            for (SQLHint hint : this.hints) {
-                x.hints.add(hint);
-            }
-        }
-
-        x.forBrowse = forBrowse;
-
-        if (forXmlOptions != null) {
-            x.forXmlOptions = new ArrayList<String>(forXmlOptions);
-        }
-
-        if (xmlPath != null) {
-            x.setXmlPath(xmlPath.clone());
-        }
-
-        if (rowCount != null) {
-            x.setRowCount(rowCount.clone());
-        }
-
-        if (offset != null) {
-            x.setOffset(offset.clone());
-        }
-
-        return x;
-    }
+//    public SQLSelect clone() {
+//        SQLSelect x = new SQLSelect();
+//
+//        x.withSubQuery = this.withSubQuery;
+//        x.query = this.query;
+//        if (orderBy != null) {
+//            x.setOrderBy(this.orderBy.clone());
+//        }
+//        if (restriction != null) {
+//            x.setRestriction(restriction.clone());
+//        }
+//
+//        if (this.hints != null) {
+//            for (SQLHint hint : this.hints) {
+//                x.hints.add(hint);
+//            }
+//        }
+//
+//        x.forBrowse = forBrowse;
+//
+//        if (forXmlOptions != null) {
+//            x.forXmlOptions = new ArrayList<String>(forXmlOptions);
+//        }
+//
+//        if (xmlPath != null) {
+//            x.setXmlPath(xmlPath.clone());
+//        }
+//
+//        if (rowCount != null) {
+//            x.setRowCount(rowCount.clone());
+//        }
+//
+//        if (offset != null) {
+//            x.setOffset(offset.clone());
+//        }
+//
+//        return x;
+//    }
 
     public boolean isSimple() {
         return withSubQuery == null

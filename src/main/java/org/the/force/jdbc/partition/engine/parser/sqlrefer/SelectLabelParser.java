@@ -1,9 +1,12 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
+import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.table.ExprSqlTable;
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -20,6 +23,8 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,13 +33,15 @@ import java.util.List;
 /**
  * Created by xuji on 2017/6/14.
  * 解析select查询结果集中可以被引用的列
- * 只操作原始的SQLTableSource 不包括ExecutableTableSource的实例
+ * 只操作原始的SQLTableSource
  */
-public class SelectReferLabelParser {
+public class SelectLabelParser {
+
+    private static Log logger = LogFactory.getLog(SelectLabelParser.class);
 
     private final LogicDbConfig logicDbConfig;
 
-    public SelectReferLabelParser(LogicDbConfig logicDbConfig) {
+    public SelectLabelParser(LogicDbConfig logicDbConfig) {
         this.logicDbConfig = logicDbConfig;
     }
 
@@ -90,7 +97,8 @@ public class SelectReferLabelParser {
                 String name = sqlName.getSimpleName();
                 columns.add(name);
             } else {
-                throw new SqlParseException("无法识别select的item的label");
+                //无法被引用，以特殊字符串标识
+                columns.add("'" + expr.toString() + "'");
             }
         }
         return columns;
@@ -107,10 +115,28 @@ public class SelectReferLabelParser {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) sqlTableSource;
             ExprSqlTable exprSqlTable = new ExprConditionalSqlTable(logicDbConfig, sqlExprTableSource);
             if (targetTableName == null || targetTableName.equals(exprSqlTable.getAlias()) || targetTableName.equalsIgnoreCase(exprSqlTable.getTableName())) {
-                return exprSqlTable.getReferLabels();
+                return exprSqlTable.getAllReferAbleLabels();
             } else {
                 return new ArrayList<>();
             }
+        } else if (sqlTableSource instanceof JoinedTableSource) {
+            //TODO 获取所有label
+            JoinedTableSource joinedTableSource = (JoinedTableSource) sqlTableSource;
+            List<ConditionalSqlTable> sqlTables = joinedTableSource.getSqlTables();
+            List<QueryExecutor> executorList = joinedTableSource.getQueryExecutors();
+            List<String> returnList = new ArrayList<>();
+            for (int i = 0; i < sqlTables.size(); i++) {
+                ConditionalSqlTable conditionalSqlTable = sqlTables.get(i);
+                if (targetTableName != null) {
+                    if (targetTableName.equals(conditionalSqlTable.getAlias()) || targetTableName.equalsIgnoreCase(conditionalSqlTable.getTableName())) {
+                        return parseSelectLabels(executorList.get(i).getStatement());
+                    }
+                } else {
+                    List<String> temp = parseSelectLabels(executorList.get(i).getStatement());
+                    returnList.addAll(temp);
+                }
+            }
+            return returnList;
         } else if (sqlTableSource instanceof SQLJoinTableSource) {
             //从多个中选择一个，必须指定targetTableName
             SQLJoinTableSource joinTableSource = (SQLJoinTableSource) sqlTableSource;
@@ -130,7 +156,6 @@ public class SelectReferLabelParser {
             }
             return rs;
         }
-
         if (sqlTableSource.getAlias() == null) {
             throw new SqlParseException("sqlTableSource.getAlias() == null");
         }

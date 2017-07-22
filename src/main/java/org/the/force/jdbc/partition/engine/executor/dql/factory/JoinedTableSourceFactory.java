@@ -13,7 +13,7 @@ import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.JoinConnector;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.sql.SqlTableCitedLabels;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -202,10 +202,12 @@ public class JoinedTableSourceFactory {
             //join需要的单表的排序条件分析
             List<SqlRefer> sqlOrderByItemForJoin = new SqlReferParser(joinConnector.getJoinCondition(), sqlTable).getSqlReferList();
             if (sqlOrderByItemForJoin.isEmpty()) {
-                throw new SqlParseException("join的条件sqlProperties.isEmpty()");
+                throw new SqlParseException("join的条件列名称无法确定表格归属，不支持join");
             }
-            SqlTableRefers sqlTableRefers = new SqlTableReferParser(logicDbConfig, joinedTableSource.getSqlJoinTableSource().getParent(), sqlTable).getSqlTableRefers();
-            SQLSelectQueryBlock sqlSelectQueryBlock = buildSQLSelectQueryBlock(sqlTable, sqlTableRefers, sqlOrderByItemForJoin);
+            //确保
+            SqlTableCitedLabels
+                sqlTableCitedLabels = new SqlTableReferParser(logicDbConfig, joinedTableSource.getSqlJoinTableSource().getParent(), sqlTable).getSqlTableCitedLabels();
+            SQLSelectQueryBlock sqlSelectQueryBlock = buildSQLSelectQueryBlock(sqlTable, sqlTableCitedLabels, sqlOrderByItemForJoin);
             QueryExecutor queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, sqlSelectQueryBlock).build();
             queryExecutor.setParent(joinedTableSource.getSqlJoinTableSource().getParent());
             queryExecutors.add(queryExecutor);
@@ -213,7 +215,7 @@ public class JoinedTableSourceFactory {
 
     }
 
-    private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableRefers sqlTableRefers, List<SqlRefer> sqlOrderByItemForJoin) {
+    private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableCitedLabels sqlTableCitedLabels, List<SqlRefer> sqlOrderByItemForJoin) {
         MySqlSelectQueryBlock mySqlSelectQueryBlock = new MySqlSelectQueryBlock();
         mySqlSelectQueryBlock.setParent(joinedTableSource.getSqlJoinTableSource());
         mySqlSelectQueryBlock.setFrom(sqlTable.getSQLTableSource());
@@ -221,8 +223,8 @@ public class JoinedTableSourceFactory {
             sqlTable.getSQLTableSource().setAlias(sqlTable.getAlias());
         }
         List<SQLSelectItem> selectList = new ArrayList<>();
-        if (sqlTableRefers.isReferAll()) {
-            List<String> columns = sqlTable.getReferLabels();
+        if (sqlTableCitedLabels.isBeCitedAll()) {
+            List<String> columns = sqlTable.getAllReferAbleLabels();
             if (columns == null || columns.isEmpty()) {
                 selectList.add(new SQLSelectItem(new SQLAllColumnExpr()));
             } else {
@@ -237,7 +239,7 @@ public class JoinedTableSourceFactory {
                 }
             }
         } else {
-            selectList.addAll(sqlTableRefers.getReferLabels().stream().map(sqlRefer -> new SQLSelectItem(new SQLIdentifierExpr(sqlRefer))).collect(Collectors.toList()));
+            selectList.addAll(sqlTableCitedLabels.getCitedLabels().stream().map(sqlRefer -> new SQLSelectItem(new SQLIdentifierExpr(sqlRefer))).collect(Collectors.toList()));
         }
         mySqlSelectQueryBlock.getSelectList().addAll(selectList);
         if (sqlTable.getTableOwnCondition() != null) {

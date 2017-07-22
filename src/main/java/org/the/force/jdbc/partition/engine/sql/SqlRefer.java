@@ -21,6 +21,7 @@ public class SqlRefer extends AbstractSqlExprEvaluator {
     private final String name;
 
 
+
     public SqlRefer(SQLName sqlExpr) {
         super(sqlExpr);
         if (sqlExpr instanceof SQLPropertyExpr) {

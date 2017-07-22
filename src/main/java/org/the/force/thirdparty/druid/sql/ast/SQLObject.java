@@ -54,5 +54,6 @@ public interface SQLObject {
 
     void output(StringBuffer buf);
 
-    SQLObject clone();
+    //modify by xuji 2017-07-22
+    //SQLObject clone();
 }

@@ -54,7 +54,7 @@ public abstract class QueriedSqlTable implements ConditionalSqlTable {
 
     }
 
-    public abstract List<String> getReferLabels();
+    public abstract List<String> getAllReferAbleLabels();
 
     public SQLTableSource getSQLTableSource() {
         return sqlTableSource;

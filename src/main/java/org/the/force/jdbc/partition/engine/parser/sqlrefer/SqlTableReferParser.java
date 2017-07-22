@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.SqlTable;
-import org.the.force.jdbc.partition.engine.sql.SqlTableRefers;
+import org.the.force.jdbc.partition.engine.sql.SqlTableCitedLabels;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -16,6 +16,8 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQuery;
 import org.the.force.thirdparty.druid.sql.parser.ParserException;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +25,13 @@ import java.util.stream.Collectors;
 /**
  * Created by xuji on 2017/7/8.
  * <p>
- * 1，检查某个sqlTable被引用到的列的范围  不管是否rowQuery还是聚合还是row函数
- * 2，确保SqlTable的alias被正确设置 (当logicSql使用逻辑表名为前缀引用属性时)
+ * 1，检查某个sqlTable被引用到的所有列  输出 {@link SqlTableCitedLabels}
+ * 不管是否rowQuery还是聚合还是row函数
+ * 2，确保SqlTable的alias被正确设置 (当logicSql使用逻辑表名为前缀引用列时)
  */
 public class SqlTableReferParser extends AbstractVisitor {
 
+    private static Log logger = LogFactory.getLog(SqlTableReferParser.class);
     //输入
 
     private final LogicDbConfig logicDbConfig;
@@ -47,12 +51,12 @@ public class SqlTableReferParser extends AbstractVisitor {
     private SQLSelectQuery subQuery;
 
     //输出
-    private final SqlTableRefers sqlTableRefers;
+    private final SqlTableCitedLabels sqlTableCitedLabels;
 
     public SqlTableReferParser(LogicDbConfig logicDbConfig, SQLObject parent, SqlTable sqlTable) {
         this.logicDbConfig = logicDbConfig;
         this.sqlTable = sqlTable;
-        this.sqlTableRefers = new SqlTableRefers();
+        this.sqlTableCitedLabels = new SqlTableCitedLabels();
         this.originTableSource = sqlTable.getSQLTableSource();
         this.parent = parent;
         if (this.parent instanceof SQLUnionQuery) {
@@ -89,7 +93,7 @@ public class SqlTableReferParser extends AbstractVisitor {
             sqlJoinTableSource.getCondition().accept(this);
             sqlJoinTableSource.getLeft().accept(this);
             sqlJoinTableSource.getRight().accept(this);
-            if(sqlJoinTableSource.getFlashback()!=null){
+            if (sqlJoinTableSource.getFlashback() != null) {
                 sqlJoinTableSource.getFlashback().accept(this);
             }
             return false;
@@ -119,7 +123,7 @@ public class SqlTableReferParser extends AbstractVisitor {
             return false;
         }
         if (x.getParent() instanceof SQLSelectItem) {
-            sqlTableRefers.setReferAll(true);
+            sqlTableCitedLabels.setBeCitedAll(true);
         }
         return false;
     }
@@ -137,12 +141,13 @@ public class SqlTableReferParser extends AbstractVisitor {
                 }
                 Boolean b = checkByOwnerOnly(sqlTable, sqlRefer);
                 if (b != null && b) {
-                    sqlTableRefers.setReferAll(true);
+                    sqlTableCitedLabels.setBeCitedAll(true);
                 }
+
             } else {
                 Boolean b = checkByOwnerOnly(sqlTable, sqlRefer);
                 if (b != null && b) {
-                    sqlTableRefers.addReferLabel(sqlRefer.getName());
+                    sqlTableCitedLabels.addReferLabel(sqlRefer.getName());
                 }
             }
         } else {
@@ -163,7 +168,7 @@ public class SqlTableReferParser extends AbstractVisitor {
         if (subQuery == null) {
             boolean b = checkOwner(sqlTable, sqlRefer);
             if (b) {
-                sqlTableRefers.addReferLabel(sqlRefer.getName());
+                sqlTableCitedLabels.addReferLabel(sqlRefer.getName());
             }
         }
         return false;
@@ -176,9 +181,10 @@ public class SqlTableReferParser extends AbstractVisitor {
                 return b;
             }
         }
-        List<String> columns = sqlTable.getReferLabels();
+        List<String> columns = sqlTable.getAllReferAbleLabels();
         if (columns == null || columns.isEmpty()) {
-            throw new ParserException("sqlTable columns can not init:" + sqlTable.toString());
+            logger.warn("sqlTable columns can not init:" + sqlTable.toString());
+            return false;
         }
         return !columns.stream().filter(column -> column.equalsIgnoreCase(sqlRefer.getName())).collect(Collectors.toSet()).isEmpty();
     }
@@ -201,7 +207,7 @@ public class SqlTableReferParser extends AbstractVisitor {
         return this.sqlTable.getAlias();
     }
 
-    public SqlTableRefers getSqlTableRefers() {
-        return sqlTableRefers;
+    public SqlTableCitedLabels getSqlTableCitedLabels() {
+        return sqlTableCitedLabels;
     }
 }

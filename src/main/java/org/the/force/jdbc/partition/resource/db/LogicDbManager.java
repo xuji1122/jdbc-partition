@@ -158,9 +158,6 @@ public class LogicDbManager implements LogicDbConfig {
 
     public LogicTableManagerImpl getLogicTableManager(String logicTableName) {
         LogicTableManagerImpl logicTableManager = logicTableManagerMap.get(logicTableName.toLowerCase());
-        if (logicTableManager == null) {
-            throw new SqlParseException("getLogicTableManager is null");
-        }
         return logicTableManager;
     }
 

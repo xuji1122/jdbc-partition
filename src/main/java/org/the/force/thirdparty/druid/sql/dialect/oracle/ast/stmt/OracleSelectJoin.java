@@ -105,18 +105,18 @@ public class OracleSelectJoin extends SQLJoinTableSource implements OracleSelect
         return SQLUtils.toOracleString(this);
     }
 
-    public SQLJoinTableSource clone() {
-        OracleSelectJoin x = new OracleSelectJoin();
-        cloneTo(x);
-
-        if (pivot != null) {
-            x.setPivot(pivot.clone());
-        }
-
-        if (flashback != null) {
-            x.setFlashback(flashback.clone());
-        }
-
-        return x;
-    }
+//    public SQLJoinTableSource clone() {
+//        OracleSelectJoin x = new OracleSelectJoin();
+//        cloneTo(x);
+//
+//        if (pivot != null) {
+//            x.setPivot(pivot.clone());
+//        }
+//
+//        if (flashback != null) {
+//            x.setFlashback(flashback.clone());
+//        }
+//
+//        return x;
+//    }
 }
