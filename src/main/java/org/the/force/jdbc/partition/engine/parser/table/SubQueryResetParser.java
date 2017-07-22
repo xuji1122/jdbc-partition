@@ -15,6 +15,7 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
@@ -91,8 +92,7 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
                     list.set(i, newExpr);
                 }
             }
-        } else if (x instanceof SQLInSubQueriedExpr) {
-        } else if (x instanceof SQLInListExpr) {
+        }else if (x instanceof SQLInListExpr) {
             SQLInListExpr sqlInListExpr = (SQLInListExpr) x;
             SQLExpr newExpr = checkSubExpr(sqlInListExpr.getExpr());
             if (newExpr != null) {
@@ -149,6 +149,12 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
                 if (newExpr != null) {
                     list.set(i, newExpr);
                 }
+            }
+        } else if (x instanceof SQLNotExpr) {
+            SQLNotExpr sqlNotExpr = (SQLNotExpr) x;
+            SQLExpr newExpr = checkSubExpr(sqlNotExpr.getExpr());
+            if (newExpr != null) {
+                sqlNotExpr.setExpr(newExpr);
             }
         }
     }
