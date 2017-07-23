@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by xuji on 2017/7/14.
  */
-public class GroupBy {
+public class GroupByFunction {
 
     private SqlExprEvaluator having;//返回true false
 

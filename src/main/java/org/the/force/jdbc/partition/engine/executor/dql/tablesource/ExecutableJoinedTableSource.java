@@ -17,13 +17,13 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/7/18.
- * TODO
- * 表关联查询
+ * 处理多表join的from
+ * 可以获取join结果集
+ * //TODO
  * 1，逻辑上拆成了多个表  binding关系
- * 2，join的条件其中一个表已经指定了value  优化join条件的问题
- * 3，小表广播的方式
+ * 2，小表广播的方式避免client端去实现sql的逻辑
  */
-public class JoinedTableSource extends SQLJoinTableSource implements LogicTableSource {
+public class ExecutableJoinedTableSource extends SQLJoinTableSource implements LogicTableSource {
 
     private final LogicDbConfig logicDbConfig;
 
@@ -38,7 +38,7 @@ public class JoinedTableSource extends SQLJoinTableSource implements LogicTableS
     private final List<JoinConnector> joinConnectorList = new ArrayList<>();
 
 
-    public JoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource originalJoinTableSource) {
+    public ExecutableJoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource originalJoinTableSource) {
         this.logicDbConfig = logicDbConfig;
         this.originalJoinTableSource = originalJoinTableSource;
         this.setParent(originalJoinTableSource.getParent());

@@ -4,7 +4,7 @@ import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ExecutableJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlReferParser;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by xuji on 2017/6/4.
- * 平铺的JoinedTableSource 非嵌套
+ * 构造 {@link ExecutableJoinedTableSource}对象，用于重置sql查询的from部分
  */
 public class JoinedTableSourceFactory {
 
@@ -70,19 +70,19 @@ public class JoinedTableSourceFactory {
     /**
      * 最终输出结果
      */
-    private JoinedTableSource joinedTableSource;
+    private ExecutableJoinedTableSource executableJoinedTableSource;
 
     public JoinedTableSourceFactory(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
         this.logicDbConfig = logicDbConfig;
         this.otherConditionForWhere = originalWhere;
-        joinedTableSource = new JoinedTableSource(logicDbConfig, sqlJoinTableSource);
-        parseTableSource(joinedTableSource.getOriginalJoinTableSource());
+        executableJoinedTableSource = new ExecutableJoinedTableSource(logicDbConfig, sqlJoinTableSource);
+        parseTableSource(executableJoinedTableSource.getOriginalJoinTableSource());
         parseCondition();
         buildJoinExecutor();
-        joinedTableSource.addFirst(sqlTables.get(0), this.queryExecutors.get(0));
+        executableJoinedTableSource.addFirst(sqlTables.get(0), this.queryExecutors.get(0));
         int index = 1;
         for (JoinConnector joinConnector : joinConnectorMap.values()) {
-            joinedTableSource.addJoinedTable(sqlTables.get(index), queryExecutors.get(index), joinConnector);
+            executableJoinedTableSource.addJoinedTable(sqlTables.get(index), queryExecutors.get(index), joinConnector);
             index++;
         }
     }
@@ -95,11 +95,11 @@ public class JoinedTableSourceFactory {
         if (left instanceof SQLJoinTableSource) {
             parseTableSource((SQLJoinTableSource) left);
         } else {
-            left.setParent(joinedTableSource);
+            left.setParent(executableJoinedTableSource);
             ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(left);
             sqlTables.add(sqlTable);
         }
-        right.setParent(joinedTableSource);
+        right.setParent(executableJoinedTableSource);
         ConditionalSqlTable sqlTable = new SqlTableParser(logicDbConfig).getSqlTable(right);
         sqlTables.add(sqlTable);
         JoinConnector joinConnector = new JoinConnector(sqlJoinTableSource.getJoinType(), sqlJoinTableSource.getCondition());
@@ -201,11 +201,11 @@ public class JoinedTableSourceFactory {
                 throw new SqlParseException("join的条件列名称无法确定表格归属，不支持join");
             }
             SqlTableCitedLabels sqlTableCitedLabels =
-                new SqlTableReferParser(logicDbConfig, joinedTableSource.getOriginalJoinTableSource().getParent(), sqlTable).getSqlTableCitedLabels();
+                new SqlTableReferParser(logicDbConfig, executableJoinedTableSource.getOriginalJoinTableSource().getParent(), sqlTable).getSqlTableCitedLabels();
 
             SQLSelectQueryBlock sqlSelectQueryBlock = buildSQLSelectQueryBlock(sqlTable, sqlTableCitedLabels, sqlOrderByItemForJoin);
             QueryExecutor queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, sqlSelectQueryBlock).buildQueryExecutor();
-            queryExecutor.setParent(joinedTableSource.getOriginalJoinTableSource().getParent());
+            queryExecutor.setParent(executableJoinedTableSource.getOriginalJoinTableSource().getParent());
             queryExecutors.add(queryExecutor);
         }
 
@@ -233,7 +233,7 @@ public class JoinedTableSourceFactory {
 
     private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableCitedLabels sqlTableCitedLabels, List<SqlRefer> sqlOrderByItemForJoin) {
         MySqlSelectQueryBlock mySqlSelectQueryBlock = new MySqlSelectQueryBlock();
-        mySqlSelectQueryBlock.setParent(joinedTableSource.getOriginalJoinTableSource());
+        mySqlSelectQueryBlock.setParent(executableJoinedTableSource.getOriginalJoinTableSource());
         mySqlSelectQueryBlock.setFrom(sqlTable.getSQLTableSource());
         if (sqlTable.getAlias() != null) {
             sqlTable.getSQLTableSource().setAlias(sqlTable.getAlias());
@@ -317,7 +317,7 @@ public class JoinedTableSourceFactory {
         return otherConditionForWhere;
     }
 
-    public JoinedTableSource getJoinedTableSource() {
-        return joinedTableSource;
+    public ExecutableJoinedTableSource getExecutableJoinedTableSource() {
+        return executableJoinedTableSource;
     }
 }

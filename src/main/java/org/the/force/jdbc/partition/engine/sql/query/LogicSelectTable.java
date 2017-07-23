@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.sql.query;
 
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 
 /**
@@ -10,7 +11,17 @@ import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
  */
 public class LogicSelectTable extends SelectTable{
 
+    private SqlExprEvaluator condition;
+
     public LogicSelectTable(ConditionalSqlTable sqlTable, boolean distinctAll) {
         super(sqlTable, distinctAll);
+    }
+
+    public SqlExprEvaluator getCondition() {
+        return condition;
+    }
+
+    public void setCondition(SqlExprEvaluator condition) {
+        this.condition = condition;
     }
 }

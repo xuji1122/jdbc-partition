@@ -17,6 +17,8 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectGroupByClause;
+import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -69,9 +71,6 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
      * @param x
      */
     public void preVisit(SQLObject x) {
-        if (!(x instanceof SQLExpr)) {
-            return;
-        }
         if (!excludes.isEmpty()) {
             Iterator<SQLObject> sqlObjectIterator = excludes.iterator();
             while (sqlObjectIterator.hasNext()) {
@@ -81,6 +80,16 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
                     return;
                 }
             }
+        }
+        if (x instanceof SQLSelectItem) {
+            SQLSelectItem sqlSelectItem = (SQLSelectItem) x;
+            SQLExpr newExpr = checkSubExpr(sqlSelectItem.getExpr());
+            if (newExpr != null) {
+                sqlSelectItem.setExpr(newExpr);
+            }
+        }
+        if (!(x instanceof SQLExpr)) {
+            return;
         }
         if (x instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr sqlBinaryOpExpr = (SQLBinaryOpExpr) x;

@@ -25,11 +25,15 @@ import java.util.List;
 
 /**
  * Created by xuji on 2017/7/18.
- * client端执行的sql
- * 有三种来源
- * 1，from是join类型
- * 2，from是单表子查询(PartitionBlockQueryExecutor)  但是子查询有limit 条件 只能先做子查询 再通过client的逻辑计算返回的结果集
- * 3,from是LogicBlockQueryExecutor 嵌套  单表子查询嵌套，但是底层是1或者2的情况
+ * client端实现的sql
+ * 准确的定义是 from的结果集可以获取到，但是对from的过滤，聚合，排序等问题只能由client自己实现，不能依赖数据库的过滤，聚合以及排序结果
+ * 它的特点是
+ * 理论上不受数据库执行的sql的约束，不必merge多个分区的结果，只要处理好一个结果集即可，但是会面临数据量大的问题
+ * ==================适用范围===============
+ * 1，from是join类型的
+ * 2，from是单表查询{@link org.the.force.jdbc.partition.engine.executor.dql.partition.PartitionBlockQueryExecutor}
+ *    但是中间的from子查询中有limit 条件 只能先做里面的子查询 再由client对from返回的数据进行过滤，聚合，排序等操作
+ * 3, 1或2的情况作子查询时，外部的查询被迫只能由client自己实现
  */
 public class LogicBlockQueryExecutor extends SQLSelectQueryBlock implements BlockQueryExecutor {
 

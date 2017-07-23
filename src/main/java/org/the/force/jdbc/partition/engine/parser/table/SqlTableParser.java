@@ -1,7 +1,6 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
-import org.the.force.jdbc.partition.engine.executor.dql.partition.PartitionBlockQueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ExecutableJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectLabelParser;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
@@ -15,7 +14,6 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLUnionQueryTableSource;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -34,8 +32,8 @@ public class SqlTableParser {
         if (tableSource instanceof SQLExprTableSource) {
             ExprConditionalSqlTable sqlTable = new ExprConditionalSqlTable(logicDbConfig, (SQLExprTableSource) tableSource);
             return sqlTable;
-        } else if (tableSource instanceof JoinedTableSource) {
-            throw new SqlParseException("JoinedTableSource 不能用于获取SqlTable");
+        } else if (tableSource instanceof ExecutableJoinedTableSource) {
+            throw new SqlParseException("ExecutableJoinedTableSource 不能用于获取SqlTable");
         } else if (tableSource instanceof SQLJoinTableSource) {
             throw new SqlParseException("SQLJoinTableSource 不能用于获取SqlTable");
         }

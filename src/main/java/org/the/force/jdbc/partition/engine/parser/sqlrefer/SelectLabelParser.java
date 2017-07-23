@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ExecutableJoinedTableSource;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
@@ -118,11 +118,11 @@ public class SelectLabelParser {
             } else {
                 return new ArrayList<>();
             }
-        } else if (sqlTableSource instanceof JoinedTableSource) {
+        } else if (sqlTableSource instanceof ExecutableJoinedTableSource) {
             //TODO 获取所有label
-            JoinedTableSource joinedTableSource = (JoinedTableSource) sqlTableSource;
-            List<ConditionalSqlTable> sqlTables = joinedTableSource.getSqlTables();
-            List<QueryExecutor> executorList = joinedTableSource.getQueryExecutors();
+            ExecutableJoinedTableSource executableJoinedTableSource = (ExecutableJoinedTableSource) sqlTableSource;
+            List<ConditionalSqlTable> sqlTables = executableJoinedTableSource.getSqlTables();
+            List<QueryExecutor> executorList = executableJoinedTableSource.getQueryExecutors();
             List<String> returnList = new ArrayList<>();
             for (int i = 0; i < sqlTables.size(); i++) {
                 ConditionalSqlTable conditionalSqlTable = sqlTables.get(i);
@@ -183,5 +183,4 @@ public class SelectLabelParser {
             throw new SqlParseException("无法识别的tableSource类型" + sqlTableSource.getClass().getName());
         }
     }
-
 }

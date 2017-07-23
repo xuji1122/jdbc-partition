@@ -9,7 +9,12 @@ import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
  */
 public class PartitionSelectTable extends SelectTable {
 
+
+
     public PartitionSelectTable(ConditionalSqlTable sqlTable, boolean distinctAll) {
         super(sqlTable, distinctAll);
     }
+
+
+
 }

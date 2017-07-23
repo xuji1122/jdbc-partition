@@ -5,7 +5,7 @@ import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
-import org.the.force.jdbc.partition.engine.executor.dql.tablesource.JoinedTableSource;
+import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ExecutableJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
 import org.the.force.jdbc.partition.engine.sql.table.ExprSqlTable;
@@ -229,7 +229,7 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
         return false;
     }
 
-    public boolean visit(JoinedTableSource joinedTableSource) {
+    public boolean visit(ExecutableJoinedTableSource executableJoinedTableSource) {
         return false;
     }
 

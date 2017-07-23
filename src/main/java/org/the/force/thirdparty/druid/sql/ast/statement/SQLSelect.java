@@ -161,7 +161,7 @@ public class SQLSelect extends SQLObjectImpl {
 //        x.withSubQuery = this.withSubQuery;
 //        x.query = this.query;
 //        if (orderBy != null) {
-//            x.setOrderBy(this.orderBy.clone());
+//            x.setOrderByFunction(this.orderBy.clone());
 //        }
 //        if (restriction != null) {
 //            x.setRestriction(restriction.clone());
