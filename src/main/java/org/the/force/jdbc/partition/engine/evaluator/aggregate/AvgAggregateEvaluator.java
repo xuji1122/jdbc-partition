@@ -11,6 +11,7 @@ import java.sql.SQLException;
  */
 public class AvgAggregateEvaluator extends AggregateEvaluator {
 
+
     public AvgAggregateEvaluator(LogicDbConfig logicDbConfig, SQLAggregateExpr sqlAggregateExpr) {
         super(logicDbConfig, sqlAggregateExpr);
     }
@@ -18,6 +19,5 @@ public class AvgAggregateEvaluator extends AggregateEvaluator {
     public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
         return null;
     }
-
 
 }

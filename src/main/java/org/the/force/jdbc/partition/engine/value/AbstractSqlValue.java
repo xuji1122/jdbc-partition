@@ -1,5 +1,7 @@
 package org.the.force.jdbc.partition.engine.value;
 
+import org.the.force.jdbc.partition.exception.SqlParseException;
+
 import java.sql.SQLException;
 
 /**
@@ -28,7 +30,18 @@ public abstract class AbstractSqlValue implements SqlValue, Comparable<SqlValue>
     }
 
     public final int compareTo(SqlValue o) {
-        return ((Comparable<Object>) this.getValue()).compareTo((Comparable<Object>) o.getValue());
+        Object thisValue = this.getValue();
+        Object oValue = o.getValue();
+        //按照mysql的语法null排在最前面，比任何值小
+        if (this.getValue() == null) {
+            return 0;
+        } else if (o.getValue() == null) {
+            return 0;
+        }
+        if (!(thisValue instanceof Comparable<?>) || !(oValue instanceof Comparable<?>)) {
+            throw new SqlParseException("!(thisValue instanceof Comparable<?>) || !(oValue instanceof Comparable<?>)");
+        }
+        return ((Comparable<Object>) thisValue).compareTo(oValue);
     }
 
     public final String toString() {

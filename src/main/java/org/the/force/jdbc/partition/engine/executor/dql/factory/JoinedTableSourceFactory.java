@@ -265,7 +265,8 @@ public class JoinedTableSourceFactory {
         for (SqlRefer sqlRefer : sqlOrderByItemForJoin) {
             SQLSelectOrderByItem orderByItem = new SQLSelectOrderByItem();
             orderByItem.setType(SQLOrderingSpecification.DESC);
-            orderByItem.setNullsOrderType(SQLSelectOrderByItem.NullsOrderType.NullsLast);
+            //mysql 语法 没有NullsLast
+            //orderByItem.setNullsOrderType(SQLSelectOrderByItem.NullsOrderType.NullsLast);
             if (sqlTable.getAlias() != null) {
                 orderByItem.setExpr(new SQLPropertyExpr(sqlTable.getAlias(), sqlRefer.getName()));
             } else {
