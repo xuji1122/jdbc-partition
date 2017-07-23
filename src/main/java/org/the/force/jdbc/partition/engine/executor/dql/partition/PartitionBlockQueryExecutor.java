@@ -50,7 +50,7 @@ import java.util.List;
  * 为了让客户端能够merge结果集,同时兼顾性能等综合因素考虑，约定规则如下
  * 1,group by的列都必须放入select的结果集中，如果没有则自动改写sql放入
  * 2,order by的条件涉及的列必须在select的结果集中，如果没有则自动改写sql放入
- * 3,如果结果集中含有 avg聚合,那么对avg的入参 结果集中必须有同样参数的count和sum，如果没有自动改写sql放入
+ * 3,如果结果集中含有 avg聚合,那么对avg的入参 使用同样参数的sum和count替换avg表达式
  * 4,limit最后一个执行，在router输出物理sql时对每个分区改写为从0开始的endRows
  * 5,如果有group by的列，那么结果集优先依据group by的列排序
  * 5.1 order by条件对数据库失效不输出，交给client实现

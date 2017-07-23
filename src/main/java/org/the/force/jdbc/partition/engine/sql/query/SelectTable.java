@@ -29,6 +29,8 @@ public class SelectTable {
 
     private List<SQLSelectItem> allColumnItems = new ArrayList<>();
 
+    boolean hasAggregate = false;
+
     private int queryBound;
 
     private int extendBound;
@@ -118,5 +120,13 @@ public class SelectTable {
 
     public void setResultLimitFunction(ResultLimitFunction resultLimitFunction) {
         this.resultLimitFunction = resultLimitFunction;
+    }
+
+    public boolean isHasAggregate() {
+        return hasAggregate;
+    }
+
+    public void setHasAggregate(boolean hasAggregate) {
+        this.hasAggregate = hasAggregate;
     }
 }

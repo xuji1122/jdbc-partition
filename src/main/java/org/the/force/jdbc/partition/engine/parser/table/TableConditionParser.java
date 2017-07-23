@@ -338,8 +338,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * in 条件表达式 支持的类别
      * c1 in (1,2,3)
      * (c1,c2) in ((1,2),(3,4))
-     * c1 in (executor id from xxx)
-     * (c1,c2) in (executor id,type from xxx)
+     * c1 in (select id from xxx)
+     * (c1,c2) in (select id,type from xxx)
      * 子查询的处理借助where条件重置{@link SubQueryResetParser}和{@link SQLInSubQueriedExpr}实现
      *
      * @param x
@@ -559,26 +559,27 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      */
     public static class StackArray {
         private boolean[] array;//用数组实现
-        private int top; //栈顶指针  数组的角标
-        private final int size;
+        private int top; //栈顶指针  数组的角标,栈顶的数据在数组的尾部
+        private final int extendSize;//扩容的size
 
         public StackArray() {
-            size = 10;
-            array = new boolean[size];
+            extendSize = 10;
+            array = new boolean[extendSize];
             top = -1; //栈空的时候
         }
 
-        public StackArray(int size) {
-            this.size = size;
-            array = new boolean[size];
+        public StackArray(int extendSize) {
+            this.extendSize = extendSize;
+            array = new boolean[extendSize];
             top = -1; //栈空的时候
         }
 
         //压栈
         public void push(boolean element) {
-            if (top == size - 1) {
-                boolean[] n = new boolean[array.length + size];
-                System.arraycopy(array, 0, n, 0, array.length);
+            if (top >= array.length - 1) {//扩容 + extendSize
+                boolean[] n = new boolean[array.length + extendSize];
+                //栈顶以内的数据复制过来
+                System.arraycopy(array, 0, n, 0, top + 1);
                 this.array = n;
             }
             array[++top] = element;
@@ -590,6 +591,12 @@ public class TableConditionParser extends PartitionAbstractVisitor {
                 return;
             }
             top--;
+            if (array.length - top > 2 * extendSize) {//尺寸太大了舍弃
+                boolean[] n = new boolean[array.length - extendSize];
+                //栈顶以内的数据复制过来
+                System.arraycopy(array, 0, n, 0, top + 1);
+                this.array = n;
+            }
         }
 
         //判断是否全部为true

@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.common;
 
 import org.testng.annotations.Test;
+import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -55,6 +56,17 @@ public class TestJavaUtil {
             String[] a = (String[]) v;
             logger.info(a.length + "");
         }
+    }
+    @Test
+    public void test4() {
+        TableConditionParser.StackArray stackArray = new TableConditionParser.StackArray(2);
+        for(int i=0;i<5;i++){
+            stackArray.push(true);
+        }
+        for(int i=0;i<5;i++){
+            stackArray.pop();
+        }
+
     }
 
 }
