@@ -52,34 +52,43 @@ public class JoinedTableSourceFactory {
     /**
      * 临时变量
      */
+    //join的table 有序的list，依赖index
     private final List<ConditionalSqlTable> sqlTables = new ArrayList<>();
 
+    //join的条件按照表格的索引顺序映射存储,join的二元操作符可以是任意两个表格之间的关系，且保存的SQLBinaryOpExpr在and语义下
     private Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> joinConditionMap = new LinkedHashMap<>();
 
-    //此条件会被设置到外部的selectQuery中去，JoinedTableSource不必实际的查询
-    private SQLExpr otherCondition;
-
+    //JoinConnector对象用来连接join的条件，保存join的类型
     private final Map<Pair<Integer, Integer>, JoinConnector> joinConnectorMap = new LinkedHashMap<>();
 
+    //join的每个tableSource的执行器 按照tableSource的顺序保存
     private final List<QueryExecutor> queryExecutors = new ArrayList<>();
 
+    //此条件会被设置到外部的selectQuery中去，join查询原始的where条件会被重置
+    private SQLExpr otherConditionForWhere;
+
     /**
-     * 输出
+     * 最终输出结果
      */
     private JoinedTableSource joinedTableSource;
 
     public JoinedTableSourceFactory(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource, SQLExpr originalWhere) {
         this.logicDbConfig = logicDbConfig;
-        this.otherCondition = originalWhere;
+        this.otherConditionForWhere = originalWhere;
         joinedTableSource = new JoinedTableSource(logicDbConfig, sqlJoinTableSource);
-        parseTableSource(joinedTableSource.getSqlJoinTableSource());
+        parseTableSource(joinedTableSource.getOriginalJoinTableSource());
         parseCondition();
-        buildJoin();
-        joinedTableSource.getSqlTables().addAll(sqlTables);
-        joinedTableSource.getQueryExecutors().addAll(this.queryExecutors);
-        joinConnectorMap.values().forEach(joinConnector -> joinedTableSource.getJoinConnectorList().add(joinConnector));
+        buildJoinExecutor();
+        joinedTableSource.addFirst(sqlTables.get(0), this.queryExecutors.get(0));
+        int index = 1;
+        for (JoinConnector joinConnector : joinConnectorMap.values()) {
+            joinedTableSource.addJoinedTable(sqlTables.get(index), queryExecutors.get(index), joinConnector);
+            index++;
+        }
     }
-
+    /**
+     *  将join的tableSource展开平铺，初始化sqlTables和joinConnectorMap
+     */
     private void parseTableSource(SQLJoinTableSource sqlJoinTableSource) {
         SQLTableSource left = sqlJoinTableSource.getLeft();
         SQLTableSource right = sqlJoinTableSource.getRight();
@@ -98,6 +107,9 @@ public class JoinedTableSourceFactory {
         joinConnectorMap.put(pair, joinConnector);
     }
 
+    /**
+     * 解析join的条件，按照sqlTable归集where条件，把join的条件放入joinConditionMap中去
+     */
     private void parseCondition() {
         int size = sqlTables.size();
         for (int i = 0; i < size; i++) {
@@ -107,42 +119,26 @@ public class JoinedTableSourceFactory {
             } else {
                 expectPair = new Pair<>(size - 2, size - 1);
             }
+            //解析  join on的条件
             JoinConnector joinConnector = joinConnectorMap.get(expectPair);
             if (joinConnector.getJoinCondition() != null) {
                 TableConditionParser parser = new TableConditionParser(logicDbConfig, joinConnector.getJoinCondition(), i, sqlTables);
                 SQLExpr newCondition = parser.getOtherCondition();
                 JoinConnector newJoinConnector = new JoinConnector(joinConnector.getJoinType(), newCondition);
                 joinConnectorMap.put(expectPair, newJoinConnector);
-                addJoinSQLBinaryOpExpr(parser.getJoinConditionMap());
+                addJoinCondition(parser.getJoinConditionMap());
             }
-            TableConditionParser parser = new TableConditionParser(logicDbConfig, this.otherCondition, i, sqlTables);
-            this.otherCondition = parser.getOtherCondition();
-            addJoinSQLBinaryOpExpr(parser.getJoinConditionMap());
+            //解析where条件，将条件按照tableSource归集到各自的sqlTable中去
+            TableConditionParser parser = new TableConditionParser(logicDbConfig, this.otherConditionForWhere, i, sqlTables);
+            this.otherConditionForWhere = parser.getOtherCondition();
+            addJoinCondition(parser.getJoinConditionMap());
 
         }
     }
-
-    private void addJoinSQLBinaryOpExpr(Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap) {
-        conditionTableMap.forEach((pair, list) -> {
-            List<SQLBinaryOpExpr> binaryOpExprList = joinConditionMap.get(pair);
-            if (binaryOpExprList == null) {
-                binaryOpExprList = new ArrayList<>();
-                joinConditionMap.put(pair, binaryOpExprList);
-            }
-            for (SQLBinaryOpExpr sqlBinaryOpExpr : list) {
-                if (!binaryOpExprList.contains(sqlBinaryOpExpr)) {
-                    binaryOpExprList.add(sqlBinaryOpExpr);
-                }
-            }
-            JoinConnector joinConnector = joinConnectorMap.get(pair);
-            if (joinConnector != null && joinConnector.getJoinType() == SQLJoinTableSource.JoinType.COMMA) {
-                joinConnectorMap.put(pair, new JoinConnector(SQLJoinTableSource.JoinType.INNER_JOIN, joinConnector.getJoinCondition()));
-            }
-
-        });
-    }
-
-    private void buildJoin() {
+    /**
+     * 构建join执行器
+     */
+    private void buildJoinExecutor() {
         Set<SQLExpr> conditionSet = new LinkedHashSet<>();
         int size = sqlTables.size();
         for (int i = 0; i < size; i++) {
@@ -170,9 +166,9 @@ public class JoinedTableSourceFactory {
             });
             JoinConnector joinConnector = joinConnectorMap.get(expectPair);
             if (joinConnector == null || joinConnector.getJoinCondition() == null) {
-                throw new SqlParseException("表格join必须指定join的条件");
+                throw new SqlParseException("表格join必须指定join的条件,不支持cross join");
             }
-            //join的条件推到的列等价条件分析
+            //join的条件推导的等价条件分析
             Map<SqlRefer, List<Pair<ConditionalSqlTable, SqlRefer>>> equalReferMap = sqlTable.getEqualReferMap();
             equalReferMap.forEach(((sqlRefer, pairs) -> {
                 pairs.forEach(pair -> {
@@ -204,20 +200,40 @@ public class JoinedTableSourceFactory {
             if (sqlOrderByItemForJoin.isEmpty()) {
                 throw new SqlParseException("join的条件列名称无法确定表格归属，不支持join");
             }
-            //确保
-            SqlTableCitedLabels
-                sqlTableCitedLabels = new SqlTableReferParser(logicDbConfig, joinedTableSource.getSqlJoinTableSource().getParent(), sqlTable).getSqlTableCitedLabels();
+            SqlTableCitedLabels sqlTableCitedLabels =
+                new SqlTableReferParser(logicDbConfig, joinedTableSource.getOriginalJoinTableSource().getParent(), sqlTable).getSqlTableCitedLabels();
+
             SQLSelectQueryBlock sqlSelectQueryBlock = buildSQLSelectQueryBlock(sqlTable, sqlTableCitedLabels, sqlOrderByItemForJoin);
-            QueryExecutor queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, sqlSelectQueryBlock).build();
-            queryExecutor.setParent(joinedTableSource.getSqlJoinTableSource().getParent());
+            QueryExecutor queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, sqlSelectQueryBlock).buildQueryExecutor();
+            queryExecutor.setParent(joinedTableSource.getOriginalJoinTableSource().getParent());
             queryExecutors.add(queryExecutor);
         }
 
     }
 
+    private void addJoinCondition(Map<Pair<Integer, Integer>, List<SQLBinaryOpExpr>> conditionTableMap) {
+        conditionTableMap.forEach((pair, list) -> {
+            List<SQLBinaryOpExpr> binaryOpExprList = joinConditionMap.get(pair);
+            if (binaryOpExprList == null) {
+                binaryOpExprList = new ArrayList<>();
+                joinConditionMap.put(pair, binaryOpExprList);
+            }
+            for (SQLBinaryOpExpr sqlBinaryOpExpr : list) {
+                if (!binaryOpExprList.contains(sqlBinaryOpExpr)) {
+                    binaryOpExprList.add(sqlBinaryOpExpr);
+                }
+            }
+            JoinConnector joinConnector = joinConnectorMap.get(pair);
+            if (joinConnector != null && joinConnector.getJoinType() == SQLJoinTableSource.JoinType.COMMA) {
+                joinConnectorMap.put(pair, new JoinConnector(SQLJoinTableSource.JoinType.INNER_JOIN, joinConnector.getJoinCondition()));
+            }
+
+        });
+    }
+
     private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableCitedLabels sqlTableCitedLabels, List<SqlRefer> sqlOrderByItemForJoin) {
         MySqlSelectQueryBlock mySqlSelectQueryBlock = new MySqlSelectQueryBlock();
-        mySqlSelectQueryBlock.setParent(joinedTableSource.getSqlJoinTableSource());
+        mySqlSelectQueryBlock.setParent(joinedTableSource.getOriginalJoinTableSource());
         mySqlSelectQueryBlock.setFrom(sqlTable.getSQLTableSource());
         if (sqlTable.getAlias() != null) {
             sqlTable.getSQLTableSource().setAlias(sqlTable.getAlias());
@@ -297,8 +313,8 @@ public class JoinedTableSourceFactory {
         }
     }
 
-    public SQLExpr getOtherCondition() {
-        return otherCondition;
+    public SQLExpr getNewWhereCondition() {
+        return otherConditionForWhere;
     }
 
     public JoinedTableSource getJoinedTableSource() {

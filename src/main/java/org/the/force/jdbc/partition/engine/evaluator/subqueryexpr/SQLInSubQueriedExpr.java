@@ -40,11 +40,11 @@ public class SQLInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEva
             throw new ParserException("sqlSelect.getQuery()==null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).build();
+            this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).buildQueryExecutor();
             this.sqlInSubQueryExpr.setSubQuery(new SQLSelect(queryExecutor.getStatement()));
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
             throw new ParserException("SQLUnionQuery 不支持" + sqlSelectQuery.getClass());
-            //this.queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery).build();
+            //this.queryExecutor = new UnionQueryExecutorFactory(logicDbConfig, (SQLUnionQuery) sqlSelectQuery).buildQueryExecutor();
         } else {
             throw new ParserException("不受支持的sqlSelectQuery类型" + sqlSelectQuery.getClass());
         }

@@ -2,7 +2,6 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.LogicTableSource;
-import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.JoinConnector;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -28,19 +27,32 @@ public class JoinedTableSource extends SQLJoinTableSource implements LogicTableS
 
     private final LogicDbConfig logicDbConfig;
 
-    private final SQLJoinTableSource sqlJoinTableSource;
+    private final SQLJoinTableSource originalJoinTableSource;
 
     private final List<ConditionalSqlTable> sqlTables = new ArrayList<>();
 
+    //queryExecutors的size和sqlTables的size相等且对应
     private final List<QueryExecutor> queryExecutors = new ArrayList<>();
 
+    //joinConnectorList size是queryExecutors的size减去1
     private final List<JoinConnector> joinConnectorList = new ArrayList<>();
 
 
-    public JoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource sqlJoinTableSource) {
+    public JoinedTableSource(LogicDbConfig logicDbConfig, SQLJoinTableSource originalJoinTableSource) {
         this.logicDbConfig = logicDbConfig;
-        this.sqlJoinTableSource = sqlJoinTableSource;
-        this.setParent(sqlJoinTableSource.getParent());
+        this.originalJoinTableSource = originalJoinTableSource;
+        this.setParent(originalJoinTableSource.getParent());
+    }
+
+
+    //打印调试时输出原始的join关系
+    protected void accept0(SQLASTVisitor visitor) {
+        SQLTableSource left = buildSQLSubqueryTableSource(sqlTables.get(0), queryExecutors.get(0));
+        for (int i = 1; i < queryExecutors.size(); i++) {
+            SQLSubqueryTableSource right = buildSQLSubqueryTableSource(sqlTables.get(i), queryExecutors.get(i));
+            left = buildSQLJoinTableSource(left, right, joinConnectorList.get(i - 1));
+        }
+        left.accept(visitor);
     }
 
     private SQLSubqueryTableSource buildSQLSubqueryTableSource(ConditionalSqlTable conditionalSqlTable, QueryExecutor queryExecutor) {
@@ -54,16 +66,6 @@ public class JoinedTableSource extends SQLJoinTableSource implements LogicTableS
         return new SQLJoinTableSource(left, joinConnector.getJoinType(), sqlSubqueryTableSource, joinConnector.getJoinCondition());
     }
 
-    protected void accept0(SQLASTVisitor visitor) {
-        SQLTableSource left = buildSQLSubqueryTableSource(sqlTables.get(0), queryExecutors.get(0));
-        for (int i = 1; i < queryExecutors.size(); i++) {
-            SQLSubqueryTableSource right = buildSQLSubqueryTableSource(sqlTables.get(i), queryExecutors.get(i));
-            left = buildSQLJoinTableSource(left, right, joinConnectorList.get(i - 1));
-        }
-        left.accept(visitor);
-    }
-
-
     public List<ConditionalSqlTable> getSqlTables() {
         return sqlTables;
     }
@@ -72,17 +74,42 @@ public class JoinedTableSource extends SQLJoinTableSource implements LogicTableS
         return joinConnectorList;
     }
 
+    public List<QueryExecutor> getQueryExecutors() {
+        return queryExecutors;
+    }
+
+    public void addFirst(ConditionalSqlTable conditionalSqlTable, QueryExecutor queryExecutor) {
+        if (joinConnectorList.isEmpty() && sqlTables.isEmpty() && queryExecutors.isEmpty()) {
+            sqlTables.add(conditionalSqlTable);
+            queryExecutors.add(queryExecutor);
+        }
+    }
+
+    public void addJoinedTable(ConditionalSqlTable conditionalSqlTable, QueryExecutor queryExecutor, JoinConnector joinConnector) {
+        int size = sqlTables.size();
+        if (size < 1) {
+            throw new RuntimeException("addJoinedTable size<1");
+        }
+        if (queryExecutors.size() != size) {
+            throw new RuntimeException("queryExecutors.size() != size");
+        }
+        if (joinConnectorList.size() != size - 1) {
+            throw new RuntimeException("joinConnectorList.size() != size - 1");
+        }
+        if (sqlTables.contains(conditionalSqlTable)) {
+            throw new RuntimeException("sqlTables.contains(conditionalSqlTable)");
+        }
+        sqlTables.add(conditionalSqlTable);
+        queryExecutors.add(queryExecutor);
+        joinConnectorList.add(joinConnector);
+    }
+
     public LogicDbConfig getLogicDbConfig() {
         return logicDbConfig;
     }
 
-    public SQLJoinTableSource getSqlJoinTableSource() {
-        return sqlJoinTableSource;
-    }
-
-
-    public List<QueryExecutor> getQueryExecutors() {
-        return queryExecutors;
+    public SQLJoinTableSource getOriginalJoinTableSource() {
+        return originalJoinTableSource;
     }
 
     public SQLJoinTableSource.JoinType getJoinType() {
@@ -118,11 +145,11 @@ public class JoinedTableSource extends SQLJoinTableSource implements LogicTableS
     }
 
     public List<SQLExpr> getUsing() {
-        return sqlJoinTableSource.getUsing();
+        return originalJoinTableSource.getUsing();
     }
 
     public boolean isNatural() {
-        return sqlJoinTableSource.isNatural();
+        return originalJoinTableSource.isNatural();
     }
 
     public void setNatural(boolean natural) {
@@ -130,11 +157,11 @@ public class JoinedTableSource extends SQLJoinTableSource implements LogicTableS
     }
 
     public void output(StringBuffer buf) {
-        sqlJoinTableSource.output(buf);
+        originalJoinTableSource.output(buf);
     }
 
     public boolean equals(Object o) {
-        return sqlJoinTableSource.equals(o);
+        return originalJoinTableSource.equals(o);
     }
 
     public boolean replace(SQLExpr expr, SQLExpr target) {

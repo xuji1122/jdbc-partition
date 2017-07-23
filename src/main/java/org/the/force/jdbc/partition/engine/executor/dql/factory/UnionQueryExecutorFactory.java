@@ -29,7 +29,7 @@ public class UnionQueryExecutorFactory implements QueryExecutorFactory {
 
     }
 
-    public QueryExecutor build() {
+    public QueryExecutor buildQueryExecutor() {
         return null;
     }
 }

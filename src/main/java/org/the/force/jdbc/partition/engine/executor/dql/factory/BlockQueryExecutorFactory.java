@@ -1,7 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.dql.factory;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.partition.PartitionBlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.logic.LogicBlockQueryExecutor;
@@ -51,7 +50,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         this.selectQueryBlock = selectQueryBlock;
     }
 
-    public BlockQueryExecutor build() {
+    public BlockQueryExecutor buildQueryExecutor() {
         return build(this.selectQueryBlock);
     }
 
@@ -91,6 +90,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                         selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
                     }
                     selectQueryBlock.setFrom(root);
+                    new SubQueryResetParser(logicDbConfig, selectQueryBlock, selectQueryBlock.getWhere(),root);
                     //改变指针，进入下一轮build
                     root = new LogicBlockQueryExecutor(logicDbConfig, selectQueryBlock, conditionalSqlTable);
                 }
@@ -119,7 +119,6 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
 
         do {
             sqlSelectQueryBlockList.add(selectQueryBlock);
-
             if (selectQueryBlock.getFrom() instanceof SQLJoinTableSource) {
                 return checkJoinTableSource(selectQueryBlock);
             } else if (selectQueryBlock.getFrom() instanceof SQLExprTableSource) {
@@ -133,7 +132,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                     selectQueryBlock.setLimit(copy);
                     sqlSelectQueryBlockList.set(sqlSelectQueryBlockList.size() - 1, selectQueryBlock);
                 } else {
-                    throw new SqlParseException("build result is not SQLSelectQueryBlock");
+                    throw new SqlParseException("buildQueryExecutor result is not SQLSelectQueryBlock");
                 }
                 return new ExecutorNodeType(true, null);
             } else if (!(selectQueryBlock.getFrom() instanceof SQLSubqueryTableSource)) {
@@ -141,6 +140,8 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                 throw new SqlParseException(
                     "不支持的tableSource:" + PartitionSqlUtils.toSql(selectQueryBlock, logicDbConfig.getSqlDialect()) + " : from=" + selectQueryBlock.getFrom().getClass().getName());
             }
+            //重置子查询
+            new SubQueryResetParser(logicDbConfig, selectQueryBlock, selectQueryBlock);
             selectQueryBlock = checkSQLSubqueryTableSource(selectQueryBlock);
         } while (true);
     }
@@ -166,7 +167,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         }
         //最底层的query,由于partitionBlockQuery不去检测，所以为了确保alias被正确设置，从底层检测
         new SqlTableReferParser(logicDbConfig, selectQueryBlock, exprConditionalSqlTable);
-
+        new SubQueryResetParser(logicDbConfig, selectQueryBlock, selectQueryBlock,selectQueryBlock.getWhere());
         return new ExecutorNodeType(false, exprConditionalSqlTable);
     }
 
@@ -180,7 +181,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
     protected ExecutorNodeType checkJoinTableSource(SQLSelectQueryBlock selectQueryBlock) {
         JoinedTableSourceFactory joinedTableSourceFactory =
             new JoinedTableSourceFactory(logicDbConfig, (SQLJoinTableSource) selectQueryBlock.getFrom(), selectQueryBlock.getWhere());
-        SQLExpr newWhere = joinedTableSourceFactory.getOtherCondition(); //tableSource特有的条件过滤掉之后剩余的条件
+        SQLExpr newWhere = joinedTableSourceFactory.getNewWhereCondition(); //tableSource特有的条件过滤掉之后剩余的条件
         //剩余的where条件是否有子查询
         if (newWhere != null) {
             newWhere = (SQLExpr) new SubQueryResetParser(logicDbConfig, newWhere).getSubQueryResetSqlObject();

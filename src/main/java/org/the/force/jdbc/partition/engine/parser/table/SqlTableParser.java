@@ -46,26 +46,14 @@ public class SqlTableParser {
             SQLSelectQuery sqlSelectQuery = sqlSubqueryTableSource.getSelect().getQuery();
             return new QueriedSqlTable(tableSource) {
                 public List<String> getAllReferAbleLabels() {
-                    List<String> columns;
-                    try {
-                        columns = new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlSelectQuery);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return columns;
+                    return new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlSelectQuery);
                 }
             };
         } else if (tableSource instanceof SQLUnionQueryTableSource) {
             SQLUnionQueryTableSource sqlUnionQueryTableSource = (SQLUnionQueryTableSource) tableSource;
             return new QueriedSqlTable(tableSource) {
                 public List<String> getAllReferAbleLabels() {
-                    List<String> columns;
-                    try {
-                        columns = new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlUnionQueryTableSource.getUnion());
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return columns;
+                    return new SelectLabelParser(logicDbConfig).parseSelectLabels(sqlUnionQueryTableSource.getUnion());
                 }
             };
         } else {

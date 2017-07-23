@@ -8,7 +8,6 @@ import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.table.ExprSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
-import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
@@ -45,7 +44,7 @@ public class SelectLabelParser {
         this.logicDbConfig = logicDbConfig;
     }
 
-    public List<String> parseSelectLabels(SQLUnionQuery sqlUnionQuery) throws SQLException {
+    public List<String> parseSelectLabels(SQLUnionQuery sqlUnionQuery)  {
         SQLSelectQuery rightSqlSelectQuery = sqlUnionQuery.getRight();
         List<String> ls = parseSelectLabels(rightSqlSelectQuery);
         if (ls == null || ls.isEmpty()) {
@@ -54,13 +53,13 @@ public class SelectLabelParser {
         return new ArrayList<>();
     }
 
-    public List<String> parseSelectLabels(SQLSelectQuery sqlSelectQuery) throws SQLException {
+    public List<String> parseSelectLabels(SQLSelectQuery sqlSelectQuery) {
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
             return parseSelectLabels((SQLSelectQueryBlock) sqlSelectQuery);
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
             return parseSelectLabels((SQLUnionQuery) sqlSelectQuery);
         } else {
-            throw new UnsupportedSqlOperatorException(
+            throw new UnsupportedOperationException(
                 "sqlSelectQuery not block and not union" + PartitionSqlUtils.toSql(sqlSelectQuery, logicDbConfig.getSqlDialect()) + "\n" + sqlSelectQuery.getClass());
         }
     }
@@ -69,7 +68,7 @@ public class SelectLabelParser {
      * @param sqlSelectQueryBlock
      * @return
      */
-    public List<String> parseSelectLabels(SQLSelectQueryBlock sqlSelectQueryBlock) throws SQLException {
+    public List<String> parseSelectLabels(SQLSelectQueryBlock sqlSelectQueryBlock)  {
         List<SQLSelectItem> selectList = sqlSelectQueryBlock.getSelectList();
         List<String> columns = new ArrayList<>();
         for (SQLSelectItem item : selectList) {
@@ -110,7 +109,7 @@ public class SelectLabelParser {
      * @return
      * @throws SQLException
      */
-    public List<String> getAllColumns(SQLTableSource sqlTableSource, String targetTableName) throws SQLException {
+    public List<String> getAllColumns(SQLTableSource sqlTableSource, String targetTableName)  {
         if (sqlTableSource instanceof SQLExprTableSource) {
             SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) sqlTableSource;
             ExprSqlTable exprSqlTable = new ExprConditionalSqlTable(logicDbConfig, sqlExprTableSource);
@@ -163,7 +162,7 @@ public class SelectLabelParser {
             SQLSubqueryTableSource subqueryTableSource = (SQLSubqueryTableSource) sqlTableSource;
             SQLSelectQuery sqlSelectQuery = subqueryTableSource.getSelect().getQuery();
             if (sqlSelectQuery == null) {
-                throw new UnsupportedSqlOperatorException("sqlSelectQuery == null");
+                throw new UnsupportedOperationException("sqlSelectQuery == null");
             }
             List<String> sets = parseSelectLabels(sqlSelectQuery);
             if (targetTableName == null || targetTableName.equals(sqlTableSource.getAlias())) {

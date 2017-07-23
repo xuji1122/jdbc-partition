@@ -75,7 +75,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         try {
             Object obj = constructor.newInstance(args.toArray());
             if (obj instanceof QueryExecutorFactory) {
-                return ((QueryExecutorFactory) obj).build();
+                return ((QueryExecutorFactory) obj).buildQueryExecutor();
             } else if (obj instanceof SqlExecutor) {
                 return (SqlExecutor) obj;
             }

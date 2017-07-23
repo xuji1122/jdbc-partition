@@ -4,7 +4,7 @@
     <!-- appender配置 -->
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d][%t][%p][%c:%L] %m%n" />
+            <PatternLayout pattern="[%d][%t][%p][%c{3}] %m%n" />
         </Console>
     </Appenders>
     <Loggers>

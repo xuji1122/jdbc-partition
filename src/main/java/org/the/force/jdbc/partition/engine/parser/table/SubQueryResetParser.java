@@ -21,6 +21,8 @@ import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,10 +37,21 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
 
     private SQLObject subQueryResetSqlObject;
 
+    private final List<SQLObject> excludes;
+
+
     private static Log log = LogFactory.getLog(SubQueryResetParser.class);
 
     public SubQueryResetParser(LogicDbConfig logicDbConfig, SQLObject sqlExpr) {
+        this(logicDbConfig, sqlExpr, new SQLObject[] {});
+    }
+
+    public SubQueryResetParser(LogicDbConfig logicDbConfig, SQLObject sqlExpr, SQLObject... excludes) {
         this.logicDbConfig = logicDbConfig;
+        if (excludes == null) {
+            excludes = new SQLObject[] {};
+        }
+        this.excludes = new ArrayList<>(Arrays.asList(excludes));
         SQLExpr newExpr = checkSubExpr(sqlExpr);
         if (newExpr != null) {
             subQueryResetSqlObject = newExpr;
@@ -58,6 +71,16 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
     public void preVisit(SQLObject x) {
         if (!(x instanceof SQLExpr)) {
             return;
+        }
+        if (!excludes.isEmpty()) {
+            Iterator<SQLObject> sqlObjectIterator = excludes.iterator();
+            while (sqlObjectIterator.hasNext()) {
+                SQLObject sqlObject = sqlObjectIterator.next();
+                if (x == sqlObject) {
+                    sqlObjectIterator.remove();
+                    return;
+                }
+            }
         }
         if (x instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr sqlBinaryOpExpr = (SQLBinaryOpExpr) x;
@@ -92,7 +115,7 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
                     list.set(i, newExpr);
                 }
             }
-        }else if (x instanceof SQLInListExpr) {
+        } else if (x instanceof SQLInListExpr) {
             SQLInListExpr sqlInListExpr = (SQLInListExpr) x;
             SQLExpr newExpr = checkSubExpr(sqlInListExpr.getExpr());
             if (newExpr != null) {

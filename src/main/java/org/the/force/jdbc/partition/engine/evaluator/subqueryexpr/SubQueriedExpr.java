@@ -42,7 +42,7 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
             throw new ParserException("sqlSelect.getQuery()==null");
         }
         if (sqlSelectQuery instanceof SQLSelectQueryBlock) {
-            this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).build();
+            this.queryExecutor = new BlockQueryExecutorFactory(logicDbConfig, (SQLSelectQueryBlock) sqlSelectQuery).buildQueryExecutor();
         } else if (sqlSelectQuery instanceof SQLUnionQuery) {
             throw new ParserException("SQLUnionQuery 不支持" + sqlSelectQuery.getClass());
         } else {
