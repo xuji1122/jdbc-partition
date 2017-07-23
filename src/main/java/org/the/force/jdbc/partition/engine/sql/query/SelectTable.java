@@ -19,17 +19,17 @@ public class SelectTable {
 
     private List<SqlExprEvaluator> selectValueNodes = new ArrayList<>();
 
-    private List<String> selectLabels = new ArrayList<>();
-    /**
-     * 一个labe可能映射到多个列上
-     */
-    private Map<String, List<Integer>> labelMap = new LinkedHashMap<>();
+    private List<String> selectLabels = new ArrayList<>();//总是有值的，不管SQLSelectItem是否有alias
 
-    private List<SQLSelectItem> originalNormalSelectItems = new ArrayList<>();
-
+    //非allColumnItems的selectItem,包括添加进去的，最终重置到查询中的sqlItem= normalSelectItems+allColumnItems
+    private List<SQLSelectItem> normalSelectItems = new ArrayList<>();
+    //select * 或t.*的item
     private List<SQLSelectItem> allColumnItems = new ArrayList<>();
 
-    boolean hasAggregate = false;
+    /**
+     * 一个labe可能映射到多个列上，映射关系
+     */
+    private Map<String, List<Integer>> labelMap = new LinkedHashMap<>();
 
     private int queryBound;
 
@@ -46,7 +46,7 @@ public class SelectTable {
         this.distinctAll = distinctAll;
     }
 
-    public void addValueNode(String label, SqlExprEvaluator sqlExprEvaluator) {
+    public void addValueNode(String label, SqlExprEvaluator sqlExprEvaluator, SQLSelectItem sqlSelectItem) {
         selectLabels.add(label);
         selectValueNodes.add(sqlExprEvaluator);
         String key = label.toLowerCase();
@@ -56,10 +56,18 @@ public class SelectTable {
             labelMap.put(key, list);
         }
         list.add(selectLabels.size() - 1);
+        normalSelectItems.add(sqlSelectItem);
     }
 
-    public void addOriginalNormalSelectItem(SQLSelectItem sqlSelectItem){
-        originalNormalSelectItems.add(sqlSelectItem);
+    public void updateValueNode(int index, SqlExprEvaluator sqlExprEvaluator, SQLSelectItem sqlSelectItem) {
+        selectValueNodes.set(index, sqlExprEvaluator);
+        normalSelectItems.set(index, sqlSelectItem);
+    }
+
+
+
+    public void addOriginalNormalSelectItem(SQLSelectItem sqlSelectItem) {
+        normalSelectItems.add(sqlSelectItem);
     }
 
     public void addAllColumnItem(SQLSelectItem item) {
@@ -122,11 +130,4 @@ public class SelectTable {
         this.resultLimitFunction = resultLimitFunction;
     }
 
-    public boolean isHasAggregate() {
-        return hasAggregate;
-    }
-
-    public void setHasAggregate(boolean hasAggregate) {
-        this.hasAggregate = hasAggregate;
-    }
 }

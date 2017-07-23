@@ -7,7 +7,6 @@ import org.the.force.jdbc.partition.engine.executor.dql.logic.LogicBlockQueryExe
 import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
-import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.query.ExecutorNodeType;
@@ -31,7 +30,7 @@ import java.util.List;
  * Created by xuji on 2017/6/3.
  * 处理select tableSource的嵌套关系，依据此关系为主判断执行节点的类型，构造执行节点之间的树形关系
  * 执行节点的细节交给具体的执行节点解析执行
- *
+ * <p>
  * 逻辑的union查询不支持，执行节点就两种类型
  * 一个是由数据库实现的sql操作  实现类是{@link PartitionBlockQueryExecutor}
  * 一个是client实现的sql操作   实现类是{@link LogicBlockQueryExecutor}
@@ -90,11 +89,9 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                     //嵌套
                     ConditionalSqlTable conditionalSqlTable = new SqlTableParser(logicDbConfig).getSqlTable(selectQueryBlock.getFrom());
                     if (selectQueryBlock.getWhere() != null) {
-                        TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, conditionalSqlTable, selectQueryBlock.getWhere());
-                        selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
+                        new TableConditionParser(logicDbConfig, conditionalSqlTable, selectQueryBlock.getWhere());
                     }
                     selectQueryBlock.setFrom(root);
-                    new SubQueryResetParser(logicDbConfig, selectQueryBlock, selectQueryBlock.getWhere(), root);
                     //改变指针，进入下一轮build
                     root = new LogicBlockQueryExecutor(logicDbConfig, selectQueryBlock, conditionalSqlTable);
                 }
@@ -145,8 +142,6 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                 throw new SqlParseException(
                     "不支持的tableSource:" + PartitionSqlUtils.toSql(selectQueryBlock, logicDbConfig.getSqlDialect()) + " : from=" + selectQueryBlock.getFrom().getClass().getName());
             }
-            //重置子查询
-            new SubQueryResetParser(logicDbConfig, selectQueryBlock);
             selectQueryBlock = checkSQLSubqueryTableSource(selectQueryBlock);
         } while (++subQueryCount <= maxSubQuery);
         throw new SqlParseException("子查询嵌套太多");
@@ -168,12 +163,10 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
     protected ExecutorNodeType checkExprTableSource(SQLSelectQueryBlock selectQueryBlock) {
         ExprConditionalSqlTable exprConditionalSqlTable = (ExprConditionalSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(selectQueryBlock.getFrom());
         if (selectQueryBlock.getWhere() != null) {
-            TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
-            selectQueryBlock.setWhere(tableConditionParser.getSubQueryResetWhere());
+            new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
         }
         //最底层的query,由于partitionBlockQuery不去检测，所以为了确保alias被正确设置，从底层检测
         new SqlTableReferParser(logicDbConfig, selectQueryBlock, exprConditionalSqlTable);
-        new SubQueryResetParser(logicDbConfig, selectQueryBlock, selectQueryBlock.getWhere());
         return new ExecutorNodeType(false, exprConditionalSqlTable);
     }
 
@@ -188,14 +181,8 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         JoinedTableSourceFactory joinedTableSourceFactory =
             new JoinedTableSourceFactory(logicDbConfig, (SQLJoinTableSource) selectQueryBlock.getFrom(), selectQueryBlock.getWhere());
         SQLExpr newWhere = joinedTableSourceFactory.getNewWhereCondition(); //tableSource特有的条件过滤掉之后剩余的条件
-        //剩余的where条件是否有子查询
-        if (newWhere != null) {
-            newWhere = (SQLExpr) new SubQueryResetParser(logicDbConfig, newWhere).getSubQueryResetSqlObject();
-        }
         selectQueryBlock.setFrom(joinedTableSourceFactory.getExecutableJoinedTableSource());
         selectQueryBlock.setWhere(newWhere);
-        //确保子查询被重置
-        new SubQueryResetParser(logicDbConfig, selectQueryBlock, selectQueryBlock.getWhere());
         return new ExecutorNodeType(true, null);
     }
 }

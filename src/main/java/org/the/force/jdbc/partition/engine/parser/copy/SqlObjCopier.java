@@ -2,8 +2,11 @@ package org.the.force.jdbc.partition.engine.parser.copy;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLInSubQueryExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -34,8 +37,14 @@ public class SqlObjCopier {
 
     private boolean useEqualsWhenReplace = false;
 
+    private LogicDbConfig logicDbConfig;
+
     public SqlObjCopier() {
 
+    }
+
+    public SqlObjCopier(LogicDbConfig logicDbConfig) {
+        this.logicDbConfig = logicDbConfig;
     }
 
     public boolean isUseEqualsWhenReplace() {
@@ -55,7 +64,6 @@ public class SqlObjCopier {
     }
 
     public <T> T copy(T source) {
-
         try {
             return copy(source, true);
         } catch (Exception e) {
@@ -67,7 +75,6 @@ public class SqlObjCopier {
         if (source == null) {
             return null;
         }
-
         if (source instanceof String) {
             return source;
         } else if (source instanceof Number) {
@@ -78,10 +85,18 @@ public class SqlObjCopier {
             return source;
         } else if (source instanceof Character) {
             return (T) source.getClass().getConstructor(new Class[] {String.class}).newInstance(source.toString());
+        } else if (source instanceof SqlInSubQueriedExpr) {
+            return source;
         } else if (source instanceof SQLInSubQueryExpr) {
+            if (logicDbConfig != null) {
+                return (T) new SqlInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) source);
+            }
+        } else if (source instanceof SqlQueryExpr) {
             return source;
-        } else if (source instanceof SubQueriedExpr) {
-            return source;
+        } else if (source instanceof SQLQueryExpr) {
+            if (logicDbConfig != null) {
+                return (T) new SqlQueryExpr(logicDbConfig, (SQLQueryExpr) source);
+            }
         }
         Class<?> clazz = source.getClass();
         if (clazz.isEnum()) {
@@ -164,6 +179,14 @@ public class SqlObjCopier {
             dest.put(copy(e.getKey(), false), copy(e.getValue(), false));
         }
         return dest;
+    }
+
+    public LogicDbConfig getLogicDbConfig() {
+        return logicDbConfig;
+    }
+
+    public void setLogicDbConfig(LogicDbConfig logicDbConfig) {
+        this.logicDbConfig = logicDbConfig;
     }
 
     //===================属性缓存==============

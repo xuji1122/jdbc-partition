@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
+import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
@@ -9,6 +10,7 @@ import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/7/15.
@@ -41,5 +43,8 @@ public class SQLEqualEvaluator extends AbstractSqlExprEvaluator {
         return rightEvaluator;
     }
 
+    public List<SqlExprEvaluator> children() {
+        return Lists.newArrayList(leftEvaluator, rightEvaluator);
+    }
 
 }

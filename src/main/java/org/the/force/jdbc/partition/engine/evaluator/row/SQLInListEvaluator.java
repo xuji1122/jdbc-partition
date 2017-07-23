@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -40,7 +40,7 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         this.not = originalSqlExpr.isNot();
     }
 
-    public SQLInListEvaluator(LogicDbConfig logicDbConfig, SQLInSubQueriedExpr originalSqlExpr) {
+    public SQLInListEvaluator(LogicDbConfig logicDbConfig, SqlInSubQueriedExpr originalSqlExpr) {
         super(originalSqlExpr);
         this.logicDbConfig = logicDbConfig;
         exprEvaluator = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getExpr());
@@ -114,5 +114,17 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
 
     public boolean isNot() {
         return not;
+    }
+
+
+    public List<SqlExprEvaluator> children() {
+        List<SqlExprEvaluator> list = new ArrayList<>();
+        list.add(exprEvaluator);
+        int size = targetListEvaluator.size();
+        for (int i = 0; i < size; i++) {
+            SqlExprEvaluator evaluator = targetListEvaluator.get(i);
+            list.add(evaluator);
+        }
+        return list;
     }
 }

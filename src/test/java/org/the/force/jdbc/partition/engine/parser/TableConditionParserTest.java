@@ -6,6 +6,7 @@ import org.the.force.jdbc.partition.TestSupport;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
+import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
@@ -36,6 +37,7 @@ public class TableConditionParserTest extends AbstractVisitor {
     private SQLExpr where = null;
 
     public boolean visit(MySqlSelectQueryBlock x) {
+        x = new SqlObjCopier(TestSupport.partitionDb.ymlLogicDbConfig).copy(x);
         where = x.getWhere();
         return false;
     }
@@ -108,7 +110,7 @@ public class TableConditionParserTest extends AbstractVisitor {
             sqlStatement.accept(this);
             for (int k = 0; k < sqlTable.length; k++) {
                 TableConditionParser conditionVisitor = new TableConditionParser(TestSupport.partitionDb.ymlLogicDbConfig, where, k, Lists.newArrayList(sqlTable));
-                SQLExpr subQueryResetWhere = conditionVisitor.getSubQueryResetWhere();
+                SQLExpr subQueryResetWhere = where;
                 SQLExpr tableOwnCondition = sqlTable[k].getTableOwnCondition();
                 SQLExpr otherCondition = conditionVisitor.getOtherCondition();
                 Map<SqlRefer, List<SqlExprEvaluator>> currentTableColumnValueMap = sqlTable[k].getColumnConditionsMap();
@@ -126,13 +128,11 @@ public class TableConditionParserTest extends AbstractVisitor {
                     logger.info("tableOwnCondition == null");
                 } else {
                     logger.info("tableOwnCondition=\n" + SQLUtils.toMySqlString(tableOwnCondition));
-                    logger.info("tableOwnCondition 子查询\n" + conditionVisitor.getSubQueryList());
                 }
                 if (otherCondition == null) {
                     logger.info("otherCondition == null");
                 } else {
                     logger.info("otherCondition=\n" + SQLUtils.toMySqlString(otherCondition));
-                    logger.info("otherCondition 子查询\n" + conditionVisitor.getSubQueryList());
                 }
                 if (conditionTableMap == null) {
                     logger.info("conditionTableMap == null");

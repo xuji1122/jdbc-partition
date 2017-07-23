@@ -57,4 +57,15 @@ public class SQLCaseEvaluator extends AbstractSqlExprEvaluator {
         }
         throw new RuntimeException("case when表达式没有匹配结果");
     }
+
+    public List<SqlExprEvaluator> children() {
+        List<SqlExprEvaluator> list = new ArrayList<>();
+        list.add(valueEvaluator);
+        for (SqlExprEvaluator[] sqlExprEvaluators : itemsEvaluator) {
+            list.add(sqlExprEvaluators[0]);
+            list.add(sqlExprEvaluators[1]);
+        }
+        list.add(elseEvaluator);
+        return list;
+    }
 }

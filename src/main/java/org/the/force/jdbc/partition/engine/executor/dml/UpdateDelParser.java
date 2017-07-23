@@ -36,8 +36,6 @@ public class UpdateDelParser {
 
     private final PartitionEvent.EventType eventType;
 
-    private final SQLExpr where;
-
 
     private final TableRouter tableRouter;
 
@@ -45,13 +43,12 @@ public class UpdateDelParser {
         this.logicDbConfig = logicDbConfig;
         this.updateDelParserAdapter = updateDelParserAdapter;
         this.eventType = updateDelParserAdapter.getEventType();
-        exprSqlTable = new ExprConditionalSqlTable(logicDbConfig,updateDelParserAdapter.getSQLExprTableSource());
-        TableConditionParser tableConditionParser = new TableConditionParser(logicDbConfig, exprSqlTable, updateDelParserAdapter.getCondition());
-        this.where = tableConditionParser.getSubQueryResetWhere();
-        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLStatement(),exprSqlTable);
+        exprSqlTable = new ExprConditionalSqlTable(logicDbConfig, updateDelParserAdapter.getSQLExprTableSource());
+        new TableConditionParser(logicDbConfig, exprSqlTable, updateDelParserAdapter.getCondition());
+        SqlTableReferParser parser = new SqlTableReferParser(logicDbConfig, updateDelParserAdapter.getSQLStatement(), exprSqlTable);
         exprSqlTable.setAlias(parser.getTableAlias());
 
-        tableRouter = new DefaultTableRouter(logicDbConfig,updateDelParserAdapter.getSQLStatement(), exprSqlTable);
+        tableRouter = new DefaultTableRouter(logicDbConfig, updateDelParserAdapter.getSQLStatement(), exprSqlTable);
     }
 
 

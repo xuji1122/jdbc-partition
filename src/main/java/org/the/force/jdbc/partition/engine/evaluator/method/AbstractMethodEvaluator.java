@@ -35,4 +35,10 @@ public abstract class AbstractMethodEvaluator extends AbstractSqlExprEvaluator {
         }
         return argumentValues;
     }
+
+    public List<SqlExprEvaluator> children() {
+        List<SqlExprEvaluator> list  = new ArrayList<>();
+        list.addAll(argumentEvaluators);
+        return list;
+    }
 }

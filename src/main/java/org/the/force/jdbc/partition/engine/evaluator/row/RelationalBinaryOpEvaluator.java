@@ -1,10 +1,10 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
+import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.value.SqlNull;
-import org.the.force.jdbc.partition.engine.value.SqlNumber;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
@@ -13,8 +13,7 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 
 import java.sql.SQLException;
-
-import static org.the.force.thirdparty.druid.sql.visitor.SQLEvalVisitor.EVAL_VALUE_NULL;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/7/15.
@@ -69,5 +68,9 @@ public class RelationalBinaryOpEvaluator extends AbstractSqlExprEvaluator {
             default:
                 throw new PartitionSystemException("not expected operator");
         }
+    }
+
+    public List<SqlExprEvaluator> children() {
+        return Lists.newArrayList(left,right);
     }
 }

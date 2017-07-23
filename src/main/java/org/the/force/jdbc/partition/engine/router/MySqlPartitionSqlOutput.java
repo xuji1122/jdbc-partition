@@ -3,8 +3,8 @@ package org.the.force.jdbc.partition.engine.router;
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ExecutableJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
 import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
@@ -207,7 +207,7 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
      * @param x
      * @return
      */
-    public boolean visit(SubQueriedExpr x) {
+    public boolean visit(SqlQueryExpr x) {
         return false;
     }
 
@@ -217,7 +217,7 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
      * @param x
      * @return
      */
-    public boolean visit(SQLInSubQueriedExpr x) {
+    public boolean visit(SqlInSubQueriedExpr x) {
         Map<SQLExpr, List<Object[]>> map = sqlTablePartition.getSubInListExpr();
         List<Object[]> targetList = map.get(x);
         if (targetList == null) {

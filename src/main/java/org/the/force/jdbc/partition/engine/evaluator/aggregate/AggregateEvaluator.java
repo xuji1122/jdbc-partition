@@ -34,4 +34,10 @@ public abstract class AggregateEvaluator extends AbstractSqlExprEvaluator {
         return distinct;
     }
 
+    public List<SqlExprEvaluator> children() {
+        List<SqlExprEvaluator> list  = new ArrayList<>();
+        list.addAll(argumentEvaluators);
+        return list;
+    }
+
 }

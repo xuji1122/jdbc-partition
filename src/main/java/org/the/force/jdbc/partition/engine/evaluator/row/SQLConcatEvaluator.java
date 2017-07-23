@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
+import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
@@ -11,6 +12,7 @@ import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/7/21.
@@ -32,5 +34,9 @@ public class SQLConcatEvaluator extends AbstractSqlExprEvaluator {
             throw new SqlParseException("null || null is invalid");
         }
         return new TextValue(leftValue.toString() + rightValue.toString());
+    }
+
+    public List<SqlExprEvaluator> children() {
+        return Lists.newArrayList(left, right);
     }
 }

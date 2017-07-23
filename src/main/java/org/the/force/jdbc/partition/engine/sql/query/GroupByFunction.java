@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.sql.query;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ public class GroupByFunction {
 
     private SqlExprEvaluator having;//返回true false
 
-    private List<SqlExprEvaluator> itemList = new ArrayList<>();
+    private List<SqlRefer> itemList = new ArrayList<>();
 
     public SqlExprEvaluator getHaving() {
         return having;
@@ -22,7 +23,7 @@ public class GroupByFunction {
         this.having = having;
     }
 
-    public List<SqlExprEvaluator> getItemList() {
+    public List<SqlRefer> getItemList() {
         return itemList;
     }
 

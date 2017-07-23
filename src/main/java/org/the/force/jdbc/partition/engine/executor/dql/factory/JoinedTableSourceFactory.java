@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by xuji on 2017/6/4.
- * 构造 {@link ExecutableJoinedTableSource}对象，用于重置sql查询的from部分
+ * 构造 {@link ExecutableJoinedTableSource}对象，用于重置sql查询的join类型的from
  */
 public class JoinedTableSourceFactory {
 

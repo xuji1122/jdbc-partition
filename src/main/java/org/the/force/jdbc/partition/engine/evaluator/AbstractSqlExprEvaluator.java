@@ -26,6 +26,29 @@ public abstract class AbstractSqlExprEvaluator implements SqlExprEvaluator {
         return originalSqlExpr;
     }
 
+    public <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target, ExprGatherConfig exprGatherConfig, List<T> resultList) {
+        boolean match = false;
+        if (exprGatherConfig.isChildClassMatch()) {
+            if (this.getClass().isAssignableFrom(target)) {
+                resultList.add((T) this);
+                match = true;
+            }
+        } else {
+            if (this.getClass() == target) {
+                resultList.add((T) this);
+                match = true;
+            }
+        }
+        if (!match) {
+            List<SqlExprEvaluator> children = children();
+            if (children == null || children.isEmpty()) {
+                return;
+            }
+            for (SqlExprEvaluator child : children) {
+                child.gatherExprEvaluator(target, exprGatherConfig, resultList);
+            }
+        }
+    }
 
     public final boolean equals(Object o) {
         if (this == o)

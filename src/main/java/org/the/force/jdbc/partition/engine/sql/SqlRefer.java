@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.engine.sql;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
@@ -9,6 +10,8 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLPropertyExpr;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/5/27.
@@ -19,7 +22,6 @@ public class SqlRefer extends AbstractSqlExprEvaluator {
     private final String ownerName;
 
     private final String name;
-
 
 
     public SqlRefer(SQLName sqlExpr) {
@@ -66,4 +68,7 @@ public class SqlRefer extends AbstractSqlExprEvaluator {
         return name;
     }
 
+    public List<SqlExprEvaluator> children() {
+        return new ArrayList<>(0);
+    }
 }

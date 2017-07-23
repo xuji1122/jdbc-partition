@@ -14,6 +14,7 @@ import org.the.force.jdbc.partition.engine.router.DefaultTableRouter;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.query.GroupByFunction;
 import org.the.force.jdbc.partition.engine.sql.query.PartitionSelectTable;
 import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
@@ -31,6 +32,8 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -71,6 +74,8 @@ import java.util.List;
  */
 public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements BlockQueryExecutor {
 
+    private static Log logger = LogFactory.getLog(PartitionBlockQueryExecutor.class);
+
     private final LogicDbConfig logicDbConfig;
 
     private final ExprConditionalSqlTable innerExprSqlTable;
@@ -105,15 +110,12 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
     public void init() {
         extendAllColumns();
         resolveItems();
-        resolveAggregate();
+        resolveGroupBy();
     }
 
     protected void resolveItems() {
         List<SQLSelectItem> sqlSelectItems = sqlSelectQueryBlock.getSelectList();
         int size = sqlSelectItems.size();
-        boolean hasAggregate = false;
-        List<AvgAggregateEvaluator> avgAggregates = new ArrayList<>();
-        List<AvgAggregateEvaluator> countAggregates = new ArrayList<>();
         SqlExprEvaluatorFactory sqlExprEvaluatorFactory = logicDbConfig.getSqlExprEvaluatorFactory();
         for (int i = 0; i < size; i++) {
             SQLSelectItem item = sqlSelectItems.get(i);
@@ -146,23 +148,35 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
                 }
                 sqlExprEvaluator = sqlExprEvaluatorFactory.matchSqlExprEvaluator(itemExpr);
             }
-            if (sqlExprEvaluator instanceof AggregateEvaluator) {
-                hasAggregate = true;
-            }
-            if (sqlExprEvaluator instanceof AvgAggregateEvaluator) {
-
-            }
-
-            selectTable.addValueNode(label, sqlExprEvaluator);
+            selectTable.addValueNode(label, sqlExprEvaluator, item);
         }
         //group by
         //order by
         //limit
     }
 
-    protected void resolveAggregate() {
+    protected void resolveGroupBy() {
         SQLSelectGroupByClause sqlSelectGroupByClause = sqlSelectQueryBlock.getGroupBy();
+        if (sqlSelectGroupByClause == null) {
+            return;
+        }
+        GroupByFunction groupByFunction = new GroupByFunction();
+
+        selectTable.setGroupByFunction(groupByFunction);
+
         List<SQLExpr> items = sqlSelectGroupByClause.getItems();
+        SQLExpr havingExpr = sqlSelectGroupByClause.getHaving();
+        for (SQLExpr sqlExpr : items) {
+            if (!(sqlExpr instanceof SQLName)) {
+                logger.warn("group by的列不是SQLName实例");
+            }
+            SqlRefer sqlRefer = new SqlRefer((SQLName) sqlExpr);
+            groupByFunction.getItemList().add(sqlRefer);
+        }
+        SqlExprEvaluatorFactory sqlExprEvaluatorFactory = logicDbConfig.getSqlExprEvaluatorFactory();
+        if (havingExpr != null) {
+
+        }
     }
 
     public void extendAllColumns() {

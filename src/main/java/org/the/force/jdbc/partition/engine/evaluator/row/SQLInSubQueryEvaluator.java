@@ -1,11 +1,13 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,10 +15,10 @@ import java.util.List;
  */
 public class SQLInSubQueryEvaluator extends SQLInListEvaluator {
 
-    private final SQLInSubQueriedExpr valuesEvaluator;
+    private final SqlInSubQueriedExpr valuesEvaluator;
 
 
-    public SQLInSubQueryEvaluator(LogicDbConfig logicDbConfig, SQLInSubQueriedExpr originalSqlExpr) {
+    public SQLInSubQueryEvaluator(LogicDbConfig logicDbConfig, SqlInSubQueriedExpr originalSqlExpr) {
         super(logicDbConfig, originalSqlExpr);
         this.valuesEvaluator = originalSqlExpr;
     }
@@ -28,6 +30,13 @@ public class SQLInSubQueryEvaluator extends SQLInListEvaluator {
 
     public List<Object[]> getTargetListValue(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         return valuesEvaluator.eval(sqlExprEvalContext, data);
+    }
+
+    public List<SqlExprEvaluator> children() {
+        List<SqlExprEvaluator> list = new ArrayList<>();
+        list.add(exprEvaluator);
+        list.add(valuesEvaluator);
+        return list;
     }
 
 

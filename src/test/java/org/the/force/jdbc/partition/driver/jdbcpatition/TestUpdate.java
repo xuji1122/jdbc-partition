@@ -80,7 +80,7 @@ public class TestUpdate {
         preparedStatement.setInt(3, 1);
         preparedStatement.setInt(4, 2);
         preparedStatement.setInt(5, 4);
-        preparedStatement.setInt(6, 7);
+        preparedStatement.setInt(6, 10);
         int result = preparedStatement.executeUpdate();
         TestSupport.logger.info("result=" + result);
         connection.commit();

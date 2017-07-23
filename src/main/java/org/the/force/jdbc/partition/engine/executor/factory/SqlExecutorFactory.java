@@ -7,6 +7,7 @@ import org.the.force.jdbc.partition.engine.executor.dml.MySqlReplaceIntoExecutor
 import org.the.force.jdbc.partition.engine.executor.dml.UpdateExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.executor.dql.factory.UnionQueryExecutorFactory;
+import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -45,6 +46,8 @@ public class SqlExecutorFactory extends AbstractVisitor {
 
     protected final LogicDbConfig logicDbConfig;
 
+    private final SqlObjCopier sqlObjCopier;//用于复制statement时重置子查询,在进入主解析流程之前就重置掉子查询，让后续的流程基本不必关心子查询的处理，简化逻辑
+
     private SQLObject sqlStatement;
 
     private SQLExprTableSource tableSource;
@@ -54,6 +57,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
 
     public SqlExecutorFactory(LogicDbConfig logicDbConfig) {
         this.logicDbConfig = logicDbConfig;
+        sqlObjCopier = new SqlObjCopier(logicDbConfig);
     }
 
 
@@ -61,9 +65,6 @@ public class SqlExecutorFactory extends AbstractVisitor {
         return constructor == null;
     }
 
-    public boolean visit(SQLVariantRefExpr x) {
-        return false;
-    }
 
     public SqlExecutor getSqlExecutor() {
         List<Object> args = new ArrayList<>();
@@ -98,25 +99,26 @@ public class SqlExecutorFactory extends AbstractVisitor {
         if (sqlStatement == null) {
             try {
                 constructor = BlockQueryExecutorFactory.class.getConstructor(LogicDbConfig.class, SQLSelectQueryBlock.class);
-                sqlStatement = x;
+                sqlStatement = sqlObjCopier.copy(x);
             } catch (NoSuchMethodException e) {
                 throw new SqlParseException("", e);
             }
         }
         return isContinue();
     }
+
     /**
-     * @param mySqlUnionQuery
+     * @param x
      * @return
      */
-    public boolean visit(SQLUnionQuery mySqlUnionQuery) {
+    public boolean visit(SQLUnionQuery x) {
         if (logger.isDebugEnabled()) {
             //logger.debug("MySqlUnionQuery:{}", SQLUtils.toSQLString(mySqlUnionQuery, JdbcConstants.MYSQL));
         }
         if (sqlStatement == null) {
             try {
                 constructor = UnionQueryExecutorFactory.class.getConstructor(LogicDbConfig.class, SQLUnionQuery.class);
-                sqlStatement = mySqlUnionQuery;
+                sqlStatement = sqlObjCopier.copy(x);
             } catch (NoSuchMethodException e) {
                 throw new SqlParseException("", e);
             }
@@ -137,7 +139,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         try {
             if (sqlStatement == null) {
                 constructor = InsertExecutor.class.getConstructor(LogicDbConfig.class, SQLInsertStatement.class);
-                sqlStatement = x;
+                sqlStatement = sqlObjCopier.copy(x);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -152,7 +154,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         try {
             if (sqlStatement == null) {
                 constructor = MySqlReplaceIntoExecutor.class.getConstructor(LogicDbConfig.class, MySqlReplaceStatement.class);
-                sqlStatement = x;
+                sqlStatement = sqlObjCopier.copy(x);
             }
         } catch (Exception e) {
             throw new SqlParseException("", e);
@@ -173,8 +175,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         try {
             if (sqlStatement == null) {
                 constructor = UpdateExecutor.class.getConstructor(LogicDbConfig.class, SQLUpdateStatement.class);
-                sqlStatement = x;
-                sqlStatement = x;
+                sqlStatement = sqlObjCopier.copy(x);
             }
         } catch (Exception e) {
             throw new SqlParseException("", e);
@@ -195,7 +196,7 @@ public class SqlExecutorFactory extends AbstractVisitor {
         try {
             if (sqlStatement == null) {
                 constructor = DeleteExecutor.class.getConstructor(LogicDbConfig.class, SQLDeleteStatement.class);
-                sqlStatement = x;
+                sqlStatement = sqlObjCopier.copy(x);
             }
         } catch (Exception e) {
             throw new SqlParseException("", e);

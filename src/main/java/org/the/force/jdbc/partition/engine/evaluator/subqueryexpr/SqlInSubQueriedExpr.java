@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 
+import org.the.force.jdbc.partition.engine.evaluator.ExprGatherConfig;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
@@ -24,12 +25,12 @@ import java.util.List;
  * Created by xuji on 2017/6/4.
  * 叶子节点
  */
-public class SQLInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEvaluator {
+public class SqlInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEvaluator {
     private final LogicDbConfig logicDbConfig;
     private final SQLInSubQueryExpr sqlInSubQueryExpr;
     private final QueryExecutor queryExecutor;
 
-    public SQLInSubQueriedExpr(LogicDbConfig logicDbConfig, SQLInSubQueryExpr sqlInSubQueryExpr) {
+    public SqlInSubQueriedExpr(LogicDbConfig logicDbConfig, SQLInSubQueryExpr sqlInSubQueryExpr) {
         this.logicDbConfig = logicDbConfig;
         this.sqlInSubQueryExpr = sqlInSubQueryExpr;
         super.setParent(sqlInSubQueryExpr.getParent());
@@ -81,8 +82,8 @@ public class SQLInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEva
 
 
     public boolean equals(Object o) {
-        if (o instanceof SQLInSubQueriedExpr) {
-            return sqlInSubQueryExpr.equals(((SQLInSubQueriedExpr) o).getSqlInSubQueryExpr());
+        if (o instanceof SqlInSubQueriedExpr) {
+            return sqlInSubQueryExpr.equals(((SqlInSubQueriedExpr) o).getSqlInSubQueryExpr());
         } else {
             return false;
         }
@@ -122,5 +123,21 @@ public class SQLInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEva
 
     public LogicDbConfig getLogicDbConfig() {
         return logicDbConfig;
+    }
+
+    public <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target,ExprGatherConfig exprGatherConfig, List<T> resultList) {
+        if (exprGatherConfig.isChildClassMatch()) {
+            if (SqlInSubQueriedExpr.class.isAssignableFrom(target)) {
+                resultList.add((T) this);
+            }
+        } else {
+            if (SqlInSubQueriedExpr.class == target) {
+                resultList.add((T)this);
+            }
+        }
+    }
+
+    public List<SqlExprEvaluator> children() {
+        return new ArrayList<>(0);
     }
 }

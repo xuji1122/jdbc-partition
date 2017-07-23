@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
 import org.the.force.jdbc.partition.engine.parser.ParserUtils;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
@@ -38,7 +38,6 @@ import java.util.Map;
  * 2，归集sqlTable的条件（可能包括多个不同的列）（通过{@linkplain tableOwnConditionStack}实现）,写入{@linkplain currentSqlTable}
  * 3, 搜集可能出现在where条件中的join条件  写入{@linkplain joinConditionMap}，并判断join的table之间的列的条件等价关系
  * 4，从原始的条件中 去除已经归集到tableSource的条件和join的条件，拼装新的条件 输出{@linkplain otherCondition}
- * 5，借助SubQueryResetParser 重置条件表达式中的子查询为可以执行的子查询表达式
  */
 public class TableConditionParser extends PartitionAbstractVisitor {
     /**
@@ -61,9 +60,8 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      */
     private final ConditionalSqlTable currentSqlTable;//传入的
 
-    private final SubQueryResetParser subQueryResetParser;
 
-    private final SQLExpr subQueryResetWhere;//重置过子查询的，状态只会因为子查询而改变
+    private final SQLExpr originalWhere;//重置过子查询的，状态只会因为子查询而改变
 
     //按照sqlTable归集的字段条件
     private SQLExpr currentTableOwnCondition;//归集到currentSqlTable的sql条件
@@ -84,22 +82,15 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         this.logicDbConfig = logicDbConfig;
         this.orderedSqlTables = new ArrayList<>(orderedSqlTables);
         //先重置子查询
-        subQueryResetParser = new SubQueryResetParser(logicDbConfig, originalWhere);
-        subQueryResetWhere = (SQLExpr) subQueryResetParser.getSubQueryResetSqlObject();
+        this.originalWhere = originalWhere;
         columnConditionStack = new StackArray(16);
         tableOwnConditionStack = new StackArray(16);
-        this.subQueryResetWhere.accept(this);
+        this.originalWhere.accept(this);
         currentSqlTable.setTableOwnCondition(currentTableOwnCondition);
 
     }
 
-    public SQLExpr getSubQueryResetWhere() {
-        return this.subQueryResetWhere;
-    }
 
-    public List<SQLExpr> getSubQueryList() {
-        return subQueryResetParser.getSubQueryList();
-    }
 
     public SQLExpr getOtherCondition() {
         return otherCondition;
@@ -340,7 +331,6 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * (c1,c2) in ((1,2),(3,4))
      * c1 in (select id from xxx)
      * (c1,c2) in (select id,type from xxx)
-     * 子查询的处理借助where条件重置{@link SubQueryResetParser}和{@link SQLInSubQueriedExpr}实现
      *
      * @param x
      * @return
@@ -415,7 +405,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
      * @param x
      * @return
      */
-    public boolean visit(SQLInSubQueriedExpr x) {
+    public boolean visit(SqlInSubQueriedExpr x) {
         SQLExpr sqlExpr = x.getExpr();
         backupOtherCondition(x);
         List<SQLExpr> listKey = matchListKey(sqlExpr);
@@ -431,7 +421,7 @@ public class TableConditionParser extends PartitionAbstractVisitor {
         return false;
     }
 
-    public boolean visit(SubQueriedExpr x) {
+    public boolean visit(SqlQueryExpr x) {
         backupOtherCondition(x);
         return false;
     }

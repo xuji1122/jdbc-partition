@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
+import org.the.force.jdbc.partition.engine.evaluator.ExprGatherConfig;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
@@ -17,12 +18,14 @@ import org.the.force.thirdparty.druid.sql.parser.ParserException;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/6/3.
  * 作为叶子节点
  */
-public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
+public class SqlQueryExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     private final LogicDbConfig logicDbConfig;
 
@@ -30,7 +33,7 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     private final QueryExecutor queryExecutor;
 
-    public SubQueriedExpr(LogicDbConfig logicDbConfig, SQLQueryExpr sqlQueryExpr) {
+    public SqlQueryExpr(LogicDbConfig logicDbConfig, SQLQueryExpr sqlQueryExpr) {
         this.logicDbConfig = logicDbConfig;
         this.sqlQueryExpr = sqlQueryExpr;
         super.setSubQuery(sqlQueryExpr.getSubQuery());
@@ -100,5 +103,22 @@ public class SubQueriedExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     public String toString() {
         return PartitionSqlUtils.toSql(sqlQueryExpr, logicDbConfig.getSqlDialect());
+    }
+
+
+    public <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target, ExprGatherConfig exprGatherConfig, List<T> resultList) {
+        if (exprGatherConfig.isChildClassMatch()) {
+            if (SqlQueryExpr.class.isAssignableFrom(target)) {
+                resultList.add((T) this);
+            }
+        } else {
+            if (SqlQueryExpr.class == target) {
+                resultList.add((T) this);
+            }
+        }
+    }
+
+    public List<SqlExprEvaluator> children() {
+        return new ArrayList<>(0);
     }
 }

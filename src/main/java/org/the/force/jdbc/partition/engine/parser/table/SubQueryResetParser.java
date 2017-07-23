@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionAbstractVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -17,7 +17,6 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLListExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
-import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectGroupByClause;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
@@ -197,10 +196,10 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
         if (x == null) {
             return null;
         }
-        if (x instanceof SubQueriedExpr) {
+        if (x instanceof SqlQueryExpr) {
             return null;
         }
-        if (x instanceof SQLInSubQueriedExpr) {
+        if (x instanceof SqlInSubQueriedExpr) {
             return null;
         }
         if (x instanceof SQLInSubQueryExpr) {
@@ -211,21 +210,21 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
             } else {
                 sqlInSubQueryExpr.getExpr().accept(this);
             }
-            return new SQLInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) x);
+            return new SqlInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) x);
         } else if (x instanceof SQLQueryExpr) {
 
             SQLQueryExpr sqlQueryExpr = (SQLQueryExpr) x;
-            return new SubQueriedExpr(logicDbConfig, sqlQueryExpr);
+            return new SqlQueryExpr(logicDbConfig, sqlQueryExpr);
         }
         return null;
     }
 
-    public boolean visit(SubQueriedExpr x) {
+    public boolean visit(SqlQueryExpr x) {
         subQueryList.add(x);
         return false;
     }
 
-    public boolean visit(SQLInSubQueriedExpr x) {
+    public boolean visit(SqlInSubQueriedExpr x) {
         subQueryList.add(x);
         return false;
     }

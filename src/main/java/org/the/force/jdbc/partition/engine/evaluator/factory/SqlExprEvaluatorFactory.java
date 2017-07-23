@@ -7,16 +7,10 @@ import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInSubQueryEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLListEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLNotEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.row.SQLSubQueryEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.UnKnowEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.factory.AggregateEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.evaluator.factory.BinaryOpEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.evaluator.factory.SqlMethodEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.evaluator.factory.SqlValueEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SQLInSubQueriedExpr;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
@@ -80,19 +74,19 @@ public class SqlExprEvaluatorFactory {
             return new SQLNotEvaluator(logicDbConfig, (SQLNotExpr) sqlExpr);
         }
         // in 查询有关的
-        else if (sqlExpr instanceof SQLInSubQueriedExpr) {
-            return new SQLInSubQueryEvaluator(logicDbConfig, (SQLInSubQueriedExpr) sqlExpr);
+        else if (sqlExpr instanceof SqlInSubQueriedExpr) {
+            return new SQLInSubQueryEvaluator(logicDbConfig, (SqlInSubQueriedExpr) sqlExpr);
         } else if (sqlExpr instanceof SQLInSubQueryExpr) {//SQLInSubQueryExpr被重置是前提
-            throw new SqlParseException("没有重置的子查询");
+            return new SQLInSubQueryEvaluator(logicDbConfig, new SqlInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) sqlExpr));
         } else if (sqlExpr instanceof SQLInListExpr) {//放在子查询之后判断
             return new SQLInListEvaluator(logicDbConfig, (SQLInListExpr) sqlExpr);
         }
         //子查询
-        else if (sqlExpr instanceof SubQueriedExpr) {
-            return new SQLSubQueryEvaluator(logicDbConfig, (SubQueriedExpr) sqlExpr);
+        else if (sqlExpr instanceof SqlQueryExpr) {
+            return (SqlQueryExpr) sqlExpr;
+            //return new SQLSubQueryEvaluator(logicDbConfig, (SqlQueryExpr) sqlExpr);
         } else if (sqlExpr instanceof SQLQueryExpr) {
-            //
-            throw new SqlParseException("没有重置的子查询");
+            return new SqlQueryExpr(logicDbConfig, (SQLQueryExpr) sqlExpr);
         }
         return new UnKnowEvaluator(logicDbConfig, sqlExpr);
     }

@@ -14,7 +14,6 @@ import org.the.force.jdbc.partition.engine.router.InsertTableRouter;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
-import org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlClauseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -56,7 +55,6 @@ public class InsertExecutor implements BatchAbleSqlExecutor {
         }
         sqlTable = new InsertSqlTable(logicDbConfig, originStatement.getTableSource());
         new SqlTableReferParser(logicDbConfig, originStatement, sqlTable);
-        new SubQueryResetParser(logicDbConfig, originStatement);
         visitColumns();
         tableRouter = new InsertTableRouter(logicDbConfig, originStatement, sqlTable);
 

@@ -39,4 +39,11 @@ public class SQLListEvaluator extends AbstractSqlExprEvaluator {
         return itemEvaluators;
     }
 
+
+    public List<SqlExprEvaluator> children() {
+        List<SqlExprEvaluator> list = new ArrayList<>();
+        list.addAll(itemEvaluators);
+        return list;
+    }
+
 }

@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.evaluator;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by xuji on 2017/7/13.
@@ -14,5 +15,17 @@ public interface SqlExprEvaluator extends SQLExpr {
     Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException;
 
     SQLExpr getOriginalSqlExpr();
+
+
+    List<SqlExprEvaluator> children();
+
+    /**
+     * 收集求值处理过程中指定类型的表达式
+     * @param target
+     * @param exprGatherConfig   Expr遍历搜集的相关条件设置
+     * @param resultList    保存结果集的对象
+     * @return
+     */
+    <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target, ExprGatherConfig exprGatherConfig, List<T> resultList);
 
 }
