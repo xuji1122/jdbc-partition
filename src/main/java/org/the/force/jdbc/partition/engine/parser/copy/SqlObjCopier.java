@@ -88,12 +88,22 @@ public class SqlObjCopier {
         } else if (source instanceof SqlInSubQueriedExpr) {
             return source;
         } else if (source instanceof SQLInSubQueryExpr) {
+            /**
+             * 通过复制时替换对象的方式重置子查询
+             * 能够保证SQLInSubQueryExpr不会被遗漏掉
+             * 比判断parent中是否包括SQLInSubQueryExpr的方式靠谱，难以枚举parent出现的情形 vs {@link org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser}
+             */
             if (logicDbConfig != null) {
                 return (T) new SqlInSubQueriedExpr(logicDbConfig, (SQLInSubQueryExpr) source);
             }
         } else if (source instanceof SqlQueryExpr) {
             return source;
         } else if (source instanceof SQLQueryExpr) {
+            /**
+             * 通过复制时替换对象的方式重置子查询
+             * 能够保证SQLQueryExpr不会被遗漏掉
+             * 比判断parent中是否包括SQLInSubQueryExpr的方式靠谱，难以枚举parent出现的情形  vs {@link org.the.force.jdbc.partition.engine.parser.table.SubQueryResetParser}
+             */
             if (logicDbConfig != null) {
                 return (T) new SqlQueryExpr(logicDbConfig, (SQLQueryExpr) source);
             }
