@@ -16,8 +16,12 @@ public class AvgAggregateEvaluator extends AggregateEvaluator {
         super(logicDbConfig, sqlAggregateExpr);
     }
 
+    public AvgAggregateEvaluator() {
+    }
+
     public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
         return null;
     }
+
 
 }

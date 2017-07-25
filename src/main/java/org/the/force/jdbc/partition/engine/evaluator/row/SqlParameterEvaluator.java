@@ -22,6 +22,9 @@ public class SqlParameterEvaluator extends AbstractSqlExprEvaluator {
         this.index = sqlVariantRefExpr.getIndex();
     }
 
+    public SqlParameterEvaluator() {
+    }
+
     public SqlParameter eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         return sqlExprEvalContext.getLogicSqlParameterHolder().getSqlParameter(index);
     }

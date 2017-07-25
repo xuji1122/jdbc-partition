@@ -17,11 +17,11 @@ import java.util.List;
  */
 public class SQLCaseEvaluator extends AbstractSqlExprEvaluator {
 
-    private final SqlExprEvaluator valueEvaluator;
+    private  SqlExprEvaluator valueEvaluator;
 
-    private final SqlExprEvaluator elseEvaluator;
+    private  SqlExprEvaluator elseEvaluator;
 
-    private final List<SqlExprEvaluator[]> itemsEvaluator = new ArrayList<>();
+    private  List<SqlExprEvaluator[]> itemsEvaluator = new ArrayList<>();
 
     public SQLCaseEvaluator(LogicDbConfig logicDbConfig, SQLCaseExpr sqlCaseExpr) {
         super(sqlCaseExpr);
@@ -39,6 +39,10 @@ public class SQLCaseEvaluator extends AbstractSqlExprEvaluator {
             pair[1] = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(item.getValueExpr());
             itemsEvaluator.add(pair);
         }
+    }
+
+    public SQLCaseEvaluator(){
+
     }
 
     public SqlValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {

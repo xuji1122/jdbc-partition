@@ -1,8 +1,7 @@
 package org.the.force.jdbc.partition.engine.parser.table;
 
-import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
+import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionAbstractVisitor;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -18,8 +17,6 @@ import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
-import org.the.force.thirdparty.druid.support.logging.Log;
-import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +29,8 @@ import java.util.List;
  */
 public class SubQueryResetParser extends PartitionAbstractVisitor {
 
+    //private static Log log = LogFactory.getLog(SubQueryResetParser.class);
+
     private final LogicDbConfig logicDbConfig;
 
     private List<SQLExpr> subQueryList = new ArrayList<>();
@@ -40,8 +39,6 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
 
     private final List<SQLObject> excludes;
 
-
-    private static Log log = LogFactory.getLog(SubQueryResetParser.class);
 
     public SubQueryResetParser(LogicDbConfig logicDbConfig, SQLObject sqlExpr) {
         this(logicDbConfig, sqlExpr, new SQLObject[] {});
@@ -112,7 +109,7 @@ public class SubQueryResetParser extends PartitionAbstractVisitor {
                 }
             }
             if (sqlMethodInvokeExpr.getFrom() != null) {
-                log.warn("SQLMethodInvokeExpr from有值" + PartitionSqlUtils.toSql(x, logicDbConfig.getSqlDialect()));
+                //log.warn("SQLMethodInvokeExpr from有值" + PartitionSqlUtils.toSql(x, logicDbConfig.getSqlDialect()));
             }
         } else if (x instanceof SQLListExpr) {
             SQLListExpr sqlListExpr = (SQLListExpr) x;

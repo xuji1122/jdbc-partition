@@ -25,6 +25,10 @@ public class SQLNotEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
+    public SQLNotEvaluator(){
+
+    }
+
     public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         return new BooleanValue(!((BooleanValue) sqlExprEvaluator.eval(sqlExprEvalContext, data)).getValue());
     }

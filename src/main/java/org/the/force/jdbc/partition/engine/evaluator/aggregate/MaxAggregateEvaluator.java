@@ -15,6 +15,9 @@ public class MaxAggregateEvaluator extends AggregateEvaluator {
         super(logicDbConfig, sqlAggregateExpr);
     }
 
+    public MaxAggregateEvaluator() {
+    }
+
     public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
         return null;
     }

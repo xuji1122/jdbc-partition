@@ -18,8 +18,8 @@ import java.util.List;
  * Created by xuji on 2017/7/21.
  */
 public class SQLConcatEvaluator extends AbstractSqlExprEvaluator {
-    private final SqlExprEvaluator left;
-    private final SqlExprEvaluator right;
+    private  SqlExprEvaluator left;
+    private  SqlExprEvaluator right;
 
     public SQLConcatEvaluator(LogicDbConfig logicDbConfig, SQLBinaryOpExpr originalSqlExpr) {
         super(originalSqlExpr);
@@ -35,6 +35,11 @@ public class SQLConcatEvaluator extends AbstractSqlExprEvaluator {
         }
         return new TextValue(leftValue.toString() + rightValue.toString());
     }
+
+    public SQLConcatEvaluator(){
+
+    }
+
 
     public List<SqlExprEvaluator> children() {
         return Lists.newArrayList(left, right);

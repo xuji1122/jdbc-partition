@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class SQLEqualEvaluator extends AbstractSqlExprEvaluator {
 
-    private final SqlExprEvaluator leftEvaluator;
-    private final SqlExprEvaluator rightEvaluator;
+    private SqlExprEvaluator leftEvaluator;
+    private SqlExprEvaluator rightEvaluator;
 
     public SQLEqualEvaluator(LogicDbConfig logicDbConfig, SQLBinaryOpExpr originalSqlExpr) {
         super(originalSqlExpr);
@@ -33,6 +33,10 @@ public class SQLEqualEvaluator extends AbstractSqlExprEvaluator {
             return new BooleanValue(false);
         }
         return new BooleanValue(leftValue.equals(rightValue));
+    }
+
+    public SQLEqualEvaluator() {
+
     }
 
     public SqlExprEvaluator getLeftEvaluator() {

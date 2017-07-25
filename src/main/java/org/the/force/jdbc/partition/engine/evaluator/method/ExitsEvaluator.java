@@ -21,4 +21,8 @@ public class ExitsEvaluator extends AbstractMethodEvaluator {
         List<Object> value = evalArguments(sqlExprEvalContext, data);
         return new BooleanValue(value != null && !value.isEmpty());
     }
+
+    public ExitsEvaluator(){
+
+    }
 }

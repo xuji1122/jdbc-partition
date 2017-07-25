@@ -16,14 +16,18 @@ public class RsIndexEvaluator extends AbstractSqlExprEvaluator {
     /**
      * 直接取值所需的两个字段
      */
-    private final int index;
+    private int index;
 
-    private final String label;
+    private String label;
 
     public RsIndexEvaluator(SQLExpr originalSqlExpr, int index, String label) {
         super(originalSqlExpr);
         this.index = index;
         this.label = label;
+    }
+
+    public RsIndexEvaluator() {
+
     }
 
     public Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {

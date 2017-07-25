@@ -19,15 +19,19 @@ import java.util.List;
  */
 public class MathBinaryOpEvaluator extends AbstractSqlExprEvaluator {
 
-    private final SqlExprEvaluator left;
-    private final SqlExprEvaluator right;
-    private final SQLBinaryOperator operator;
+    private  SqlExprEvaluator left;
+    private  SqlExprEvaluator right;
+    private  SQLBinaryOperator operator;
 
     public MathBinaryOpEvaluator(LogicDbConfig logicDbConfig, SQLBinaryOpExpr originalSqlExpr) {
         super(originalSqlExpr);
         left = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getLeft());
         right = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getRight());
         this.operator = originalSqlExpr.getOperator();
+    }
+
+    public MathBinaryOpEvaluator(){
+
     }
 
     public SqlValue eval(SqlExprEvalContext sqlExprEvalContext, Object rows) throws SQLException {

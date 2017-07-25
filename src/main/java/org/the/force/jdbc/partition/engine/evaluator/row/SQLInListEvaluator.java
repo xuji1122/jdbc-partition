@@ -21,13 +21,13 @@ import java.util.stream.Collectors;
  */
 public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
 
-    protected final LogicDbConfig logicDbConfig;
+    protected LogicDbConfig logicDbConfig;
 
-    protected final SqlExprEvaluator exprEvaluator;
+    protected SqlExprEvaluator exprEvaluator;
 
-    protected final List<SqlExprEvaluator> targetListEvaluator = new ArrayList<>();
+    protected List<SqlExprEvaluator> targetListEvaluator = new ArrayList<>();
 
-    private final boolean not;
+    private boolean not;
 
     public SQLInListEvaluator(LogicDbConfig logicDbConfig, SQLInListExpr originalSqlExpr) {
         super(originalSqlExpr);
@@ -45,6 +45,10 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         this.logicDbConfig = logicDbConfig;
         exprEvaluator = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getExpr());
         this.not = originalSqlExpr.isNot();
+    }
+
+    public SQLInListEvaluator() {
+
     }
 
     public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {

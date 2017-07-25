@@ -54,7 +54,9 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
     }
 
     public BlockQueryExecutor buildQueryExecutor() {
-        return build(this.selectQueryBlock);
+        BlockQueryExecutor blockQueryExecutor = build(this.selectQueryBlock);
+        blockQueryExecutor.init();
+        return blockQueryExecutor;
     }
 
     /**
@@ -128,10 +130,11 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
             } else if (selectQueryBlock.getLimit() != null) {
                 SQLLimit copy = selectQueryBlock.getLimit();
                 selectQueryBlock.setLimit(null);
-                SQLObject sqlObject = build(selectQueryBlock);
-                if (sqlObject instanceof SQLSelectQueryBlock) {
-                    selectQueryBlock = (SQLSelectQueryBlock) sqlObject;
+                BlockQueryExecutor blockQueryExecutor = build(selectQueryBlock);
+                if (blockQueryExecutor instanceof SQLSelectQueryBlock) {
+                    selectQueryBlock = (SQLSelectQueryBlock) blockQueryExecutor;
                     selectQueryBlock.setLimit(copy);
+                    blockQueryExecutor.init();
                     sqlSelectQueryBlockList.set(sqlSelectQueryBlockList.size() - 1, selectQueryBlock);
                 } else {
                     throw new SqlParseException("buildQueryExecutor result is not SQLSelectQueryBlock");

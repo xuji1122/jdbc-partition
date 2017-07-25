@@ -17,11 +17,14 @@ import java.util.List;
  */
 public class UnKnowEvaluator extends AbstractSqlExprEvaluator {
 
-    private final LogicDbConfig logicDbConfig;
+    private LogicDbConfig logicDbConfig;
 
     public UnKnowEvaluator(LogicDbConfig logicDbConfig, SQLExpr originalSqlExpr) {
         super(originalSqlExpr);
         this.logicDbConfig = logicDbConfig;
+    }
+
+    public UnKnowEvaluator() {
     }
 
     public Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {

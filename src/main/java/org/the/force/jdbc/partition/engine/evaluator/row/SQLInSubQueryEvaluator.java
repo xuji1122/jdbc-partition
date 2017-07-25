@@ -15,13 +15,18 @@ import java.util.List;
  */
 public class SQLInSubQueryEvaluator extends SQLInListEvaluator {
 
-    private final SqlInSubQueriedExpr valuesEvaluator;
+    private SqlInSubQueriedExpr valuesEvaluator;
 
 
     public SQLInSubQueryEvaluator(LogicDbConfig logicDbConfig, SqlInSubQueriedExpr originalSqlExpr) {
         super(logicDbConfig, originalSqlExpr);
         this.valuesEvaluator = originalSqlExpr;
     }
+
+    public SQLInSubQueryEvaluator() {
+
+    }
+
 
     public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
 

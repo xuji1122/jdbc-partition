@@ -363,11 +363,11 @@ public class SQLSelectQueryBlock extends SQLObjectImpl implements SQLSelectQuery
 //        }
 //
 //        if (groupBy != null) {
-//            x.setGroupByFunction(groupBy.clone());
+//            x.setGroupBy(groupBy.clone());
 //        }
 //
 //        if (orderBy != null) {
-//            x.setOrderByFunction(orderBy.clone());
+//            x.setOrderBy(orderBy.clone());
 //        }
 //
 //        x.parenthesized = parenthesized;

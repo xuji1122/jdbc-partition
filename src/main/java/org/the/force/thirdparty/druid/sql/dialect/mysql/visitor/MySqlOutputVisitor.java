@@ -2618,9 +2618,9 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
     //            right.accept(this);
     //        }
     //
-    //        if (x.getOrderByFunction() != null) {
+    //        if (x.getOrderBy() != null) {
     //            println();
-    //            x.getOrderByFunction().accept(this);
+    //            x.getOrderBy().accept(this);
     //        }
     //
     //        if (x.getLimit() != null) {

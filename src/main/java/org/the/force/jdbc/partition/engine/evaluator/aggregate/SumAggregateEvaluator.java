@@ -15,6 +15,9 @@ public class SumAggregateEvaluator extends AggregateEvaluator {
         super(logicDbConfig, sqlAggregateExpr);
     }
 
+    public SumAggregateEvaluator() {
+    }
+
     public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
         return null;
     }

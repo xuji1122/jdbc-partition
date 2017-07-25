@@ -15,7 +15,9 @@ public class MinAggregateEvaluator extends AggregateEvaluator {
         super(logicDbConfig, sqlAggregateExpr);
     }
 
-    @Override
+    public MinAggregateEvaluator() {
+    }
+
     public Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         return null;
     }

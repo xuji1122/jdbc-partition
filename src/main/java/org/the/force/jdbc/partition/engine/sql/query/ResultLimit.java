@@ -5,13 +5,13 @@ import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 /**
  * Created by xuji on 2017/7/22.
  */
-public class ResultLimitFunction {
+public class ResultLimit {
 
     private SqlExprEvaluator offset;
 
     private final SqlExprEvaluator count;
 
-    public ResultLimitFunction(SqlExprEvaluator count) {
+    public ResultLimit(SqlExprEvaluator count) {
         this.count = count;
     }
 

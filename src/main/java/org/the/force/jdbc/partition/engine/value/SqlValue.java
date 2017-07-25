@@ -7,7 +7,7 @@ import java.sql.SQLException;
  */
 public interface SqlValue {
 
-    Object NULL = Long.MIN_VALUE;
+    Object NULL = (Comparable<?>) o -> -1;
 
     Object getValue();
 

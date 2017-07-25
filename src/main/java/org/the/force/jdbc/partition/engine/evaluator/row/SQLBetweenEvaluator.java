@@ -19,11 +19,11 @@ public class SQLBetweenEvaluator extends AbstractSqlExprEvaluator {
 
     private boolean not;
 
-    private final SqlExprEvaluator testSqlExprEvaluator;
+    private  SqlExprEvaluator testSqlExprEvaluator;
 
-    private final SqlExprEvaluator beginSqlExprEvaluator;
+    private  SqlExprEvaluator beginSqlExprEvaluator;
 
-    private final SqlExprEvaluator endSqlExprEvaluator;
+    private  SqlExprEvaluator endSqlExprEvaluator;
 
     public SQLBetweenEvaluator(LogicDbConfig logicDbConfig, SQLBetweenExpr originalSqlExpr) {
         super(originalSqlExpr);
@@ -32,6 +32,11 @@ public class SQLBetweenEvaluator extends AbstractSqlExprEvaluator {
         beginSqlExprEvaluator = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getBeginExpr());
         endSqlExprEvaluator = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getEndExpr());
     }
+
+    public SQLBetweenEvaluator(){
+
+    }
+
 
     public SqlValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         Comparable<Object> testValue = (Comparable<Object>) testSqlExprEvaluator.eval(sqlExprEvalContext, data);

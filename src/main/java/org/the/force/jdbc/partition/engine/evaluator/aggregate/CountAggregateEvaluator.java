@@ -16,6 +16,9 @@ public class CountAggregateEvaluator extends AggregateEvaluator {
         super(logicDbConfig, sqlAggregateExpr);
     }
 
+    public CountAggregateEvaluator() {
+    }
+
     public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
         return null;
     }

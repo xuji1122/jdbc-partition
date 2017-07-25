@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.sql.query;
 
 import org.the.force.jdbc.partition.engine.evaluator.row.RsIndexEvaluator;
+import org.the.force.thirdparty.druid.sql.ast.SQLOrderingSpecification;
 
 /**
  * Created by xuji on 2017/7/14.
@@ -10,18 +11,22 @@ public class OrderByItem {
 
     private final RsIndexEvaluator rsIndexEvaluator;
 
-    private final boolean asc;
+    private SQLOrderingSpecification sqlOrderingSpecification;
 
-    public OrderByItem(RsIndexEvaluator rsIndexEvaluator, boolean asc) {
+    public OrderByItem(RsIndexEvaluator rsIndexEvaluator, SQLOrderingSpecification sqlOrderingSpecification) {
         this.rsIndexEvaluator = rsIndexEvaluator;
-        this.asc = asc;
-    }
-
-    public RsIndexEvaluator getSelectValueNode() {
-        return rsIndexEvaluator;
+        this.sqlOrderingSpecification = sqlOrderingSpecification;
     }
 
     public boolean isAsc() {
-        return asc;
+        return sqlOrderingSpecification.equals(SQLOrderingSpecification.ASC);
+    }
+
+    public RsIndexEvaluator getRsIndexEvaluator() {
+        return rsIndexEvaluator;
+    }
+
+    public SQLOrderingSpecification getSqlOrderingSpecification() {
+        return sqlOrderingSpecification;
     }
 }

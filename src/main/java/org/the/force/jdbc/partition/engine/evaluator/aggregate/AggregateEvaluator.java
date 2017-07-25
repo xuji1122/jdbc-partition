@@ -17,7 +17,7 @@ public abstract class AggregateEvaluator extends AbstractSqlExprEvaluator {
 
     private List<SqlExprEvaluator> argumentEvaluators = new ArrayList<>();
 
-    private final boolean distinct;
+    private  boolean distinct;
 
 
     public AggregateEvaluator(LogicDbConfig logicDbConfig, SQLAggregateExpr sqlAggregateExpr) {
@@ -28,6 +28,10 @@ public abstract class AggregateEvaluator extends AbstractSqlExprEvaluator {
             argumentEvaluators.add(sqlExprEvaluator);
         }
         distinct = sqlAggregateExpr.getOption() == SQLAggregateOption.DISTINCT;
+    }
+
+    public AggregateEvaluator(){
+
     }
 
     public boolean isDistinct() {

@@ -8,6 +8,7 @@ import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 
@@ -19,15 +20,25 @@ import java.util.List;
  */
 public class LogicBooleanEvaluator extends AbstractSqlExprEvaluator {
 
-    private final SqlExprEvaluator left;
-    private final SqlExprEvaluator right;
-    private final SQLBinaryOperator operator;
+    private SqlExprEvaluator left;
+    private SqlExprEvaluator right;
+    private SQLBinaryOperator operator;
 
     public LogicBooleanEvaluator(LogicDbConfig logicDbConfig, SQLBinaryOpExpr originalSqlExpr) {
         super(originalSqlExpr);
         left = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getLeft());
         right = logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(originalSqlExpr.getRight());
         this.operator = originalSqlExpr.getOperator();
+    }
+
+    public LogicBooleanEvaluator() {
+
+    }
+
+    public LogicBooleanEvaluator(SqlExprEvaluator left, SqlExprEvaluator right, SQLBinaryOperator operator) {
+        this.left = left;
+        this.right = right;
+        this.operator = operator;
     }
 
     public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object rows) throws SQLException {

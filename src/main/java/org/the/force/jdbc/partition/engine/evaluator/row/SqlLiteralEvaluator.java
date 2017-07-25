@@ -25,6 +25,10 @@ public abstract class SqlLiteralEvaluator extends AbstractSqlExprEvaluator {
         return eval();
     }
 
+    public SqlLiteralEvaluator(){
+
+    }
+
     public abstract SqlValue eval() throws SQLException;
 
     public List<SqlExprEvaluator> children() {

@@ -122,6 +122,16 @@ public class SqlObjCopier {
         } else if (clazz.isArray()) {
             return (T) copyArray(source);
         }
+        //如果程序传入的的根对象就是需要替换的，那么直接替换返回
+        SimpleLinkedList.Node<Object[]> replacePair = replaceObjPairs.first();
+        while (replacePair != null) {
+            Object[] pair = replacePair.item();
+            if (pair[0] == source || (isUseEqualsWhenReplace() && pair[0].equals(source))) {
+                replaceObjPairs.remove(replacePair);
+                return (T) pair[1];
+            }
+            replacePair = replacePair.next();
+        }
         Object target;
         try {
             Constructor constructor = clazz.getConstructor(new Class[] {});
@@ -134,8 +144,8 @@ public class SqlObjCopier {
             logger.warn(MessageFormat.format("{0},没有默认的无参构造器，无法深度复制", clazz.getName()));
             return source;
         }
+
         List<Field> list = loadFields(clazz);
-        w:
         for (Field pd : list) {
             String name = pd.getName();
             if (inRootFields && excludeRootFields != null && excludeRootFields.contains(name)) {
@@ -145,16 +155,6 @@ public class SqlObjCopier {
             if (parentFields.contains(name)) {
                 pd.set(target, value);
                 continue;
-            }
-            SimpleLinkedList.Node<Object[]> node = replaceObjPairs.first();
-            while (node != null) {
-                Object[] pair = node.item();
-                if (pair[0] == value || (isUseEqualsWhenReplace() && pair[0].equals(value))) {
-                    pd.set(target, pair[1]);
-                    replaceObjPairs.remove(node);
-                    continue w;
-                }
-                node = node.next();
             }
             pd.set(target, copy(value, false));
         }

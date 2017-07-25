@@ -196,7 +196,7 @@ public class JoinedTableSourceFactory {
                 });
             }));
             //join需要的单表的排序条件分析
-            List<SqlRefer> sqlOrderByItemForJoin = new SqlReferParser(joinConnector.getJoinCondition(), sqlTable).getSqlReferList();
+            Set<SqlRefer> sqlOrderByItemForJoin = new SqlReferParser(joinConnector.getJoinCondition(), sqlTable).getSqlReferSet();
             if (sqlOrderByItemForJoin.isEmpty()) {
                 throw new SqlParseException("join的条件列名称无法确定表格归属，不支持join");
             }
@@ -231,7 +231,7 @@ public class JoinedTableSourceFactory {
         });
     }
 
-    private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableCitedLabels sqlTableCitedLabels, List<SqlRefer> sqlOrderByItemForJoin) {
+    private SQLSelectQueryBlock buildSQLSelectQueryBlock(ConditionalSqlTable sqlTable, SqlTableCitedLabels sqlTableCitedLabels, Set<SqlRefer> sqlOrderByItemForJoin) {
         MySqlSelectQueryBlock mySqlSelectQueryBlock = new MySqlSelectQueryBlock();
         mySqlSelectQueryBlock.setParent(executableJoinedTableSource.getOriginalJoinTableSource());
         mySqlSelectQueryBlock.setFrom(sqlTable.getSQLTableSource());

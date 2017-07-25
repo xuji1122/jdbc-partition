@@ -27,6 +27,11 @@ public abstract class AbstractMethodEvaluator extends AbstractSqlExprEvaluator {
         }
     }
 
+    public AbstractMethodEvaluator(){
+
+    }
+
+
     protected List<Object> evalArguments(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         List<Object> argumentValues = new ArrayList<>();
         for (SqlExprEvaluator sqlExprEvaluator : argumentEvaluators) {

@@ -26,6 +26,10 @@ public class SQLListEvaluator extends AbstractSqlExprEvaluator {
             .addAll(originalSqlExpr.getItems().stream().map(sqlExpr -> (logicDbConfig.getSqlExprEvaluatorFactory().matchSqlExprEvaluator(sqlExpr))).collect(Collectors.toList()));
     }
 
+    public SQLListEvaluator(){
+
+    }
+
     public Object[] eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
         Object[] array = new Object[itemEvaluators.size()];
         for (int i = 0; i < array.length; i++) {
