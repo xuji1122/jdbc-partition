@@ -5,6 +5,7 @@ import org.the.force.jdbc.partition.engine.evaluator.row.RsIndexEvaluator;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.exception.SqlParseException;
+import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
 
 import java.util.ArrayList;
@@ -12,7 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * select的定义
+ */
 public class SelectTable {
 
 
@@ -36,12 +39,20 @@ public class SelectTable {
      */
     private Map<String, int[]> labelMap = new HashMap<>();
 
+    //client查询的实际长度
     private int queryBound;
 
+    //group by  依赖有序但是顺序的方向不敏感
     private GroupBy groupBy;
 
-    private OrderBy orderBy;
+    //依赖顺序但是对顺序的方向不敏感
 
+    private GroupBy distinctAllGroupBy;
+
+    //优先级最低  正序还是倒序敏感，groupBy和distinctAllGroupBy由于对字段先后和方向不敏感，因此尽量满足order by的要求
+    //client指定的排序，固定不变，但是可以通过数据库实现也可以通过jdbc实现，因此输出的sql可变
+    private OrderBy orderBy;
+    //优先级最低
     private ResultLimit resultLimit;
 
     public SelectTable(ConditionalSqlTable sqlTable, boolean distinctAll) {
@@ -56,6 +67,9 @@ public class SelectTable {
      * @param sqlSelectItem
      */
     public void addValueNode(SQLSelectItem sqlSelectItem, SqlExprEvaluator sqlExprEvaluator) {
+        if (getIndex(sqlExprEvaluator) > -1) {
+            throw new SqlParseException("sqlSelectItem已经存在");
+        }
         String label = sqlSelectItem.getAlias();
         if (label == null) {
             if (sqlExprEvaluator instanceof SqlRefer) {
@@ -96,8 +110,12 @@ public class SelectTable {
                 }
             }
         } else if (target instanceof RsIndexEvaluator) {
-            //TODO 是否需要这样做？
-            return ((RsIndexEvaluator) target).getIndex();
+            RsIndexEvaluator rsIndexEvaluator = ((RsIndexEvaluator) target);
+            if (rsIndexEvaluator.getSqlTable() == this.sqlTable) {
+                return rsIndexEvaluator.getIndex();
+            } else {
+                return -1;
+            }
         }
         int size = selectValueNodes.size();
         for (int i = 0; i < size; i++) {
@@ -146,13 +164,18 @@ public class SelectTable {
      * @param index
      * @param sqlExprEvaluator
      */
+
     public void updateSqlExprEvaluator(int index, SqlExprEvaluator sqlExprEvaluator) {
-        updateSqlExprEvaluator(index, sqlExprEvaluator, false);
+        updateSqlExprEvaluator(index, sqlExprEvaluator, null);
     }
 
-    public void updateSqlExprEvaluator(int index, SqlExprEvaluator sqlExprEvaluator, boolean forceUpdate) {
-        if (!forceUpdate && !sqlExprEvaluator.getOriginalSqlExpr().equals(selectValueNodes.get(index).getOriginalSqlExpr())) {
+
+    public void updateSqlExprEvaluator(int index, SqlExprEvaluator sqlExprEvaluator, SQLExpr newSQLExpr) {
+        if (!sqlExprEvaluator.getOriginalSqlExpr().equals(selectValueNodes.get(index).getOriginalSqlExpr())) {
             throw new RuntimeException("!sqlExprEvaluator.getOriginalSqlExpr().equals(selectValueNodes.get(index).getOriginalSqlExpr())");
+        }
+        if (newSQLExpr != null) {
+            getNormalSelectItem(index).setExpr(newSQLExpr);
         }
         selectValueNodes.set(index, sqlExprEvaluator);
     }
@@ -200,6 +223,14 @@ public class SelectTable {
         return groupBy;
     }
 
+    public GroupBy getDistinctAllGroupBy() {
+        return distinctAllGroupBy;
+    }
+
+    public void setDistinctAllGroupBy(GroupBy distinctAllGroupBy) {
+        this.distinctAllGroupBy = distinctAllGroupBy;
+    }
+
     public OrderBy getOrderBy() {
         return orderBy;
     }
@@ -211,6 +242,7 @@ public class SelectTable {
     public void setGroupBy(GroupBy groupBy) {
         this.groupBy = groupBy;
     }
+
 
     public void setOrderBy(OrderBy orderBy) {
         this.orderBy = orderBy;
@@ -238,4 +270,7 @@ public class SelectTable {
     public int hashCode() {
         return getSqlTable().hashCode();
     }
+
+
+
 }

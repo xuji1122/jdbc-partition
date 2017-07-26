@@ -108,7 +108,7 @@ public class SqlQueryExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     public <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target, ExprGatherConfig exprGatherConfig, List<T> resultList) {
         if (exprGatherConfig.isChildClassMatch()) {
-            if (SqlQueryExpr.class.isAssignableFrom(target)) {
+            if (target.isAssignableFrom(SqlQueryExpr.class)) {
                 resultList.add((T) this);
             }
         } else {
@@ -120,5 +120,9 @@ public class SqlQueryExpr extends SQLQueryExpr implements SqlExprEvaluator {
 
     public List<SqlExprEvaluator> children() {
         return new ArrayList<>(0);
+    }
+
+    public void setFromSQLExpr(SQLExpr fromSQLExpr) {
+
     }
 }

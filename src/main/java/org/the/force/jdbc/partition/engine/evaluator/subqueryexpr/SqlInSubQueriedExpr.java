@@ -127,7 +127,7 @@ public class SqlInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEva
 
     public <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target,ExprGatherConfig exprGatherConfig, List<T> resultList) {
         if (exprGatherConfig.isChildClassMatch()) {
-            if (SqlInSubQueriedExpr.class.isAssignableFrom(target)) {
+            if (target.isAssignableFrom(SqlInSubQueriedExpr.class)) {
                 resultList.add((T) this);
             }
         } else {
@@ -139,5 +139,9 @@ public class SqlInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEva
 
     public List<SqlExprEvaluator> children() {
         return new ArrayList<>(0);
+    }
+
+    public void setFromSQLExpr(SQLExpr fromSQLExpr) {
+
     }
 }

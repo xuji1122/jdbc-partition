@@ -1,6 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.partition;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
+import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.ExprGatherConfig;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.aggregate.AggregateEvaluator;
@@ -11,12 +12,12 @@ import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.parser.select.SelectItemParser;
-import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.router.DefaultTableRouter;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.query.GroupBy;
+import org.the.force.jdbc.partition.engine.sql.query.GroupByItem;
 import org.the.force.jdbc.partition.engine.sql.query.OrderBy;
 import org.the.force.jdbc.partition.engine.sql.query.OrderByItem;
 import org.the.force.jdbc.partition.engine.sql.query.PartitionSelectTable;
@@ -30,9 +31,10 @@ import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;
 import org.the.force.thirdparty.druid.sql.ast.SQLOrderBy;
 import org.the.force.thirdparty.druid.sql.ast.SQLOrderingSpecification;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLAggregateExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.the.force.thirdparty.druid.sql.ast.expr.SQLIdentifierExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectGroupByClause;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectItem;
@@ -46,7 +48,9 @@ import org.the.force.thirdparty.druid.support.logging.LogFactory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by xuji on 2017/7/18.
@@ -99,12 +103,17 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
     private SQLSelectQueryBlock currentSqlSelectQueryBlock;
 
     public PartitionBlockQueryExecutor(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputSqlSelectQueryBlock, ExprConditionalSqlTable innerExprSqlTable) {
+        this(logicDbConfig, inputSqlSelectQueryBlock, innerExprSqlTable, innerExprSqlTable);
+    }
+
+    public PartitionBlockQueryExecutor(LogicDbConfig logicDbConfig, SQLSelectQueryBlock inputSqlSelectQueryBlock, ExprConditionalSqlTable innerExprSqlTable,
+        ConditionalSqlTable outerSqlTable) {
         this.logicDbConfig = logicDbConfig;
         versionForRule6 = inputSqlSelectQueryBlock;//保留入参的原始的版本
         //最底层的sqlTable，和sqlSelectQueryBlock的tableSource未必是直接对应的
         this.innerExprSqlTable = innerExprSqlTable;
+        this.outerSqlTable = outerSqlTable;
         tableRouter = new DefaultTableRouter(logicDbConfig, inputSqlSelectQueryBlock, innerExprSqlTable);
-        outerSqlTable = new SqlTableParser(logicDbConfig).getSqlTable(inputSqlSelectQueryBlock.getFrom());
         selectTable = new PartitionSelectTable(outerSqlTable, inputSqlSelectQueryBlock.getDistionOption() > 0);
     }
 
@@ -129,16 +138,14 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
             adaptLimit();
             //保存仅仅适配了order by和limit条件的版本
             versionForRule7 = new SqlObjCopier().copy(currentSqlSelectQueryBlock);
-            if (selectTable.isDistinctAll()) {
-                //distinct all时版本到这里中止
-                currentSqlSelectQueryBlock.setLimit(null);
-            } else {
-                //版本往下走
-                adaptGroupBy();
-                //检查是否有avg聚合查询，如果有则改变其逻辑
-                adaptAvgAggregate();
-            }
-            //按照重置selectTable的SelectValueNode的顺序重置currentSqlSelectQueryBlock的selectList
+
+            adaptGroupBy();
+            //检查是否有avg聚合查询，如果有则改变其逻辑
+            adaptAvgAggregate();
+
+            //检查是否需要distinct all  distinct all只能由jdbc客户端执行，并且会导致order by和limit对数据库失效
+            adaptDistinctAll();
+            //
             resetSelectList();
         }
         inited = true;
@@ -162,14 +169,14 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
                 SQLSelectItem newItem = new SQLSelectItem();
                 newItem.setExpr(sqlExprEvaluator.getOriginalSqlExpr());
                 selectTable.addValueNode(newItem, sqlExprEvaluator);
-                rsIndexEvaluator = new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), selectTable.getNormalValueNodeSize() - 1,
+                rsIndexEvaluator = new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), outerSqlTable, selectTable.getNormalValueNodeSize() - 1,
                     selectTable.getSelectLabel(selectTable.getNormalValueNodeSize() - 1));
             } else {
-                rsIndexEvaluator = new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), index, selectTable.getSelectLabel(index));
+                rsIndexEvaluator = new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), outerSqlTable, index, selectTable.getSelectLabel(index));
             }
             orderBy.getOrderByItems().add(new OrderByItem(rsIndexEvaluator, orderByItem.getType()));
         }
-        orderBy.setSortedIndexFrom(orderBy.getOrderByItems().size() - 1);
+        orderBy.setSortedIndexTo(orderBy.getOrderByItems().size());
         selectTable.setOrderBy(orderBy);
     }
 
@@ -194,34 +201,33 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
         GroupBy groupBy = new GroupBy();
         //referList
         List<SQLExpr> items = sqlSelectGroupByClause.getItems();
+        List<SqlRefer> sqlRefers = new ArrayList<>();
         for (SQLExpr sqlExpr : items) {
             if (!(sqlExpr instanceof SQLName)) {
                 logger.warn("group by的列不是SQLName实例");
                 continue;
             }
             SqlRefer sqlRefer = new SqlRefer((SQLName) sqlExpr);
-            groupBy.addItem(sqlRefer);
-        }
-        if (selectTable.isDistinctAll()) {
-            logger.warn("聚合查询时不能 distinct all result column:" + PartitionSqlUtils.toSql(versionForRule6, logicDbConfig.getSqlDialect()));
-            return;
+            sqlRefers.add(sqlRefer);
         }
         selectTable.setGroupBy(groupBy);
         //确保group by的列在select的结果集中
-        int groupByItemSize = groupBy.getItemSize();
+        int groupByItemSize = sqlRefers.size();
         //重置group by的列函数
         for (int i = 0; i < groupByItemSize; i++) {
-            SqlExprEvaluator sqlExprEvaluator = groupBy.getSqlExprEvaluator(i);
+            SqlRefer sqlExprEvaluator = sqlRefers.get(i);
             int selectTableLabelIndex = selectTable.getIndex(sqlExprEvaluator);
             if (selectTableLabelIndex < 0) {
                 SQLSelectItem newItem = new SQLSelectItem();
                 newItem.setExpr(sqlExprEvaluator.getOriginalSqlExpr());
                 selectTable.addValueNode(newItem, sqlExprEvaluator);
-                groupBy.updateSqlExprEvaluator(i, new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), selectTable.getNormalValueNodeSize() - 1,
+                GroupByItem groupByItem = new GroupByItem(new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), outerSqlTable, selectTable.getNormalValueNodeSize() - 1,
                     selectTable.getSelectLabel(selectTable.getNormalValueNodeSize() - 1)));
+                groupBy.addItem(groupByItem);
             } else {
-                groupBy.updateSqlExprEvaluator(i,
-                    new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), selectTableLabelIndex, selectTable.getSelectLabel(selectTableLabelIndex)));
+                GroupByItem groupByItem = new GroupByItem(
+                    new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), outerSqlTable, selectTableLabelIndex, selectTable.getSelectLabel(selectTableLabelIndex)));
+                groupBy.addItem(groupByItem);
             }
         }
         //group by排序优先的实现
@@ -234,38 +240,43 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
         int groupByItemSize = groupBy.getItemSize();
         OrderBy orderBy = selectTable.getOrderBy();
         SQLOrderBy sqlOrderBy = new SQLOrderBy();
-        boolean lastMatch = false;
+        boolean sortedToAdd = false;
         if (orderBy != null) {
             //原始的order by存在
-            lastMatch = true;
-            orderBy.setSortedIndexFrom(-1);
-            groupBy.sortFromOrderBy(selectTable, orderBy);
+            sortedToAdd = true;
+            orderBy.setSortedIndexTo(0);
+            groupBy.sortGroupByExprFrom(selectTable, orderBy);
         }
         for (int i = 0; i < groupByItemSize; i++) {
-            SQLName sqlName = (SQLName) groupBy.getSqlExprEvaluator(i).getOriginalSqlExpr();
+            GroupByItem groupByItem = groupBy.getGroupByItem(i);
+            SQLName sqlName = (SQLName) groupByItem.getItemExprEvaluator().getOriginalSqlExpr();
             SQLSelectOrderByItem sqlSelectOrderByItem = new SQLSelectOrderByItem(sqlName);
             //判断group by的列排序兼容order by的列的部分
-            if (lastMatch && i < orderBy.getOrderByItems().size()) {
-                OrderByItem orderByItem = orderBy.getOrderByItems().get(i);
-
-                if (selectTable.checkEquals(groupBy.getSqlExprEvaluator(i), orderByItem.getRsIndexEvaluator())) {
+            if (orderBy != null && i < orderBy.getItemSize()) {
+                OrderByItem orderByItem = orderBy.getOrderByItem(i);
+                if (selectTable.checkEquals(groupByItem.getItemExprEvaluator(), orderByItem.getRsIndexEvaluator())) {
                     sqlSelectOrderByItem.setType(orderByItem.getSqlOrderingSpecification());
-                    orderBy.setSortedIndexFrom(i);
+                    groupByItem.setSqlOrderingSpecification(orderByItem.getSqlOrderingSpecification());
+                    groupBy.updateSqlExprEvaluator(i, groupByItem);
+                    if (sortedToAdd) {
+                        orderBy.setSortedIndexTo(i + 1);
+                    }
                 } else {
-                    lastMatch = false;
-                    sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
+                    sortedToAdd = false;
+                    sqlSelectOrderByItem.setType(groupByItem.getSqlOrderingSpecification());
                 }
             } else {
-                lastMatch = false;
-                sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
+                sortedToAdd = false;
+                sqlSelectOrderByItem.setType(groupByItem.getSqlOrderingSpecification());
             }
             sqlOrderBy.getItems().add(sqlSelectOrderByItem);
         }
-        //设置新的排序规则
+        //设置新的排序规则到currentSqlSelectQueryBlock中，后续不再改变
         currentSqlSelectQueryBlock.setOrderBy(sqlOrderBy);
+        groupBy.setSortedIndexTo(groupBy.getItemSize());
         //判断是否需要让limit失效
         if (orderBy != null) {
-            if (orderBy.getSortedIndexFrom() < orderBy.getOrderByItems().size() - 1) {
+            if (orderBy.getSortedIndexTo() < orderBy.getItemSize()) {
                 currentSqlSelectQueryBlock.setLimit(null);
             } else {
                 //order by和group by完全兼容，limit不必因此而无效
@@ -295,9 +306,9 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
                 SQLSelectItem newItem = new SQLSelectItem(subExpr);
                 selectTable.addValueNode(newItem, aggregateEvaluator);
                 sqlObjCopier.addReplaceObj(aggregateEvaluator,
-                    new RsIndexEvaluator(subExpr, selectTable.getNormalValueNodeSize() - 1, selectTable.getSelectLabel(selectTable.getNormalValueNodeSize() - 1)));
+                    new RsIndexEvaluator(subExpr, outerSqlTable, selectTable.getNormalValueNodeSize() - 1, selectTable.getSelectLabel(selectTable.getNormalValueNodeSize() - 1)));
             } else {
-                sqlObjCopier.addReplaceObj(aggregateEvaluator, new RsIndexEvaluator(subExpr, index, selectTable.getSelectLabel(index)));
+                sqlObjCopier.addReplaceObj(aggregateEvaluator, new RsIndexEvaluator(subExpr, outerSqlTable, index, selectTable.getSelectLabel(index)));
             }
         }
         havingSqlExprEvaluator = sqlObjCopier.copy(havingSqlExprEvaluator);
@@ -322,22 +333,23 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
             SqlObjCopier sqlObjCopier = new SqlObjCopier();
             for (AvgAggregateEvaluator avgAggregateEvaluator : list) {
                 List<SqlExprEvaluator> children = avgAggregateEvaluator.children();
-                if (children.size() != 1) {
-                    logger.error("avgAggregateEvaluator children.size() != 1:" + PartitionSqlUtils.toSql(versionForRule6, logicDbConfig.getSqlDialect()));
-                    continue w;
-                }
-                SQLMethodInvokeExpr sum = new SQLMethodInvokeExpr("SUM");
-                sum.getParameters().add(children.get(0).getOriginalSqlExpr());
-                SQLMethodInvokeExpr count = new SQLMethodInvokeExpr("COUNT");
-                count.getParameters().add(children.get(0).getOriginalSqlExpr());
+                List<SQLExpr> exprArgs = children.stream().map(SqlExprEvaluator::getOriginalSqlExpr).collect(Collectors.toList());
+
+                SQLAggregateExpr avg = (SQLAggregateExpr) avgAggregateEvaluator.getOriginalSqlExpr();
+
+                SQLAggregateExpr sum = new SQLAggregateExpr("SUM");
+                sum.setOption(avg.getOption());
+                sum.getArguments().addAll(exprArgs);
+                SQLAggregateExpr count = new SQLAggregateExpr("COUNT");
+                count.setOption(avg.getOption());
+                count.getArguments().addAll(exprArgs);
                 SQLBinaryOpExpr sqlBinaryOpExpr = new SQLBinaryOpExpr(sum, count, SQLBinaryOperator.Divide);
                 sqlObjCopier.addReplaceObj(avgAggregateEvaluator.getOriginalSqlExpr(), sqlBinaryOpExpr);
             }
             SQLExpr newAvgExpr = sqlObjCopier.copy(originalAvgExpr);
             SqlExprEvaluator newSqlExprEvaluator = sqlExprEvaluatorFactory.matchSqlExprEvaluator(newAvgExpr);
-            selectTable.getNormalSelectItem(i).setExpr(newAvgExpr);
-            //强制更新结果集计算方式
-            selectTable.updateSqlExprEvaluator(i, newSqlExprEvaluator, true);
+            newSqlExprEvaluator.setFromSQLExpr(originalAvgExpr);
+            selectTable.updateSqlExprEvaluator(i, newSqlExprEvaluator, newAvgExpr);
         }
     }
 
@@ -347,11 +359,109 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
         for (int i = 0; i < size; i++) {
             SqlExprEvaluator sqlExprEvaluator = selectTable.getSelectValueNode(i);
             currentSqlSelectQueryBlock.getSelectList().add(selectTable.getNormalSelectItem(i));
-            RsIndexEvaluator rsIndexEvaluator = new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), i, selectTable.getSelectLabel(i));
+            RsIndexEvaluator rsIndexEvaluator = new RsIndexEvaluator(sqlExprEvaluator.getOriginalSqlExpr(), outerSqlTable, i, selectTable.getSelectLabel(i));
             selectTable.updateSqlExprEvaluator(i, rsIndexEvaluator);
         }
-
     }
+
+    protected void adaptDistinctAll() {
+        if (!selectTable.isDistinctAll()) {
+            return;
+        }
+        //转为全列做group by
+        currentSqlSelectQueryBlock.setDistionOption(0);
+        currentSqlSelectQueryBlock.setLimit(null);
+        GroupBy distinctAllGroupBy = new GroupBy();
+        for (int i = 0; i < selectTable.getQueryBound(); i++) {
+            GroupByItem groupByItem =
+                new GroupByItem(new RsIndexEvaluator(selectTable.getSelectValueNode(i).getOriginalSqlExpr(), outerSqlTable, i, selectTable.getSelectLabel(i)));
+            distinctAllGroupBy.addItem(groupByItem);
+        }
+        selectTable.setDistinctAllGroupBy(distinctAllGroupBy);
+        /**
+         * 1，实现多个分区做distinct all
+         * 2，兼容group by的需求(聚合 having过滤等)
+         * 3，兼容order by的排序需求
+         */
+        GroupBy groupBy = selectTable.getGroupBy();
+        if (groupBy != null) {
+            // 对group by的结果进行distinct all的场景  group by优先通过数据库执行，distinct all基于jdbc实现
+
+            //group by的列可能是隐藏列，隐藏列对客户端而言是不可见的，对distinct不起作用
+            //由group by决定的排序规则
+            distinctAllGroupBy.sortGroupByExprFrom(selectTable, groupBy);
+            int size = distinctAllGroupBy.getItemSize();
+            boolean sortedToAdd = true;
+            for (int i = 0; i < size; i++) {
+                GroupByItem groupByItem = distinctAllGroupBy.getGroupByItem(i);
+                if (i < groupBy.getItemSize() && selectTable.checkEquals(groupByItem.getItemExprEvaluator(), groupBy.getGroupByItem(i).getItemExprEvaluator())) {
+                    groupByItem.setSqlOrderingSpecification(groupBy.getGroupByItem(i).getSqlOrderingSpecification());
+                    distinctAllGroupBy.updateSqlExprEvaluator(i, groupByItem);
+                    if (sortedToAdd) {
+                        distinctAllGroupBy.setSortedIndexTo(i + 1);
+                    }
+                } else {
+                    sortedToAdd = false;
+                }
+            }
+
+            if (distinctAllGroupBy.getSortedIndexTo() <= 0 && selectTable.getOrderBy() != null) {
+                distinctAllGroupBy.sortGroupByExprFrom(selectTable, selectTable.getOrderBy());
+            }
+        }
+        //，但是在内存中还是优先于order by执行的，因此还要根据order 排序操作
+        //order by在distinctGroupBy之后执行  distinctGroupBy通过数据库实现
+        OrderBy orderBy = selectTable.getOrderBy();
+        if (orderBy != null) {
+            if (distinctAllGroupBy.getSortedIndexTo() <= 0) {//没有匹配到排序的group by的列
+                distinctAllGroupBy.sortGroupByExprFrom(selectTable, orderBy);
+                int size = distinctAllGroupBy.getItemSize();
+                for (int i = 0; i < size; i++) {
+                    GroupByItem groupByItem = distinctAllGroupBy.getGroupByItem(i);
+                    if (i < orderBy.getItemSize() && selectTable.checkEquals(groupByItem.getItemExprEvaluator(), orderBy.getOrderByItem(i).getRsIndexEvaluator())) {
+                        groupByItem.setSqlOrderingSpecification(orderBy.getOrderByItem(i).getSqlOrderingSpecification());
+                        distinctAllGroupBy.updateSqlExprEvaluator(i, groupByItem);
+                    }
+                }
+            }
+            //调整order by的隐藏列
+            Iterator<OrderByItem> itemIterator = orderBy.getOrderByItems().iterator();
+            while (itemIterator.hasNext()) {
+                OrderByItem orderByItem = itemIterator.next();
+                int index = selectTable.getIndex(orderByItem.getRsIndexEvaluator());
+                if (index >= selectTable.getQueryBound()) {
+                    itemIterator.remove();
+                }
+            }
+            if (orderBy.getSortedIndexTo() > selectTable.getQueryBound()) {
+                orderBy.setSortedIndexTo(selectTable.getQueryBound());
+            }
+        }
+        if (groupBy == null) {//group by为空时  distinct all的依赖的排序输出到物理sql中
+            SQLOrderBy sqlOrderBy = new SQLOrderBy();
+            int size = distinctAllGroupBy.getItemSize();
+            for (int i = 0; i < size; i++) {
+                GroupByItem groupByItem = distinctAllGroupBy.getGroupByItem(i);
+                SQLSelectOrderByItem item;
+                String label = selectTable.getSelectLabel(selectTable.getIndex(groupByItem.getItemExprEvaluator()));
+                if (label != null) {
+                    item = new SQLSelectOrderByItem(new SQLIdentifierExpr(label));
+                } else {
+                    SQLExpr sqlExpr = groupByItem.getItemExprEvaluator().getOriginalSqlExpr();
+                    if (sqlExpr instanceof SQLName) {
+                        item = new SQLSelectOrderByItem(sqlExpr);
+                    } else {
+                        item = new SQLSelectOrderByItem(new SQLIdentifierExpr("`" + sqlExpr.toString() + "`"));
+                    }
+                }
+                item.setType(groupByItem.getSqlOrderingSpecification());
+                sqlOrderBy.getItems().add(item);
+            }
+            distinctAllGroupBy.setSortedIndexTo(distinctAllGroupBy.getItemSize());
+            currentSqlSelectQueryBlock.setOrderBy(sqlOrderBy);
+        }
+    }
+
 
     public void setLimit(SQLLimit limit) {
         //响应 limit的改变做出改变

@@ -24,4 +24,6 @@ public class LogicSelectTable extends SelectTable{
     public void setCondition(SqlExprEvaluator condition) {
         this.condition = condition;
     }
+
+
 }

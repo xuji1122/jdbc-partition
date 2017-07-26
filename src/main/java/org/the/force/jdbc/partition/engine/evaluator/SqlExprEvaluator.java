@@ -16,6 +16,8 @@ public interface SqlExprEvaluator extends SQLExpr {
 
     SQLExpr getOriginalSqlExpr();
 
+    void setFromSQLExpr(SQLExpr fromSQLExpr);
+
 
     List<SqlExprEvaluator> children();
 

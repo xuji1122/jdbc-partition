@@ -52,4 +52,16 @@ public class PartitionBlockQueryExecutorTest {
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
+
+    public void test6() throws Exception {
+        String sql = "select distinct channel,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channel,t_order.user_id having sum(total_price) > avg(total_price) order by user_id desc,avg_price limit 20 ";
+        QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
+        logger.info(queryExecutor.toString());
+    }
+
+    public void test7() throws Exception {
+        String sql = "select distinct name,status,id from t_order where user_id in (?,?,?) and status='ok'  order by id desc limit 20 ";
+        QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
+        logger.info(queryExecutor.toString());
+    }
 }

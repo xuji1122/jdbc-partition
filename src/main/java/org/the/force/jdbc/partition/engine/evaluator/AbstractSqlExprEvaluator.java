@@ -4,6 +4,7 @@ import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public abstract class AbstractSqlExprEvaluator implements SqlExprEvaluator {
 
     private SQLExpr originalSqlExpr;
 
+    private List<SQLExpr> middleSqlExprs;
 
     public AbstractSqlExprEvaluator(SQLExpr originalSqlExpr) {
         this.originalSqlExpr = originalSqlExpr;
@@ -30,6 +32,17 @@ public abstract class AbstractSqlExprEvaluator implements SqlExprEvaluator {
         return originalSqlExpr;
     }
 
+    public void setFromSQLExpr(SQLExpr fromSQLExpr) {
+        if (originalSqlExpr != null && middleSqlExprs == null) {
+            
+            middleSqlExprs = new ArrayList<>();
+        }
+        if (originalSqlExpr != null) {
+            middleSqlExprs.add(originalSqlExpr);
+        }
+        this.originalSqlExpr = fromSQLExpr;
+    }
+
     public <T extends SqlExprEvaluator> void gatherExprEvaluator(Class<T> target, ExprGatherConfig exprGatherConfig, List<T> resultList) {
         boolean match = false;
         if (exprGatherConfig.isChildClassMatch()) {
@@ -42,7 +55,8 @@ public abstract class AbstractSqlExprEvaluator implements SqlExprEvaluator {
                 resultList.add((T) this);
                 match = true;
             }
-        } if (!match) {
+        }
+        if (!match) {
             List<SqlExprEvaluator> children = children();
             if (children == null || children.isEmpty()) {
                 return;
