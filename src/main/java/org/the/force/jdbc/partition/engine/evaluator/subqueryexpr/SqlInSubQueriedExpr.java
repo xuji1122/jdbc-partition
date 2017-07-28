@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 
 import org.the.force.jdbc.partition.engine.evaluator.ExprGatherConfig;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
@@ -68,7 +68,7 @@ public class SqlInSubQueriedExpr extends SQLInSubQueryExpr implements SqlExprEva
         return queryExecutor;
     }
 
-    public List<Object[]> eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public List<Object[]> eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
         return null;
     }
 

@@ -1,9 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
-import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.WriteCommand;
+import org.the.force.jdbc.partition.engine.executor.WriteSqlExecutionCommand;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -57,14 +55,10 @@ public class PhysicTableExecutor {
         return count;
     }
 
-    public void executeUpdate(WriteCommand template) throws SQLException {
+    public void executeUpdate(WriteSqlExecutionCommand template) throws SQLException {
         for (PhysicSqlExecutor physicSqlExecutor : deque) {
             physicSqlExecutor.executeUpdate(template);
         }
-    }
-
-    public ResultSet executeQuery(QueryCommand executeQueryTemplate) throws SQLException {
-        return null;
     }
 
     public String toString() {

@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.aggregate;
 
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLAggregateExpr;
 
@@ -18,7 +18,7 @@ public class MaxAggregateEvaluator extends AggregateEvaluator {
     public MaxAggregateEvaluator() {
     }
 
-    public Object eval(SqlExprEvalContext sqlExprEvalContext,  Object rows) throws SQLException {
+    public Object eval(SqlExecutionContext sqlExecutionContext,  Object rows) throws SQLException {
         return null;
     }
 

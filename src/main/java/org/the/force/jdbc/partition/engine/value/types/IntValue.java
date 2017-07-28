@@ -4,6 +4,7 @@ import org.the.force.jdbc.partition.engine.value.AbstractSqlValue;
 import org.the.force.jdbc.partition.engine.value.SqlInteger;
 import org.the.force.jdbc.partition.engine.value.SqlNumber;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.value.SqlParameterFactory;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.TypedValue;
 import org.the.force.jdbc.partition.engine.value.literal.BigIntegerValue;
@@ -16,7 +17,7 @@ import java.sql.Types;
 /**
  * Created by xuji on 2017/7/6.
  */
-public class IntValue extends AbstractSqlValue implements SqlParameter, TypedValue, SqlInteger {
+public class IntValue extends AbstractSqlValue implements SqlParameter, TypedValue, SqlInteger,SqlParameterFactory {
 
     private final int value;
 
@@ -63,5 +64,9 @@ public class IntValue extends AbstractSqlValue implements SqlParameter, TypedVal
 
     public IntValue mod(SqlValue sqlValue) throws SQLException {
         return new IntValue(new BigIntegerValue(this.toString()).mod(sqlValue).getNumber().intValue());
+    }
+
+    public SqlParameter parse(String input) {
+        return new IntValue(Integer.parseInt(input));
     }
 }

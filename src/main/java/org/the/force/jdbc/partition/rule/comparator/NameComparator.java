@@ -44,4 +44,25 @@ public class NameComparator implements Comparator<String> {
             }
         }
     }
+
+    public static String trimSuffix(String name) {
+        int index = name.lastIndexOf(nameComparator.suffixSeparator);
+        if (index > 0 && index < name.length() - 1) {
+            String suffix = name.substring(index + 1);
+            if (isNumber(suffix)) {
+                return name.substring(0, index);
+            }
+        }
+        return name;
+    }
+
+    public static boolean isNumber(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (ch < '0' || ch > '9') {
+                return false;
+            }
+        }
+        return true;
+    }
 }

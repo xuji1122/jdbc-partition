@@ -82,7 +82,7 @@ public final class TestJdbcPartitionSupport {
         Yaml yml = new Yaml();
         Object object;
         try {
-            object = yml.load(new FileInputStream(TestSupport.getYamlFromFile(TestSupport.test_cases_basic_path + "/schema/" + logicDbName + ".yml")));
+            object = yml.load(new FileInputStream(TestSupport.getYamlFromFile("schema/" + logicDbName + ".yml")));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

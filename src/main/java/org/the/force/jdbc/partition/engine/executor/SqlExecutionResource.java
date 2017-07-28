@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * Created by xuji on 2017/6/2.
  * 一个ExecutorCommand实例代表statementEngine发起的一次逻辑sql的执行
  */
-public class Command {
+public class SqlExecutionResource {
 
     private final ConnectionAdapter connectionAdapter;
 
@@ -23,7 +23,7 @@ public class Command {
 
     private final ExecutorConfig executorConfig;
 
-    public Command(ConnectionAdapter connectionAdapter, ThreadPoolExecutor threadPool, ExecutorConfig executorConfig) {
+    public SqlExecutionResource(ConnectionAdapter connectionAdapter, ThreadPoolExecutor threadPool, ExecutorConfig executorConfig) {
         this.connectionAdapter = connectionAdapter;
         this.threadPool = threadPool;
         this.executorConfig = executorConfig;

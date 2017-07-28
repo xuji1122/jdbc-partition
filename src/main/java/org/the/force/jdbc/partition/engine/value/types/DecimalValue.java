@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.value.types;
 import org.the.force.jdbc.partition.engine.value.AbstractSqlValue;
 import org.the.force.jdbc.partition.engine.value.SqlDecimal;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.value.SqlParameterFactory;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 /**
  * Created by xuji on 2017/7/20.
  */
-public class DecimalValue extends AbstractSqlValue implements SqlParameter,SqlDecimal {
+public class DecimalValue extends AbstractSqlValue implements SqlParameter,SqlDecimal, SqlParameterFactory {
 
     private final BigDecimal value;
 
@@ -55,5 +56,9 @@ public class DecimalValue extends AbstractSqlValue implements SqlParameter,SqlDe
 
     public SqlValue mod(SqlValue sqlValue) throws SQLException {
         throw new RuntimeException("can not mod");
+    }
+
+    public SqlParameter parse(String input) {
+        return new DecimalValue(input);
     }
 }

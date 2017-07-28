@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.engine;
 import org.the.force.jdbc.partition.driver.JdbcPartitionConnection;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.ExecutorConfig;
-import org.the.force.jdbc.partition.engine.executor.WriteCommand;
+import org.the.force.jdbc.partition.engine.executor.WriteSqlExecutionCommand;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.result.UpdateMerger;
 import org.the.force.jdbc.partition.exception.SqlParseException;
@@ -51,8 +51,9 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
         this.retrierveGeneratedKeys = retrierveGeneratedKeys;
     }
 
-    private WriteCommand buildWriteCommand(ExecutorConfig executorConfig, UpdateMerger updateMerger) {
-        WriteCommand command = new WriteCommand(jdbcPartitionConnection.getConnectionAdapter(), jdbcPartitionConnection.getThreadPoolExecutor(), executorConfig, updateMerger) {
+    private WriteSqlExecutionCommand buildWriteCommand(ExecutorConfig executorConfig, UpdateMerger updateMerger) {
+        WriteSqlExecutionCommand
+            command = new WriteSqlExecutionCommand(jdbcPartitionConnection.getConnectionAdapter(), jdbcPartitionConnection.getThreadPoolExecutor(), executorConfig, updateMerger) {
             public int[] invokeWrite(Statement statement, String sql, List<Integer> lineNumMap) throws SQLException {
                 if (lineNumMap.size() > 1) {
                     return statement.executeBatch();
@@ -87,7 +88,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
             }
             ExecutorConfig executorConfig = new ExecutorConfig();
             UpdateMerger updateMerger = new UpdateMerger(1);
-            WriteCommand template = buildWriteCommand(executorConfig, updateMerger);
+            WriteSqlExecutionCommand template = buildWriteCommand(executorConfig, updateMerger);
             physicDbExecutor.executeWrite(template);
             if (forceTransaction) {
                 jdbcPartitionConnection.commit();
@@ -138,7 +139,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
             //java.factory.BatchUpdateException 异常切换匹配
             ExecutorConfig executorConfig = new ExecutorConfig();
             UpdateMerger updateMerger = new UpdateMerger(logicSqlParameterHolder.getLineNumber());
-            WriteCommand template = buildWriteCommand(executorConfig, updateMerger);
+            WriteSqlExecutionCommand template = buildWriteCommand(executorConfig, updateMerger);
             logicSqlParameterHolder.resetLineNumber();
             if (logger.isDebugEnabled()) {
                 //logger.debug(MessageFormat.format("sql解析结果:{0}", physicDbExecutor.toString()));
@@ -179,7 +180,7 @@ public class BathAbleSqlEngine extends AbstractPreparedStatement {
             }
             ExecutorConfig executorConfig = new ExecutorConfig();
             UpdateMerger updateMerger = new UpdateMerger(logicSqlParameterHolder.getLineNumber());
-            WriteCommand template = buildWriteCommand(executorConfig, updateMerger);
+            WriteSqlExecutionCommand template = buildWriteCommand(executorConfig, updateMerger);
             physicDbExecutor.executeWrite(template);
             if (forceTransaction) {
                 jdbcPartitionConnection.commit();

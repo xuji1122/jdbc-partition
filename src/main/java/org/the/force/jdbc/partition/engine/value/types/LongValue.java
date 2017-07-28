@@ -4,6 +4,7 @@ import org.the.force.jdbc.partition.engine.value.AbstractSqlValue;
 import org.the.force.jdbc.partition.engine.value.SqlInteger;
 import org.the.force.jdbc.partition.engine.value.SqlNumber;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.value.SqlParameterFactory;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.TypedValue;
 import org.the.force.jdbc.partition.engine.value.literal.BigIntegerValue;
@@ -16,7 +17,7 @@ import java.sql.Types;
 /**
  * Created by xuji on 2017/7/6.
  */
-public class LongValue extends AbstractSqlValue implements SqlParameter, TypedValue, SqlInteger {
+public class LongValue extends AbstractSqlValue implements SqlParameter, TypedValue, SqlInteger, SqlParameterFactory {
 
     private final long value;
 
@@ -65,4 +66,7 @@ public class LongValue extends AbstractSqlValue implements SqlParameter, TypedVa
         return new LongValue(new BigIntegerValue(this.toString()).mod(sqlValue).getNumber().longValue());
     }
 
+    public SqlParameter parse(String input) {
+        return new LongValue(Long.parseLong(input));
+    }
 }

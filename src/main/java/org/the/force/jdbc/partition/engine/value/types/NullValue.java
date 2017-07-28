@@ -45,12 +45,4 @@ public class NullValue extends AbstractSqlValue implements SqlParameter, TypedVa
         return Types.NULL;
     }
 
-    public NullValue clone(SqlValue sqlValue) {
-        if (sqlValue instanceof SqlNull) {
-            return this;
-        } else {
-            throw new RuntimeException("!sqlValue instanceof SqlNull");
-        }
-
-    }
 }

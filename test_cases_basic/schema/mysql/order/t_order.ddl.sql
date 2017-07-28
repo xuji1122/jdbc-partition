@@ -6,7 +6,7 @@ CREATE TABLE t_order
 	user_id     BIGINT         NOT NULL,
 	total_price DECIMAL(17, 2) NOT NULL DEFAULT 0,
 	channel     INT            NOT NULL DEFAULT 0,
-	status      VARCHAR(16),
+	status      VARCHAR(128),
 	create_dttm DATETIME       NOT NULL DEFAULT now(),
 	update_dttm DATETIME       NOT NULL DEFAULT now(),
 	KEY idx_user_id(user_id)

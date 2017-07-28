@@ -30,7 +30,7 @@ import java.util.Map;
  * Created by xuji on 2017/7/2.
  * 通过游标merged多个result set的结果为一个  要求多个result set的返回的记录是顺序无关的
  */
-public abstract class WrappedResultSet implements ResultSet {
+public class WrappedResultSet implements ResultSet {
 
     private ResultSetMetaData resultSetMetaData;
 
@@ -44,6 +44,16 @@ public abstract class WrappedResultSet implements ResultSet {
         if (resultSet != null) {
             rsList.add(resultSet);
             rsIndex = 0;
+        }
+    }
+
+    public WrappedResultSet(ResultSetMetaData resultSetMetaData, ResultSet resultSet) {
+        if (resultSet != null) {
+            rsList.add(resultSet);
+            rsIndex = 0;
+        }
+        if (resultSetMetaData != null) {
+            this.resultSetMetaData = resultSetMetaData;
         }
     }
 
@@ -479,7 +489,6 @@ public abstract class WrappedResultSet implements ResultSet {
     }
 
 
-
     public Object getObject(int columnIndex) throws SQLException {
         return getResultSet().getObject(columnIndex);
     }
@@ -513,7 +522,6 @@ public abstract class WrappedResultSet implements ResultSet {
     public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
         return getResultSet().getBigDecimal(columnLabel);
     }
-
 
 
     public int getRow() throws SQLException {

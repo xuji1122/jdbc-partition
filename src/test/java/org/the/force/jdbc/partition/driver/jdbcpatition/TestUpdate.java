@@ -59,7 +59,7 @@ public class TestUpdate {
             "INSERT INTO  t_user(id,channel,app_id,identifier,birth_date,status) VALUES(?,?,?,?,?,?) ,(?,?,?,?,?,?) ON DUPLICATE KEY UPDATE app_id=app_id,status=status");
         for (int i = 0; i < 2; i++) {
             preparedStatement.setInt(i * 6 + 1, i * 4 + 1);//id
-            preparedStatement.setInt(i * 6 + 2, 3);//channel
+            preparedStatement.setInt(i * 6 + 2, 3);//channelArray
             preparedStatement.setString(i * 6 + 3, "app_" + (i / 2));
             preparedStatement.setString(i * 6 + 4, "identifier_" + i);
             preparedStatement.setDate(i * 6 + 5, java.sql.Date.valueOf(LocalDate.of(1990, 1, 1)));

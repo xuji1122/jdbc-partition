@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.sql;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -41,7 +41,7 @@ public class SqlRefer extends AbstractSqlExprEvaluator {
         }
     }
 
-    public SqlValue eval(SqlExprEvalContext sqlExprEvalContext, Object rows) throws SQLException {
+    public SqlValue eval(SqlExecutionContext sqlExecutionContext, Object rows) throws SQLException {
         //TODO
         return null;
     }

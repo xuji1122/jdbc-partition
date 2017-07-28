@@ -1,16 +1,15 @@
 package org.the.force.jdbc.partition.engine.router;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.TreeSet;
  */
 class ColumnInValueListRouter {
 
-    private final SqlExprEvalContext sqlExprEvalContext;
+    private final SqlExecutionContext sqlExecutionContext;
 
     private final List<List<SQLExpr>> tables;
     //parititionColumnsIndexes;
@@ -46,9 +45,9 @@ class ColumnInValueListRouter {
 
     private Map<List<SQLExpr>, Pair<SQLExpr, Object[]>> currentRowColumnValues = new HashMap<>();
 
-    public ColumnInValueListRouter(SqlExprEvalContext sqlExprEvalContext, Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap,
+    public ColumnInValueListRouter(SqlExecutionContext sqlExecutionContext, Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap,
         Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap) throws SQLException {
-        this.sqlExprEvalContext = sqlExprEvalContext;
+        this.sqlExecutionContext = sqlExecutionContext;
         int size = partitionColumnInValueListMap.size();
         cursors = new int[size];
         limits = new int[size];
@@ -61,7 +60,7 @@ class ColumnInValueListRouter {
                 SQLInListEvaluator sqlInListEvaluator = partitionColumnInValueListMap.get(key);
                 tableGetters.add(sqlInListEvaluator);
                 try {
-                    List<Object[]> values = sqlInListEvaluator.getTargetListValue(sqlExprEvalContext, null);
+                    List<Object[]> values = sqlInListEvaluator.getTargetListValue(sqlExecutionContext, null);
                     if (values == null || values.isEmpty()) {//有一个没有值  则整体都不符合  and语义下
                         end = true;
                     }
@@ -96,7 +95,7 @@ class ColumnInValueListRouter {
 
         columnValueList = new ArrayList<>();
         for (Map.Entry<SqlRefer, SqlExprEvaluator> entry2 : partitionColumnValueMap.entrySet()) {
-            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExprEvalContext, null);
+            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExecutionContext, null);
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getName(), value);
             columnValueList.add(columnValueInner);
         }

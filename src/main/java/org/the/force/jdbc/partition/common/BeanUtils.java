@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -221,5 +222,26 @@ public class BeanUtils {
                 return false;
         }
         return !(e1.hasNext() || e2.hasNext());
+    }
+
+    public static List<Integer> parseDateElements(String input) {
+        List<Integer> parts = new ArrayList<>();
+        StringBuilder partBuilder = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            if (ch <= ' ') {
+                continue;
+            }
+            if (ch == '-' || ch == '/' || ch == ':') {
+                parts.add(Integer.parseInt(partBuilder.toString()));
+                partBuilder = new StringBuilder();
+            } else {
+                partBuilder.append(ch);
+            }
+        }
+        if (partBuilder.length() > 0) {
+            parts.add(Integer.parseInt(partBuilder.toString()));
+        }
+        return parts;
     }
 }

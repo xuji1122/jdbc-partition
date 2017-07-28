@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator;
 
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
 import java.sql.SQLException;
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public interface SqlExprEvaluator extends SQLExpr {
 
-    Object eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException;
+    Object eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException;
 
     SQLExpr getOriginalSqlExpr();
 

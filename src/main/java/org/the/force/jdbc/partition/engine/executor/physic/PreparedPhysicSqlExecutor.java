@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
 import com.mysql.jdbc.Statement;
-import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.WriteCommand;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionResource;
+import org.the.force.jdbc.partition.engine.executor.WriteSqlExecutionCommand;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
 
 import java.sql.Connection;
@@ -26,6 +26,12 @@ public class PreparedPhysicSqlExecutor implements PhysicSqlExecutor {
     public PreparedPhysicSqlExecutor(String sql, String physicDbName) {
         this.sql = sql;
         this.physicDbName = physicDbName;
+    }
+
+    public PreparedPhysicSqlExecutor(String sql, String physicDbName,LinedParameters linedParameters) {
+        this.sql = sql;
+        this.physicDbName = physicDbName;
+        addParameters(linedParameters);
     }
 
     public void addParameters(LinedParameters linedParameters) {
@@ -69,7 +75,7 @@ public class PreparedPhysicSqlExecutor implements PhysicSqlExecutor {
     }
 
 
-    public void executeUpdate(WriteCommand template) throws SQLException {
+    public void executeUpdate(WriteSqlExecutionCommand template) throws SQLException {
 
         Connection connection = template.getConnection(physicDbName);
         PreparedStatement preparedStatement = null;
@@ -132,7 +138,7 @@ public class PreparedPhysicSqlExecutor implements PhysicSqlExecutor {
         return sqlParametersBatch.size();
     }
 
-    public ResultSet executeQuery(QueryCommand executeQueryTemplate) throws SQLException {
+    public ResultSet executeQuery(SqlExecutionResource executeQueryTemplate) throws SQLException {
         Connection connection = executeQueryTemplate.getConnection(physicDbName);
         PreparedStatement preparedStatement = null;
         try {
@@ -141,7 +147,7 @@ public class PreparedPhysicSqlExecutor implements PhysicSqlExecutor {
             LinedParameters linedParameters = sqlParametersBatch.peekLast();
             List<SqlParameter> sqlParameters = linedParameters.getSqlParameters();
             executeQueryTemplate.setParams(preparedStatement, sqlParameters);
-            return executeQueryTemplate.executeQuery(preparedStatement, null);
+            return preparedStatement.executeQuery();
         } finally {
             if (preparedStatement != null) {
                 preparedStatement.clearParameters();

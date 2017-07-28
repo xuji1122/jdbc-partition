@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
-import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.WriteCommand;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionResource;
+import org.the.force.jdbc.partition.engine.executor.WriteSqlExecutionCommand;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,8 +23,8 @@ public interface PhysicSqlExecutor {
 
     int sqlSize();
 
-    void executeUpdate(WriteCommand template) throws SQLException;
+    void executeUpdate(WriteSqlExecutionCommand template) throws SQLException;
 
-    ResultSet executeQuery(QueryCommand executeQueryTemplate) throws SQLException;
+    ResultSet executeQuery(SqlExecutionResource executeQueryTemplate) throws SQLException;
 
 }

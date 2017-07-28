@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.evaluator.method;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -32,10 +32,10 @@ public abstract class AbstractMethodEvaluator extends AbstractSqlExprEvaluator {
     }
 
 
-    protected List<Object> evalArguments(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    protected List<Object> evalArguments(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
         List<Object> argumentValues = new ArrayList<>();
         for (SqlExprEvaluator sqlExprEvaluator : argumentEvaluators) {
-            Object value = sqlExprEvaluator.eval(sqlExprEvalContext, data);
+            Object value = sqlExprEvaluator.eval(sqlExecutionContext, data);
             argumentValues.add(value);
         }
         return argumentValues;

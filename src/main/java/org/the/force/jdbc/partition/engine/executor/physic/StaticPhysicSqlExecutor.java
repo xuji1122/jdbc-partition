@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
-import org.the.force.jdbc.partition.engine.executor.QueryCommand;
-import org.the.force.jdbc.partition.engine.executor.WriteCommand;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionResource;
+import org.the.force.jdbc.partition.engine.executor.WriteSqlExecutionCommand;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -24,6 +24,12 @@ public class StaticPhysicSqlExecutor implements PhysicSqlExecutor {
         this.physicDbName = physicDbName;
     }
 
+
+    public StaticPhysicSqlExecutor(String physicDbName,LinedSql linedSql) {
+        this.physicDbName = physicDbName;
+        addSql(linedSql);
+    }
+
     public boolean isUpdate() {
         return true;
     }
@@ -33,7 +39,7 @@ public class StaticPhysicSqlExecutor implements PhysicSqlExecutor {
     }
 
 
-    public void executeUpdate(WriteCommand template) throws SQLException {
+    public void executeUpdate(WriteSqlExecutionCommand template) throws SQLException {
         Connection connection = template.getConnection(physicDbName);
         Statement statement = connection.createStatement();
         try {
@@ -96,13 +102,13 @@ public class StaticPhysicSqlExecutor implements PhysicSqlExecutor {
         clearBatch();
     }
 
-    public ResultSet executeQuery(QueryCommand executeQueryTemplate) throws SQLException {
+    public ResultSet executeQuery(SqlExecutionResource executeQueryTemplate) throws SQLException {
         Connection connection = executeQueryTemplate.getConnection(physicDbName);
         Statement statement = null;
         try {
             statement = connection.createStatement();
             executeQueryTemplate.configStatement(statement);
-            return executeQueryTemplate.executeQuery(statement, linedSqls.peekLast().getSql());
+            return statement.executeQuery(linedSqls.peekLast().getSql());
         } finally {
             if (statement != null) {
                 statement.clearBatch();

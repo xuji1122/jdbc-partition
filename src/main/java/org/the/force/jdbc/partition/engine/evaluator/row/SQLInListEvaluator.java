@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
@@ -51,10 +51,10 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public BooleanValue eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
 
-        List<Object[]> targetListValue = getTargetListValue(sqlExprEvalContext, data);
-        Object object = exprEvaluator.eval(sqlExprEvalContext, data);
+        List<Object[]> targetListValue = getTargetListValue(sqlExecutionContext, data);
+        Object object = exprEvaluator.eval(sqlExecutionContext, data);
         if (targetListValue.size() > 1) {
             throw new PartitionSystemException("targetListValue.size() > 1,只能返回一行");
         }
@@ -79,12 +79,12 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         }
     }
 
-    public List<Object[]> getTargetListValue(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public List<Object[]> getTargetListValue(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
         List<Object[]> targetValues = new ArrayList<>();
         int size = targetListEvaluator.size();
         for (int i = 0; i < size; i++) {
             SqlExprEvaluator evaluator = targetListEvaluator.get(i);
-            Object value = evaluator.eval(sqlExprEvalContext, data);
+            Object value = evaluator.eval(sqlExecutionContext, data);
             if (value instanceof Object[]) {
                 targetValues.add((Object[]) value);
             } else {
@@ -102,7 +102,7 @@ public class SQLInListEvaluator extends AbstractSqlExprEvaluator {
         return targetListEvaluator;
     }
 
-    //    public List<Object> getValues(SqlRefer sqlRefer, SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    //    public List<Object> getValues(SqlRefer sqlRefer, SqlExecutionContext sqlExprEvalContext, Object data) throws SQLException {
     //        List<Object> values = new AttributeList();
     //        if (exprEvaluator instanceof SqlRefer) {
     //            if (exprEvaluator.equals(sqlRefer)) {

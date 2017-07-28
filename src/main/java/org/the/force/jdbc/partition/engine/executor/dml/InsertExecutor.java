@@ -1,19 +1,21 @@
 package org.the.force.jdbc.partition.engine.executor.dml;
 
-import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.executor.BatchAbleSqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicDbExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PhysicTableExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
-import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.router.InsertTableRouter;
+import org.the.force.jdbc.partition.engine.router.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
-import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
+import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
+import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
+import org.the.force.jdbc.partition.engine.value.SqlParameter;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.exception.UnsupportedSqlClauseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -44,7 +46,6 @@ public class InsertExecutor implements BatchAbleSqlExecutor {
     private final InsertSqlTable sqlTable;//只对应一个逻辑表,有临时状态
 
     private final TableRouter tableRouter;
-
 
 
     public InsertExecutor(LogicDbConfig logicDbConfig, SQLInsertStatement sqlStatement) throws Exception {
@@ -89,18 +90,22 @@ public class InsertExecutor implements BatchAbleSqlExecutor {
         //key为physicTableName
         int lineNumber = logicSqlParameterHolder.getLineNumber();
         RouteEvent routeEvent = new RouteEvent(logicTableConfig, PartitionEvent.EventType.INSERT, logicSqlParameterHolder);
-        Map<Partition, SqlTablePartitionSql> subsMap = tableRouter.route(routeEvent);
-        for (Map.Entry<Partition, SqlTablePartitionSql> entry : subsMap.entrySet()) {
-            SqlTablePartitionSql partitionSql = entry.getValue();
+        Map<Partition, SqlTablePartition> subsMap = tableRouter.route(routeEvent);
+        for (Map.Entry<Partition, SqlTablePartition> entry : subsMap.entrySet()) {
+            StringBuilder sqlSb = new StringBuilder();
+            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, entry.getValue());
+            originStatement.accept(mySqlPartitionSqlOutput);
+            List<SqlParameter> sqlParameterList = mySqlPartitionSqlOutput.getSqlParameterList();
+            String sql = sqlSb.toString();
             Partition sqlTablePartition = entry.getKey();
             String physicDbName = logicDbConfig.getPhysicDbConfig(sqlTablePartition.getPhysicDbName()).getPhysicDbName();
             PhysicTableExecutor sqlExecuteRouter = physicDbExecutor.get(physicDbName);
-            PreparedPhysicSqlExecutor preparedSqlDbExecuteSql = sqlExecuteRouter.get(partitionSql.getSql());
+            PreparedPhysicSqlExecutor preparedSqlDbExecuteSql = sqlExecuteRouter.get(sql);
             if (preparedSqlDbExecuteSql == null) {
-                preparedSqlDbExecuteSql = new PreparedPhysicSqlExecutor(partitionSql.getSql(), physicDbName);
+                preparedSqlDbExecuteSql = new PreparedPhysicSqlExecutor(sql, physicDbName);
                 sqlExecuteRouter.add(preparedSqlDbExecuteSql);
             }
-            preparedSqlDbExecuteSql.addParameters(new LinedParameters(lineNumber, partitionSql.getSqlParameters()));
+            preparedSqlDbExecuteSql.addParameters(new LinedParameters(lineNumber, sqlParameterList));
         }
     }
 

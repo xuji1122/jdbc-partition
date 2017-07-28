@@ -30,31 +30,31 @@ public class PartitionBlockQueryExecutorTest {
     }
 
     public void test2() throws Exception {
-        String sql = "select channel,max(total_price) as total_price,avg(total_price) from t_order where user_id in (?,?,?) and status='ok'  group by t_order.user_id,channel order by total_price limit 20 ";
+        String sql = "select channelArray,max(total_price) as total_price,avg(total_price) from t_order where user_id in (?,?,?) and status='ok'  group by t_order.user_id,channelArray order by total_price limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
 
     public void test3() throws Exception {
-        String sql = "select channel,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by user_id,channel order by user_id desc,avg_price limit 20 ";
+        String sql = "select channelArray,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by user_id,channelArray order by user_id desc,avg_price limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
 
     public void test4() throws Exception {
-        String sql = "select channel,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channel,t_order.user_id order by user_id desc,avg_price limit 20 ";
+        String sql = "select channelArray,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channelArray,t_order.user_id order by user_id desc,avg_price limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
 
     public void test5() throws Exception {
-        String sql = "select channel,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channel,t_order.user_id having sum(total_price) > avg(total_price) order by user_id desc,avg_price limit 20 ";
+        String sql = "select channelArray,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channelArray,t_order.user_id having sum(total_price) > avg(total_price) order by user_id desc,avg_price limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }
 
     public void test6() throws Exception {
-        String sql = "select distinct channel,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channel,t_order.user_id having sum(total_price) > avg(total_price) order by user_id desc,avg_price limit 20 ";
+        String sql = "select distinct channelArray,max(total_price) as total_price,avg(total_price) as avg_price from t_order where user_id in (?,?,?) and status='ok'  group by channelArray,t_order.user_id having sum(total_price) > avg(total_price) order by user_id desc,avg_price limit 20 ";
         QueryExecutor queryExecutor = (QueryExecutor) sqlExecutorManager.getSqlExecutor(sql);
         logger.info(queryExecutor.toString());
     }

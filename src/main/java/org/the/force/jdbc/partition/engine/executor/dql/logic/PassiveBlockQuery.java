@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.dql.logic;
 
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
@@ -9,6 +10,9 @@ import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSubqueryTableSource;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 import org.the.force.thirdparty.druid.sql.visitor.SQLASTVisitor;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Created by xuji on 2017/7/26.
@@ -30,6 +34,13 @@ public  class PassiveBlockQuery extends LogicBlockQueryExecutor {
     public SQLTableSource getOriginalSqlTableSource() {
         return originalConditionalSqlTable.getSQLTableSource();
     }
+
+
+    public ResultSet execute(SqlExecutionContext sqlExecutionContext) throws SQLException {
+
+        return null;
+    }
+
 
     protected void accept0(SQLASTVisitor visitor) {
         //只在打印调试的时候使用

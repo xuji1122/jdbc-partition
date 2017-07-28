@@ -1,8 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor;
 
-import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutor;
-import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
 
@@ -14,7 +12,7 @@ import java.sql.SQLException;
  */
 public interface QueryExecutor extends SqlExecutor, SQLTableSource, SQLSelectQuery {
 
-    ResultSet execute(QueryCommand queryCommand, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException;
+    ResultSet execute(SqlExecutionContext executionContext) throws SQLException;
 
     SQLSelectQuery getStatement();
 

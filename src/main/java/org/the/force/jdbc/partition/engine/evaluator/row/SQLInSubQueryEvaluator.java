@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
@@ -28,13 +28,13 @@ public class SQLInSubQueryEvaluator extends SQLInListEvaluator {
     }
 
 
-    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
+    public BooleanValue eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
 
         return null;
     }
 
-    public List<Object[]> getTargetListValue(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
-        return valuesEvaluator.eval(sqlExprEvalContext, data);
+    public List<Object[]> getTargetListValue(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+        return valuesEvaluator.eval(sqlExecutionContext, data);
     }
 
     public List<SqlExprEvaluator> children() {

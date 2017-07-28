@@ -18,11 +18,12 @@ public class TestDdl {
         Connection connection = TestSupport.partitionDb.getConnection();
         connection.close();
         connection = TestSupport.partitionDb.getConnection();
-        String[] tableNames = new String[] {"user/t_user", "order/t_order", "order/t_order_sku"};
+        String[] tableNames = new String[] {"schema/" + TestSupport.sqlDialectName + "/user/t_user", "schema/" + TestSupport.sqlDialectName + "/order/t_order",
+            "schema/" + TestSupport.sqlDialectName + "/order/t_order_sku"};
         for (int i = 0; i < tableNames.length; i++) {
             String tableName = tableNames[i].substring(tableNames[i].lastIndexOf('/') + 1);
             String path = tableNames[i] + ".ddl.sql";
-            String[] sqls = TestSupport.loadSqlFromFile(TestSupport.test_cases_basic_schema_path + "/" + path);
+            String[] sqls = TestSupport.loadSqlFromFile(path);
             PreparedStatement preparedStatement = connection.prepareStatement(sqls[0]);
             int result = preparedStatement.executeUpdate();
             preparedStatement.close();

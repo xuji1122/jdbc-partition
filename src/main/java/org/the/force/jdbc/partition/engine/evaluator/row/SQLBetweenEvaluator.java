@@ -2,7 +2,7 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
@@ -38,10 +38,10 @@ public class SQLBetweenEvaluator extends AbstractSqlExprEvaluator {
     }
 
 
-    public SqlValue eval(SqlExprEvalContext sqlExprEvalContext, Object data) throws SQLException {
-        Comparable<Object> testValue = (Comparable<Object>) testSqlExprEvaluator.eval(sqlExprEvalContext, data);
-        Comparable<Object> beginValue = (Comparable<Object>) beginSqlExprEvaluator.eval(sqlExprEvalContext, data);
-        Comparable<Object> endValue = (Comparable<Object>) endSqlExprEvaluator.eval(sqlExprEvalContext, data);
+    public SqlValue eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+        Comparable<Object> testValue = (Comparable<Object>) testSqlExprEvaluator.eval(sqlExecutionContext, data);
+        Comparable<Object> beginValue = (Comparable<Object>) beginSqlExprEvaluator.eval(sqlExecutionContext, data);
+        Comparable<Object> endValue = (Comparable<Object>) endSqlExprEvaluator.eval(sqlExecutionContext, data);
         if (testValue == null) {
             return new BooleanValue(not);
         }

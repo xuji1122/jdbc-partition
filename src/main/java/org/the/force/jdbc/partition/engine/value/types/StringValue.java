@@ -2,6 +2,7 @@ package org.the.force.jdbc.partition.engine.value.types;
 
 import org.the.force.jdbc.partition.engine.value.AbstractSqlValue;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.value.SqlParameterFactory;
 import org.the.force.jdbc.partition.engine.value.SqlText;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.literal.LiteralDecimal;
@@ -13,7 +14,7 @@ import java.sql.Types;
 /**
  * Created by xuji on 2017/7/6.
  */
-public class StringValue extends AbstractSqlValue implements SqlParameter, SqlText {
+public class StringValue extends AbstractSqlValue implements SqlParameter, SqlText, SqlParameterFactory {
 
     private final String value;
 
@@ -61,5 +62,9 @@ public class StringValue extends AbstractSqlValue implements SqlParameter, SqlTe
 
     public StringValue mod(SqlValue sqlValue) throws SQLException {
         return new StringValue(new LiteralDecimal(this.toString()).mod(sqlValue).getValue().toPlainString());
+    }
+
+    public SqlParameter parse(String input) {
+        return new StringValue(input);
     }
 }

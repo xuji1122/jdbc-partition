@@ -7,7 +7,7 @@ CREATE TABLE t_user
 	app_id      VARCHAR(64) NOT NULL,
 	identifier  VARCHAR(128),
 	birth_date  DATE,
-	status      VARCHAR(16),
+	status      VARCHAR(128),
 	create_dttm DATETIME    NOT NULL DEFAULT now(),
 	UNIQUE KEY ux_user(channel, app_id, identifier),
 	KEY index_identifier (identifier),

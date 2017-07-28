@@ -2,13 +2,11 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.evaluator.ExprGatherConfig;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
-import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOpExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLBinaryOperator;
 
@@ -41,9 +39,9 @@ public class LogicBooleanEvaluator extends AbstractSqlExprEvaluator {
         this.operator = operator;
     }
 
-    public BooleanValue eval(SqlExprEvalContext sqlExprEvalContext, Object rows) throws SQLException {
-        Object leftValue = this.left.eval(sqlExprEvalContext, rows);
-        Object rightValue = this.right.eval(sqlExprEvalContext, rows);
+    public BooleanValue eval(SqlExecutionContext sqlExecutionContext, Object rows) throws SQLException {
+        Object leftValue = this.left.eval(sqlExecutionContext, rows);
+        Object rightValue = this.right.eval(sqlExecutionContext, rows);
         if (leftValue == null || rightValue == null) {
             return new BooleanValue(false);
         }

@@ -1,9 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.logic;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-import org.the.force.jdbc.partition.engine.executor.QueryCommand;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
-import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLHint;
@@ -11,8 +9,6 @@ import org.the.force.thirdparty.druid.sql.ast.SQLLimit;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQuery;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -45,9 +41,7 @@ public abstract class LogicBlockQueryExecutor extends SQLSelectQueryBlock implem
         return sqlSelectQueryBlock;
     }
 
-    public ResultSet execute(QueryCommand queryCommand, LogicSqlParameterHolder logicSqlParameterHolder) throws SQLException {
-        return null;
-    }
+
 
     public void init() {
 

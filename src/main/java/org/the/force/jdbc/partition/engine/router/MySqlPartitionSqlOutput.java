@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.router;
 
 import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
@@ -161,21 +161,21 @@ public class MySqlPartitionSqlOutput extends MySqlOutputVisitor implements Parti
             return super.visit(x);
         }
         print0(ucase ? "LIMIT " : "limit ");
-        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
+        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
         SqlExprEvaluatorFactory sqlExprEvaluatorFactory = logicDbConfig.getSqlExprEvaluatorFactory();
         int from = 1;
         int rowCount;
 
         if (x.getOffset() != null) {
             try {
-                Object v = sqlExprEvaluatorFactory.matchSqlExprEvaluator(x.getOffset()).eval(sqlExprEvalContext, null);
+                Object v = sqlExprEvaluatorFactory.matchSqlExprEvaluator(x.getOffset()).eval(sqlExecutionContext, null);
                 from = Integer.parseInt(v.toString());
             } catch (SQLException e) {
                 throw new SqlParseException("limit不是数字不正确", e);
             }
         }
         try {
-            Object v = sqlExprEvaluatorFactory.matchSqlExprEvaluator(x.getRowCount()).eval(sqlExprEvalContext, null);
+            Object v = sqlExprEvaluatorFactory.matchSqlExprEvaluator(x.getRowCount()).eval(sqlExecutionContext, null);
             rowCount = Integer.parseInt(v.toString());
         } catch (SQLException e) {
             throw new SqlParseException("limit不是数字不正确", e);

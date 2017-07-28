@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.value.types;
 import org.the.force.jdbc.partition.engine.value.AbstractSqlValue;
 import org.the.force.jdbc.partition.engine.value.SqlDecimal;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
+import org.the.force.jdbc.partition.engine.value.SqlParameterFactory;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.TypedValue;
 import org.the.force.jdbc.partition.engine.value.literal.LiteralDecimal;
@@ -15,7 +16,7 @@ import java.sql.Types;
 /**
  * Created by xuji on 2017/7/6.
  */
-public class DoubleValue extends AbstractSqlValue implements SqlParameter, TypedValue, SqlDecimal {
+public class DoubleValue extends AbstractSqlValue implements SqlParameter, TypedValue, SqlDecimal,SqlParameterFactory{
 
     private final double value;
 
@@ -59,5 +60,9 @@ public class DoubleValue extends AbstractSqlValue implements SqlParameter, Typed
 
     public DoubleValue mod(SqlValue sqlValue) throws SQLException {
         return new DoubleValue(new LiteralDecimal(this.toString()).mod(sqlValue).getValue().doubleValue());
+    }
+
+    public SqlParameter parse(String input) {
+        return new DoubleValue(Double.parseDouble(input));
     }
 }

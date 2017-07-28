@@ -13,13 +13,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * Created by xuji on 2017/6/2.
  */
-public abstract class WriteCommand extends Command {
+public abstract class WriteSqlExecutionCommand extends SqlExecutionResource {
 
-    private static Log logger = LogFactory.getLog(WriteCommand.class);
+    private static Log logger = LogFactory.getLog(WriteSqlExecutionCommand.class);
 
     private final UpdateMerger updateMerger;
 
-    public WriteCommand(ConnectionAdapter connectionAdapter, ThreadPoolExecutor threadPool, ExecutorConfig executorConfig, UpdateMerger updateMerger) {
+    public WriteSqlExecutionCommand(ConnectionAdapter connectionAdapter, ThreadPoolExecutor threadPool, ExecutorConfig executorConfig, UpdateMerger updateMerger) {
         super(connectionAdapter, threadPool, executorConfig);
         this.updateMerger = updateMerger;
     }

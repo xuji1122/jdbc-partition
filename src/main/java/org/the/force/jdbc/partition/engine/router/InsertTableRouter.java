@@ -1,14 +1,12 @@
 package org.the.force.jdbc.partition.engine.router;
 
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.value.SqlParameter;
-import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.exception.SqlParseException;
@@ -47,7 +45,7 @@ public class InsertTableRouter implements TableRouter {
         this.exprSqlTable = exprSqlTable;
     }
 
-    public Map<Partition, SqlTablePartitionSql> route(RouteEvent routeEvent) throws SQLException {
+    public Map<Partition, SqlTablePartition> route(RouteEvent routeEvent) throws SQLException {
         //insert into 单独处理
         List<SQLInsertStatement.ValuesClause> valuesClauseList = sqlStatement.getValuesList();
         SqlExprEvaluatorFactory sqlExprEvaluatorFactory = logicDbConfig.getSqlExprEvaluatorFactory();
@@ -61,7 +59,7 @@ public class InsertTableRouter implements TableRouter {
         Map<Partition, SqlTablePartition> subsMap = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
 
         int count = 0;
-        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
+        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
         for (SQLInsertStatement.ValuesClause valuesClause : valuesClauseList) {
             List<SQLExpr> sqlExprList = valuesClause.getValues();
             int size = sqlExprList.size();
@@ -80,7 +78,7 @@ public class InsertTableRouter implements TableRouter {
                     sqlExprEvaluator = sqlExprEvaluatorFactory.matchSqlExprEvaluator(sqlExprList.get(i));
                 }
 
-                SqlValue value = (SqlValue) sqlExprEvaluator.eval(sqlExprEvalContext, null);
+                SqlValue value = (SqlValue) sqlExprEvaluator.eval(sqlExecutionContext, null);
                 if (value == null) {
                     throw new SqlParseException("partition value == null");
                 }
@@ -98,16 +96,17 @@ public class InsertTableRouter implements TableRouter {
             SqlTablePartition sqlTablePartition = subsMap.get(partition);
             sqlTablePartition.getValuesClauses().add(valuesClause);
         }
-        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
-        for (Map.Entry<Partition, SqlTablePartition> entry : subsMap.entrySet()) {
-            StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, entry.getValue());
-            sqlStatement.accept(mySqlPartitionSqlOutput);
-            List<SqlParameter> list = mySqlPartitionSqlOutput.getSqlParameterList();
-            String sql = sqlSb.toString();
-            sqlTablePartitions.put(entry.getKey(), new SqlTablePartitionSql(sql, list));
-        }
-        return sqlTablePartitions;
+        return subsMap;
+//        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
+//        for (Map.Entry<Partition, SqlTablePartition> entry : subsMap.entrySet()) {
+//            StringBuilder sqlSb = new StringBuilder();
+//            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, entry.getValue());
+//            sqlStatement.accept(mySqlPartitionSqlOutput);
+//            List<SqlParameter> list = mySqlPartitionSqlOutput.getSqlParameterList();
+//            String sql = sqlSb.toString();
+//            sqlTablePartitions.put(entry.getKey(), new SqlTablePartitionSql(sql, list));
+//        }
+//        return sqlTablePartitions;
 
     }
 

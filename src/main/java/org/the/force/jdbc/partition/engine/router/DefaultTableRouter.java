@@ -1,16 +1,14 @@
 package org.the.force.jdbc.partition.engine.router;
 
 import org.the.force.jdbc.partition.common.tuple.Pair;
-import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvalContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLEqualEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
-import org.the.force.jdbc.partition.engine.value.SqlParameter;
-import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.sql.SqlRefer;
 import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -21,8 +19,6 @@ import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLObject;
-import org.the.force.thirdparty.druid.sql.ast.SQLStatement;
-import org.the.force.thirdparty.druid.sql.ast.expr.SQLInListExpr;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -53,7 +49,7 @@ public class DefaultTableRouter implements TableRouter {
         this.exprSqlTable = exprSqlTable;
     }
 
-    public Map<Partition, SqlTablePartitionSql> route(RouteEvent routeEvent) throws SQLException {
+    public Map<Partition, SqlTablePartition> route(RouteEvent routeEvent) throws SQLException {
         ExprConditionalSqlTable exprConditionalSqlTable = exprSqlTable;
 
         Set<String> partitionColumnNames = routeEvent.getLogicTableConfig().getPartitionColumnNames();
@@ -113,8 +109,8 @@ public class DefaultTableRouter implements TableRouter {
         }
     }
 
-    public Map<Partition, SqlTablePartitionSql> allPartitionRoute(RouteEvent routeEvent) {
-        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
+    public Map<Partition, SqlTablePartition> allPartitionRoute(RouteEvent routeEvent) {
+        Map<Partition, SqlTablePartition> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
         SortedSet<Partition> partitions = logicTableConfig.getPartitions();
         return sqlTablePartitions;
@@ -126,7 +122,7 @@ public class DefaultTableRouter implements TableRouter {
      *
      * @throws SQLException
      */
-    protected Map<Partition, SqlTablePartitionSql> columnEqualsRoute(RouteEvent routeEvent, Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap) throws SQLException {
+    protected Map<Partition, SqlTablePartition> columnEqualsRoute(RouteEvent routeEvent, Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap) throws SQLException {
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
         TreeSet<PartitionColumnValue> partitionColumnValueTreeSet = new TreeSet<>();
@@ -135,27 +131,29 @@ public class DefaultTableRouter implements TableRouter {
             logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
+        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
 
         for (Map.Entry<SqlRefer, SqlExprEvaluator> entry2 : partitionColumnValueMap.entrySet()) {
-            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExprEvalContext, null);
+            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExecutionContext, null);
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getName(), value);
             partitionColumnValueTreeSet.add(columnValueInner);
         }
         SortedSet<Partition> partitions = partitionRule.selectPartitions(partitionEvent, partitionColumnValueTreeSet);
-        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
+        Map<Partition, SqlTablePartition> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
         if (partitions == null || partitions.isEmpty()) {
             return sqlTablePartitions;
         }
         for (Partition partition : partitions) {
             SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
             sqlTablePartition.setTotalPartitions(partitions.size());
-            StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
-            sqlStatement.accept(mySqlPartitionSqlOutput);
-            List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
-            String sql = sqlSb.toString();
-            sqlTablePartitions.put(partition, new SqlTablePartitionSql(sql, newSqlParameters));
+            sqlTablePartitions.put(partition, sqlTablePartition);
+
+            //            StringBuilder sqlSb = new StringBuilder();
+            //            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
+            //            sqlStatement.accept(mySqlPartitionSqlOutput);
+            //            List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
+            //            String sql = sqlSb.toString();
+            //            sqlTablePartitions.put(partition, new SqlTablePartitionSql(sql, newSqlParameters));
         }
         return sqlTablePartitions;
     }
@@ -166,12 +164,12 @@ public class DefaultTableRouter implements TableRouter {
      *
      * @throws SQLException
      */
-    protected Map<Partition, SqlTablePartitionSql> columnInValueListRoute(RouteEvent routeEvent, Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap,
+    protected Map<Partition, SqlTablePartition> columnInValueListRoute(RouteEvent routeEvent, Map<SqlRefer, SqlExprEvaluator> partitionColumnValueMap,
         Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap) throws SQLException {
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
-        SqlExprEvalContext sqlExprEvalContext = new SqlExprEvalContext(routeEvent.getLogicSqlParameterHolder());
-        ColumnInValueListRouter columnInValueListRouter = new ColumnInValueListRouter(sqlExprEvalContext, partitionColumnInValueListMap, partitionColumnValueMap);
+        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
+        ColumnInValueListRouter columnInValueListRouter = new ColumnInValueListRouter(sqlExecutionContext, partitionColumnInValueListMap, partitionColumnValueMap);
 
         PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), routeEvent.getEventType(), logicTableConfig.getPartitionSortType(),
             logicTableConfig.getPartitionColumnConfigs());
@@ -203,18 +201,13 @@ public class DefaultTableRouter implements TableRouter {
                 }
             }
         }
-        Map<Partition, SqlTablePartitionSql> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
+        Map<Partition, SqlTablePartition> sqlTablePartitions = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
         for (Map.Entry<Partition, Map<SQLExpr, List<Object[]>>> entry : partitionColumnsMap.entrySet()) {
             Partition partition = entry.getKey();
             SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
             sqlTablePartition.setTotalPartitions(partitionColumnsMap.size());
             sqlTablePartition.getSubInListExpr().putAll(entry.getValue());
-            StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, sqlTablePartition);
-            sqlStatement.accept(mySqlPartitionSqlOutput);
-            List<SqlParameter> newSqlParameters = mySqlPartitionSqlOutput.getSqlParameterList();
-            String sql = sqlSb.toString();
-            sqlTablePartitions.put(partition, new SqlTablePartitionSql(sql, newSqlParameters));
+            sqlTablePartitions.put(partition,sqlTablePartition);
         }
         return sqlTablePartitions;
 

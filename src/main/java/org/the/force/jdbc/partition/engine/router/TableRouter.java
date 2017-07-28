@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.router;
 
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartitionSql;
+import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
 import org.the.force.jdbc.partition.rule.Partition;
 
 import java.sql.SQLException;
@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface TableRouter {
 
-    Map<Partition, SqlTablePartitionSql> route(RouteEvent routeEvent) throws SQLException;
+    Map<Partition, SqlTablePartition> route(RouteEvent routeEvent) throws SQLException;
 
     
 }

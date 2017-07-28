@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.executor.physic;
 
-import org.the.force.jdbc.partition.engine.executor.WriteCommand;
+import org.the.force.jdbc.partition.engine.executor.WriteSqlExecutionCommand;
 import org.the.force.jdbc.partition.rule.comparator.NameComparator;
 
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ public class PhysicDbExecutor {
         return sqlExecuteRouter;
     }
 
-    public void executeWrite(final WriteCommand template) throws SQLException {
+    public void executeWrite(final WriteSqlExecutionCommand template) throws SQLException {
         int i = dbExecuteRouterMap.size();
         List<Future<Boolean>> ts = new ArrayList<>();
         for (Map.Entry<String, PhysicTableExecutor> entry : dbExecuteRouterMap.entrySet()) {

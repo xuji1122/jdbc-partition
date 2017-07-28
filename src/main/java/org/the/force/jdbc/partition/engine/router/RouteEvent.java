@@ -1,5 +1,6 @@
 package org.the.force.jdbc.partition.engine.router;
 
+import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.value.LogicSqlParameterHolder;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
@@ -14,6 +15,8 @@ public class RouteEvent {
     private final PartitionEvent.EventType eventType;
 
     private final LogicSqlParameterHolder logicSqlParameterHolder;
+
+    private SqlExecutionContext sqlExecutionContext;
 
     public RouteEvent(LogicTableConfig logicTableConfig, PartitionEvent.EventType eventType, LogicSqlParameterHolder logicSqlParameterHolder) {
         this.logicTableConfig = logicTableConfig;
@@ -37,4 +40,11 @@ public class RouteEvent {
         return this.eventType == PartitionEvent.EventType.INSERT;
     }
 
+    public SqlExecutionContext getSqlExecutionContext() {
+        return sqlExecutionContext;
+    }
+
+    public void setSqlExecutionContext(SqlExecutionContext sqlExecutionContext) {
+        this.sqlExecutionContext = sqlExecutionContext;
+    }
 }
