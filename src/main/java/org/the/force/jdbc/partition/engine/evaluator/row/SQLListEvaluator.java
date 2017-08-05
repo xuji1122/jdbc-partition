@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLListExpr;
 
@@ -30,11 +30,11 @@ public class SQLListEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public Object[] eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+    public Object[] eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
         Object[] array = new Object[itemEvaluators.size()];
         for (int i = 0; i < array.length; i++) {
             SqlExprEvaluator itemFunction = itemEvaluators.get(i);
-            array[i] = itemFunction.eval(sqlExecutionContext, data);
+            array[i] = itemFunction.eval(sqlLineExecRequest, data);
         }
         return array;
     }

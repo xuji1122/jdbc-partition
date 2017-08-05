@@ -4,11 +4,11 @@ import org.the.force.jdbc.partition.common.tuple.Pair;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLEqualEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.SQLInListEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
-import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
+import org.the.force.jdbc.partition.engine.stmt.SqlRefer;
+import org.the.force.jdbc.partition.engine.stmt.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.stmt.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -18,7 +18,6 @@ import org.the.force.jdbc.partition.rule.PartitionColumnValue;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.jdbc.partition.rule.PartitionRule;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
-import org.the.force.thirdparty.druid.sql.ast.SQLObject;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -39,13 +38,10 @@ public class DefaultTableRouter implements TableRouter {
 
     protected final LogicDbConfig logicDbConfig;
 
-    private final SQLObject sqlStatement;
-
     protected final ExprConditionalSqlTable exprSqlTable;
 
-    public DefaultTableRouter(LogicDbConfig logicDbConfig, SQLObject sqlStatement, ExprConditionalSqlTable exprSqlTable) {
+    public DefaultTableRouter(LogicDbConfig logicDbConfig, ExprConditionalSqlTable exprSqlTable) {
         this.logicDbConfig = logicDbConfig;
-        this.sqlStatement = sqlStatement;
         this.exprSqlTable = exprSqlTable;
     }
 
@@ -131,10 +127,10 @@ public class DefaultTableRouter implements TableRouter {
             logicTableConfig.getPartitionColumnConfigs());
         partitionEvent.setPartitions(logicTableConfig.getPartitions());
         partitionEvent.setPhysicDbs(logicTableConfig.getPhysicDbs());
-        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
+        SqlLineExecRequest sqlLineExecRequest = routeEvent.getSqlLineExecRequest();
 
         for (Map.Entry<SqlRefer, SqlExprEvaluator> entry2 : partitionColumnValueMap.entrySet()) {
-            SqlValue value = (SqlValue) entry2.getValue().eval(sqlExecutionContext, null);
+            SqlValue value = (SqlValue) entry2.getValue().eval(sqlLineExecRequest, null);
             SqlColumnValue columnValueInner = new SqlColumnValue(entry2.getKey().getName(), value);
             partitionColumnValueTreeSet.add(columnValueInner);
         }
@@ -168,8 +164,8 @@ public class DefaultTableRouter implements TableRouter {
         Map<List<SQLExpr>, SQLInListEvaluator> partitionColumnInValueListMap) throws SQLException {
         LogicTableConfig logicTableConfig = routeEvent.getLogicTableConfig();
         PartitionRule partitionRule = logicTableConfig.getPartitionRule();
-        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
-        ColumnInValueListRouter columnInValueListRouter = new ColumnInValueListRouter(sqlExecutionContext, partitionColumnInValueListMap, partitionColumnValueMap);
+        SqlLineExecRequest sqlLineExecRequest = routeEvent.getSqlLineExecRequest();
+        ColumnInValueListRouter columnInValueListRouter = new ColumnInValueListRouter(sqlLineExecRequest, partitionColumnInValueListMap, partitionColumnValueMap);
 
         PartitionEvent partitionEvent = new PartitionEvent(logicTableConfig.getLogicTableName(), routeEvent.getEventType(), logicTableConfig.getPartitionSortType(),
             logicTableConfig.getPartitionColumnConfigs());
@@ -207,7 +203,7 @@ public class DefaultTableRouter implements TableRouter {
             SqlTablePartition sqlTablePartition = new SqlTablePartition(exprSqlTable, partition);
             sqlTablePartition.setTotalPartitions(partitionColumnsMap.size());
             sqlTablePartition.getSubInListExpr().putAll(entry.getValue());
-            sqlTablePartitions.put(partition,sqlTablePartition);
+            sqlTablePartitions.put(partition, sqlTablePartition);
         }
         return sqlTablePartitions;
 

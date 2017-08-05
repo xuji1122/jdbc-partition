@@ -1,7 +1,5 @@
 package org.the.force.jdbc.partition.resource.executor;
 
-import org.the.force.jdbc.partition.common.PartitionSqlUtils;
-
 /**
  * Created by xuji on 2017/6/2.
  */
@@ -14,14 +12,12 @@ public class SqlKey {
     }
 
     public String getKey() {
-        return PartitionSqlUtils.toSqlKey(sql);
+        return sql.toLowerCase();
     }
 
     public String getSql() {
         return sql;
     }
-
-
 
     public boolean equals(Object o) {
         if (this == o)
@@ -42,4 +38,5 @@ public class SqlKey {
     public String toString() {
         return sql;
     }
+
 }

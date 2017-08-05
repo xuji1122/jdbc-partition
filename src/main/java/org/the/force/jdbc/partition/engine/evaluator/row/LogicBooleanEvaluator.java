@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.exception.PartitionSystemException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -39,9 +39,9 @@ public class LogicBooleanEvaluator extends AbstractSqlExprEvaluator {
         this.operator = operator;
     }
 
-    public BooleanValue eval(SqlExecutionContext sqlExecutionContext, Object rows) throws SQLException {
-        Object leftValue = this.left.eval(sqlExecutionContext, rows);
-        Object rightValue = this.right.eval(sqlExecutionContext, rows);
+    public BooleanValue eval(SqlLineExecRequest sqlLineExecRequest, Object rows) throws SQLException {
+        Object leftValue = this.left.eval(sqlLineExecRequest, rows);
+        Object rightValue = this.right.eval(sqlLineExecRequest, rows);
         if (leftValue == null || rightValue == null) {
             return new BooleanValue(false);
         }

@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.parser.sqlrefer;
 
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.SqlTable;
-import org.the.force.jdbc.partition.engine.sql.SqlTableCitedLabels;
+import org.the.force.jdbc.partition.engine.stmt.SqlRefer;
+import org.the.force.jdbc.partition.engine.stmt.SqlTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlTableCitedLabels;
 import org.the.force.jdbc.partition.engine.parser.visitor.AbstractVisitor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;

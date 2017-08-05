@@ -891,7 +891,7 @@ public class MySqlOutputVisitor extends SQLASTOutputVisitor implements MySqlASTV
 
     @Override
     public boolean visit(MySqlExecuteStatement x) {
-        print0(ucase ? "EXECUTE " : "execute ");
+        print0(ucase ? "EXECUTE " : "action ");
         x.getStatementName().accept(this);
         if (x.getParameters().size() > 0) {
             print0(ucase ? " USING " : " using ");

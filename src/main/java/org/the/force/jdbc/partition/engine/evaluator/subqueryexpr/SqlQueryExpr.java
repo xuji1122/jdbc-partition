@@ -2,11 +2,11 @@ package org.the.force.jdbc.partition.engine.evaluator.subqueryexpr;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.evaluator.ExprGatherConfig;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.factory.BlockQueryExecutorFactory;
 import org.the.force.jdbc.partition.engine.parser.visitor.PartitionSqlASTVisitor;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLQueryExpr;
@@ -77,7 +77,7 @@ public class SqlQueryExpr extends SQLQueryExpr implements SqlExprEvaluator {
     }
 
 
-    public Object eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+    public Object eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
         return null;
     }
 

@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.rule;
 import com.google.common.collect.Sets;
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestSupport;
-import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.stmt.SqlColumnValue;
 import org.the.force.jdbc.partition.engine.value.types.IntValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;

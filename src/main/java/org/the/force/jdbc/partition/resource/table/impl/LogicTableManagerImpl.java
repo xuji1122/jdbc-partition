@@ -6,7 +6,7 @@ import org.the.force.jdbc.partition.resource.db.mysql.MySqlDdMetaDataImpl;
 import org.the.force.jdbc.partition.resource.table.LogicTableConfig;
 import org.the.force.jdbc.partition.resource.table.LogicTableManager;
 import org.the.force.jdbc.partition.resource.table.model.LogicTable;
-import org.the.force.jdbc.partition.rule.config.DataNode;
+import org.the.force.jdbc.partition.config.DataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 

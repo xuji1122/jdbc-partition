@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLNotExpr;
@@ -28,8 +28,8 @@ public class SQLNotEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public BooleanValue eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
-        return new BooleanValue(!((BooleanValue) sqlExprEvaluator.eval(sqlExecutionContext, data)).getValue());
+    public BooleanValue eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
+        return new BooleanValue(!((BooleanValue) sqlExprEvaluator.eval(sqlLineExecRequest, data)).getValue());
     }
 
 

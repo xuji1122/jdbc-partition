@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.common.PartitionSqlUtils;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -27,7 +27,7 @@ public class UnKnowEvaluator extends AbstractSqlExprEvaluator {
     public UnKnowEvaluator() {
     }
 
-    public Object eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+    public Object eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
         throw new SqlParseException("无法识别evalFunction " + PartitionSqlUtils.toSql(getOriginalSqlExpr(), logicDbConfig.getSqlDialect()));
     }
 

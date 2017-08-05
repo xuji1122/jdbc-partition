@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -45,19 +45,19 @@ public class SQLCaseEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public SqlValue eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
-        Object value = valueEvaluator.eval(sqlExecutionContext, data);
+    public SqlValue eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
+        Object value = valueEvaluator.eval(sqlLineExecRequest, data);
         if (value == null) {
             return new BooleanValue(false);
         }
         for (SqlExprEvaluator[] sqlExprEvaluators : itemsEvaluator) {
-            Object condition = sqlExprEvaluators[0].eval(sqlExecutionContext, data);
+            Object condition = sqlExprEvaluators[0].eval(sqlLineExecRequest, data);
             if (value.equals(condition)) {
-                return (SqlValue) sqlExprEvaluators[1].eval(sqlExecutionContext, data);
+                return (SqlValue) sqlExprEvaluators[1].eval(sqlLineExecRequest, data);
             }
         }
         if (elseEvaluator != null) {
-            return (SqlValue) elseEvaluator.eval(sqlExecutionContext, data);
+            return (SqlValue) elseEvaluator.eval(sqlLineExecRequest, data);
         }
         throw new RuntimeException("case when表达式没有匹配结果");
     }

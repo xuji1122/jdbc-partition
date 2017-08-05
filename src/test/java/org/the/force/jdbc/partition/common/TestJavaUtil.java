@@ -2,7 +2,6 @@ package org.the.force.jdbc.partition.common;
 
 import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
-import org.the.force.jdbc.partition.engine.sql.query.OrderByItem;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 

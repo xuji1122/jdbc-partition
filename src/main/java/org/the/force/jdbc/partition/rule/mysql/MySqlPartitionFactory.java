@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.rule.mysql;
 import org.the.force.jdbc.partition.common.json.JsonParser;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionFactory;
-import org.the.force.jdbc.partition.rule.config.DataNode;
+import org.the.force.jdbc.partition.config.DataNode;
 
 import java.util.Map;
 

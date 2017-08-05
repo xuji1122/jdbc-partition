@@ -3,7 +3,7 @@ package org.the.force.jdbc.partition.engine.executor.physic;
 /**
  * Created by xuji on 2017/5/29.
  */
-public class LinedSql{
+public class LinedSql {
     private final int lineNum;
     private final String sql;
 
@@ -22,8 +22,7 @@ public class LinedSql{
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n");
-        sb.append(lineNum).append(":").append(sql);
+        print(0, sb);
         return sb.toString();
     }
 

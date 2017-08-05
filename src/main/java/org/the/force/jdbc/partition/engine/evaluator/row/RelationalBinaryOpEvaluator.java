@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.value.SqlNull;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.engine.value.types.BooleanValue;
@@ -35,9 +35,9 @@ public class RelationalBinaryOpEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public BooleanValue eval(SqlExecutionContext sqlExecutionContext, Object rows) throws SQLException {
-        SqlValue leftValue = (SqlValue)this.left.eval(sqlExecutionContext, rows);
-        Object rightValue = (SqlValue)this.right.eval(sqlExecutionContext, rows);
+    public BooleanValue eval(SqlLineExecRequest sqlLineExecRequest, Object rows) throws SQLException {
+        SqlValue leftValue = (SqlValue)this.left.eval(sqlLineExecRequest, rows);
+        Object rightValue = (SqlValue)this.right.eval(sqlLineExecRequest, rows);
         if (leftValue == null || rightValue == null) {
             return new BooleanValue(false);
         }

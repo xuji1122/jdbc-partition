@@ -3,18 +3,10 @@ package org.the.force.jdbc.partition.common.cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.testng.annotations.Test;
-import org.the.force.jdbc.partition.TestJdbcPartitionSupport;
 import org.the.force.jdbc.partition.TestSupport;
-import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
-import org.the.force.jdbc.partition.resource.db.LogicDbManager;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
-import org.the.force.jdbc.partition.rule.config.DataNode;
-import org.the.force.jdbc.partition.rule.config.ZKDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 

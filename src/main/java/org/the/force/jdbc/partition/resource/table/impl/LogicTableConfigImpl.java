@@ -9,7 +9,7 @@ import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionColumnConfig;
 import org.the.force.jdbc.partition.rule.comparator.NameComparator;
 import org.the.force.jdbc.partition.rule.PartitionRule;
-import org.the.force.jdbc.partition.rule.config.DataNode;
+import org.the.force.jdbc.partition.config.DataNode;
 
 import java.util.Collection;
 import java.util.HashSet;

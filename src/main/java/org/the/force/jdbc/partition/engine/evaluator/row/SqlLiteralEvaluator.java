@@ -1,8 +1,8 @@
 package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
@@ -21,7 +21,7 @@ public abstract class SqlLiteralEvaluator extends AbstractSqlExprEvaluator {
         super(originalSqlExpr);
     }
 
-    public final SqlValue eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+    public final SqlValue eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
         return eval();
     }
 

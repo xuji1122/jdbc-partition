@@ -2,9 +2,9 @@ package org.the.force.jdbc.partition.engine.parser.table;
 
 import org.the.force.jdbc.partition.engine.executor.dql.tablesource.ExecutableJoinedTableSource;
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SelectLabelParser;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.table.QueriedSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.table.QueriedSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLExprTableSource;

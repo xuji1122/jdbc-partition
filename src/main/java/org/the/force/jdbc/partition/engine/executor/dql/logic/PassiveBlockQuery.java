@@ -1,9 +1,9 @@
 package org.the.force.jdbc.partition.engine.executor.dql.logic;
 
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelect;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
@@ -36,7 +36,7 @@ public  class PassiveBlockQuery extends LogicBlockQueryExecutor {
     }
 
 
-    public ResultSet execute(SqlExecutionContext sqlExecutionContext) throws SQLException {
+    public ResultSet execute(SqlLineExecRequest sqlLineExecRequest) throws SQLException {
 
         return null;
     }

@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.value.SqlNull;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
@@ -34,9 +34,9 @@ public class MathBinaryOpEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public SqlValue eval(SqlExecutionContext sqlExecutionContext, Object rows) throws SQLException {
-        SqlValue leftValue = (SqlValue) this.left.eval(sqlExecutionContext, rows);
-        SqlValue rightValue = (SqlValue) this.right.eval(sqlExecutionContext, rows);
+    public SqlValue eval(SqlLineExecRequest sqlLineExecRequest, Object rows) throws SQLException {
+        SqlValue leftValue = (SqlValue) this.left.eval(sqlLineExecRequest, rows);
+        SqlValue rightValue = (SqlValue) this.right.eval(sqlLineExecRequest, rows);
         if (leftValue instanceof SqlNull || rightValue instanceof SqlNull) {
             throw new RuntimeException("SqlNull 不能用于算术运算");
         }

@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 /**
  * Created by xuji on 2017/5/31.
- * 1，jdbcPartitionConnection 缓存engine prepared statement  关闭时清空  预编译的作用
+ * 1，connection 缓存engine prepared statement  关闭时清空  预编译的作用
  * 2，executeBatch 无论是否异常清空batch 只是清空参数列表 编译好的对象不清空
  * 3，clearParameters  手动调用才会清空 异常之后可以重复  不去清空
  * 4，statement是否需要缓存的问题 不缓存 很少使用 无法预见sql 预编译也不存在

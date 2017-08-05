@@ -2,8 +2,8 @@ package org.the.force.jdbc.partition.engine.executor.dql.tablesource;
 
 import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.dql.LogicTableSource;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.JoinConnector;
+import org.the.force.jdbc.partition.engine.stmt.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.JoinConnector;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLJoinTableSource;

@@ -3261,7 +3261,7 @@ public class OracleOutputVisitor extends SQLASTOutputVisitor implements OracleAS
 
     @Override
     public boolean visit(OracleExecuteImmediateStatement x) {
-        print0(ucase ? "EXECUTE IMMEDIATE " : "execute immediate ");
+        print0(ucase ? "EXECUTE IMMEDIATE " : "action immediate ");
         x.getDynamicSql().accept(this);
 
         List<SQLExpr> into = x.getInto();

@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.engine.executor.factory.SqlExecutorFactory;
+import org.the.force.jdbc.partition.engine.executor.SqlExecutor;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.SQLUtils;
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Created by xuji on 2017/5/31.
+ * 管理sql执行器的缓存
  */
 public class SqlExecutorManager {
 
@@ -38,9 +40,9 @@ public class SqlExecutorManager {
         });
     }
 
-    public SqlExecutor getSqlExecutor(String sql) throws SQLException {
+    public SqlExecutor getSqlExecutor(SqlKey sqlKey) throws SQLException {
         try {
-            return loadingCache.get(new SqlKey(sql));
+            return loadingCache.get(sqlKey);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             if (t instanceof SqlParseException) {

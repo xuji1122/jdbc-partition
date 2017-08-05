@@ -10,7 +10,7 @@ import org.the.force.jdbc.partition.engine.evaluator.row.SQLNotEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.row.UnKnowEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlInSubQueriedExpr;
 import org.the.force.jdbc.partition.engine.evaluator.subqueryexpr.SqlQueryExpr;
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
+import org.the.force.jdbc.partition.engine.stmt.SqlRefer;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 import org.the.force.thirdparty.druid.sql.ast.SQLName;

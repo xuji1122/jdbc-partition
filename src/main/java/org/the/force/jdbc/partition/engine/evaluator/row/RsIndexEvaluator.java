@@ -2,9 +2,9 @@ package org.the.force.jdbc.partition.engine.evaluator.row;
 
 import com.google.common.collect.Lists;
 import org.the.force.jdbc.partition.engine.evaluator.AbstractSqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
 
 import java.sql.SQLException;
@@ -34,7 +34,7 @@ public class RsIndexEvaluator extends AbstractSqlExprEvaluator {
 
     }
 
-    public Object eval(SqlExecutionContext sqlExecutionContext, Object data) throws SQLException {
+    public Object eval(SqlLineExecRequest sqlLineExecRequest, Object data) throws SQLException {
         return null;
     }
 

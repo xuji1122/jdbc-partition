@@ -285,5 +285,17 @@ public class MySqlDdMetaDataImpl extends AbstractDatabaseMetaData {
     }
 
 
+    public boolean supportsBatchUpdates() throws SQLException {
+        return true;
+    }
+
+    public boolean supportsMultipleResultSets() throws SQLException {
+        return true;
+    }
+
+    public boolean supportsMultipleOpenResults() throws SQLException {
+        return false;
+    }
+
 
 }

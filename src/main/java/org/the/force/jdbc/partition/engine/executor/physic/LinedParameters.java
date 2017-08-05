@@ -26,19 +26,9 @@ public class LinedParameters {
         return sqlParameters;
     }
 
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(lineNum);
-        sb.append(":[");
-        for (int i = 0; i < sqlParameters.size(); i++) {
-            if (i > 0) {
-                sb.append(",");
-            }
-            SqlParameter sqlParameter = sqlParameters.get(i);
-            sb.append(sqlParameter.getValue());
-        }
-        sb.append("]");
+        print(0, sb);
         return sb.toString();
     }
 
@@ -56,6 +46,6 @@ public class LinedParameters {
             sb.append(sqlParameter.getValue());
         }
         sb.append("]");
-
     }
+
 }

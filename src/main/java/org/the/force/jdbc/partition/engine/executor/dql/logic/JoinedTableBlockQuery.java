@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.engine.executor.dql.logic;
 
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
-import org.the.force.jdbc.partition.engine.sql.query.LogicSelectTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
+import org.the.force.jdbc.partition.engine.stmt.query.LogicSelectTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.the.force.thirdparty.druid.sql.ast.statement.SQLTableSource;
@@ -23,7 +23,7 @@ public class JoinedTableBlockQuery extends LogicBlockQueryExecutor {
         super(logicDbConfig, sqlSelectQueryBlock);
     }
 
-    public ResultSet execute(SqlExecutionContext sqlExecutionContext) throws SQLException {
+    public ResultSet execute(SqlLineExecRequest sqlLineExecRequest) throws SQLException {
 
         return null;
 

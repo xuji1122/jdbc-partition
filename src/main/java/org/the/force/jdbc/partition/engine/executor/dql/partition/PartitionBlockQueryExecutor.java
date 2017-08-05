@@ -7,33 +7,30 @@ import org.the.force.jdbc.partition.engine.evaluator.aggregate.AggregateEvaluato
 import org.the.force.jdbc.partition.engine.evaluator.aggregate.AvgAggregateEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
 import org.the.force.jdbc.partition.engine.evaluator.row.RsIndexEvaluator;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
 import org.the.force.jdbc.partition.engine.executor.dql.BlockQueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedSql;
-import org.the.force.jdbc.partition.engine.executor.physic.PhysicSqlExecutor;
-import org.the.force.jdbc.partition.engine.executor.physic.PreparedPhysicSqlExecutor;
-import org.the.force.jdbc.partition.engine.executor.physic.StaticPhysicSqlExecutor;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlExecParamLineNode;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlExecPhysicNode;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlExecStaticSqlNode;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.parser.select.SelectItemParser;
+import org.the.force.jdbc.partition.engine.rewrite.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.router.DefaultTableRouter;
-import org.the.force.jdbc.partition.engine.router.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.router.RouteEvent;
 import org.the.force.jdbc.partition.engine.router.TableRouter;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.query.GroupBy;
-import org.the.force.jdbc.partition.engine.sql.query.GroupByItem;
-import org.the.force.jdbc.partition.engine.sql.query.OrderBy;
-import org.the.force.jdbc.partition.engine.sql.query.OrderByItem;
-import org.the.force.jdbc.partition.engine.sql.query.PartitionSelectTable;
-import org.the.force.jdbc.partition.engine.sql.query.ResultLimit;
-import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
+import org.the.force.jdbc.partition.engine.stmt.SqlRefer;
+import org.the.force.jdbc.partition.engine.stmt.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.stmt.query.GroupBy;
+import org.the.force.jdbc.partition.engine.stmt.query.GroupByItem;
+import org.the.force.jdbc.partition.engine.stmt.query.OrderBy;
+import org.the.force.jdbc.partition.engine.stmt.query.OrderByItem;
+import org.the.force.jdbc.partition.engine.stmt.query.PartitionSelectTable;
+import org.the.force.jdbc.partition.engine.stmt.query.ResultLimit;
+import org.the.force.jdbc.partition.engine.stmt.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
-import org.the.force.jdbc.partition.resource.resultset.TableRSMetaDataAdapter;
-import org.the.force.jdbc.partition.resource.resultset.WrappedRSMetaData;
-import org.the.force.jdbc.partition.resource.resultset.WrappedResultSet;
 import org.the.force.jdbc.partition.rule.Partition;
 import org.the.force.jdbc.partition.rule.PartitionEvent;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -125,32 +122,29 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
         //最底层的sqlTable，和sqlSelectQueryBlock的tableSource未必是直接对应的
         this.innerExprSqlTable = innerExprSqlTable;
         this.outerSqlTable = outerSqlTable;
-        tableRouter = new DefaultTableRouter(logicDbConfig, inputSqlSelectQueryBlock, innerExprSqlTable);
+        tableRouter = new DefaultTableRouter(logicDbConfig, innerExprSqlTable);
         selectTable = new PartitionSelectTable(outerSqlTable, inputSqlSelectQueryBlock.getDistionOption() > 0);
     }
 
-    public ResultSet execute(SqlExecutionContext sqlExecutionContext) throws SQLException {
-        RouteEvent routeEvent = new RouteEvent(logicDbConfig.getLogicTableManager(innerExprSqlTable.getTableName()).getLogicTableConfig()[0], PartitionEvent.EventType.SELECT,
-            sqlExecutionContext.getLogicSqlParameterHolder());
-        routeEvent.setSqlExecutionContext(sqlExecutionContext);
+    public ResultSet execute(SqlLineExecRequest sqlLineExecRequest) throws SQLException {
+        RouteEvent routeEvent =
+            new RouteEvent(logicDbConfig.getLogicTableManager(innerExprSqlTable.getTableName()).getLogicTableConfig()[0], PartitionEvent.EventType.SELECT, sqlLineExecRequest);
         Map<Partition, SqlTablePartition> partitionSqlTableMap = tableRouter.route(routeEvent);
         if (partitionSqlTableMap.size() == 1) {
             //最简单的情况
             Map.Entry<Partition, SqlTablePartition> entry = partitionSqlTableMap.entrySet().iterator().next();
             StringBuilder sqlSb = new StringBuilder();
-            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, routeEvent, entry.getValue());
+            MySqlPartitionSqlOutput mySqlPartitionSqlOutput = new MySqlPartitionSqlOutput(sqlSb, logicDbConfig, sqlLineExecRequest, entry.getValue());
             versionForRule6.accept(mySqlPartitionSqlOutput);
-            PhysicSqlExecutor physicSqlExecutor;
+            SqlExecPhysicNode sqlExecPhysicNode;
             if (mySqlPartitionSqlOutput.isParametric()) {
-                physicSqlExecutor =
-                    new PreparedPhysicSqlExecutor(sqlSb.toString(), entry.getKey().getPhysicDbName(), new LinedParameters(1, mySqlPartitionSqlOutput.getSqlParameterList()));
+                sqlExecPhysicNode =
+                    new SqlExecParamLineNode(sqlSb.toString(), entry.getKey().getPhysicDbName(), new LinedParameters(1, mySqlPartitionSqlOutput.getSqlParameterList()));
 
             } else {
-                physicSqlExecutor = new StaticPhysicSqlExecutor(entry.getKey().getPhysicDbName(), new LinedSql(1, sqlSb.toString()));
+                sqlExecPhysicNode = new SqlExecStaticSqlNode(entry.getKey().getPhysicDbName(), new LinedSql(1, sqlSb.toString()));
             }
-            ResultSet rs = physicSqlExecutor.executeQuery(sqlExecutionContext.getSqlExecutionResource());
-            WrappedRSMetaData wrappedRSMetaData = new TableRSMetaDataAdapter(logicDbConfig, rs.getMetaData());
-            return new WrappedResultSet(wrappedRSMetaData, rs);
+            return null;
         } else {
             //判断是否都在同一个物理库
             Map<String, List<SqlTablePartition>> physicDbMap = new LinkedHashMap<>();

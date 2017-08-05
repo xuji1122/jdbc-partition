@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JdbcPartitionDriver implements Driver {
 
-    private ConcurrentHashMap<JdbcPartitionUrl, DbDriverInstance> driverInstanceMap = new ConcurrentHashMap<>(32);
+    private ConcurrentHashMap<JdbcPartitionUrl, LogicDbDriverInstance> driverInstanceMap = new ConcurrentHashMap<>(32);
 
     private static ClassLoader classLoader = null;
 
@@ -36,12 +36,12 @@ public class JdbcPartitionDriver implements Driver {
         if (jdbcPartitionUrl == null) {
             return null;
         }
-        DbDriverInstance instance = driverInstanceMap.get(jdbcPartitionUrl);
+        LogicDbDriverInstance instance = driverInstanceMap.get(jdbcPartitionUrl);
         if (instance == null) {
             try {
                 instance = driverInstanceMap.computeIfAbsent(jdbcPartitionUrl, key -> {
                     try {
-                        return new DbDriverInstance(key, info);
+                        return new LogicDbDriverInstance(key, info);
                     } catch (SQLException sqlEx) {
                         throw new RuntimeException(sqlEx);
                     }

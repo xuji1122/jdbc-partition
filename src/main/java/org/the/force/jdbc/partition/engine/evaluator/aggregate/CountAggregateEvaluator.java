@@ -1,6 +1,6 @@
 package org.the.force.jdbc.partition.engine.evaluator.aggregate;
 
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.expr.SQLAggregateExpr;
 
@@ -19,7 +19,7 @@ public class CountAggregateEvaluator extends AggregateEvaluator {
     public CountAggregateEvaluator() {
     }
 
-    public Object eval(SqlExecutionContext sqlExecutionContext,  Object rows) throws SQLException {
+    public Object eval(SqlLineExecRequest sqlLineExecRequest,  Object rows) throws SQLException {
         return null;
     }
 }

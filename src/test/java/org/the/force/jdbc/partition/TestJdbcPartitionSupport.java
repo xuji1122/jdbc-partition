@@ -7,7 +7,7 @@ import org.the.force.jdbc.partition.common.BeanUtils;
 import org.the.force.jdbc.partition.driver.JdbcPartitionDriver;
 import org.the.force.jdbc.partition.driver.SqlDialect;
 import org.the.force.jdbc.partition.resource.db.LogicDbManager;
-import org.the.force.jdbc.partition.rule.config.JsonDataNode;
+import org.the.force.jdbc.partition.config.JsonDataNode;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 import org.yaml.snakeyaml.Yaml;

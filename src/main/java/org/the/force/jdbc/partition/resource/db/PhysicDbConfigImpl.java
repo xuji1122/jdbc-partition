@@ -1,7 +1,7 @@
 package org.the.force.jdbc.partition.resource.db;
 
 import org.the.force.jdbc.partition.common.json.JsonParser;
-import org.the.force.jdbc.partition.rule.config.DataNode;
+import org.the.force.jdbc.partition.config.DataNode;
 
 import java.util.Map;
 

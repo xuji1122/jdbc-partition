@@ -10,9 +10,9 @@ import org.the.force.jdbc.partition.engine.executor.factory.QueryExecutorFactory
 import org.the.force.jdbc.partition.engine.parser.sqlrefer.SqlTableReferParser;
 import org.the.force.jdbc.partition.engine.parser.table.SqlTableParser;
 import org.the.force.jdbc.partition.engine.parser.table.TableConditionParser;
-import org.the.force.jdbc.partition.engine.sql.ConditionalSqlTable;
-import org.the.force.jdbc.partition.engine.sql.query.ExecutorNodeType;
-import org.the.force.jdbc.partition.engine.sql.table.ExprConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.ConditionalSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.query.QueryNodeType;
+import org.the.force.jdbc.partition.engine.stmt.table.ExprConditionalSqlTable;
 import org.the.force.jdbc.partition.exception.SqlParseException;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.thirdparty.druid.sql.ast.SQLExpr;
@@ -73,11 +73,11 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
           第一步：遍历tableSource的嵌套关系,确定执行节点的类型
                  探测selectQueryBlock是交给db执行还是要通过client实现，依据就是找到最底层的tableSource是单表的还是多表的
          */
-        ExecutorNodeType executorNodeType = detectExecutorNodeType(selectQueryBlock, sqlSelectQueryBlockList);
+        QueryNodeType queryNodeType = detectExecutorNodeType(selectQueryBlock, sqlSelectQueryBlockList);
         /*
          第二步：build执行顺序
          */
-        if (executorNodeType.isLogic()) {
+        if (queryNodeType.isLogic()) {
             //需要client端自己处理结果集的嵌套关系
             BlockQueryExecutor root = null;//返回root
             for (int i = sqlSelectQueryBlockList.size() - 1; i > -1; i--) {//从最底层的查询开始build
@@ -109,9 +109,9 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
             if (sqlSelectQueryBlockList.size() > 1) {
                 ConditionalSqlTable conditionalSqlTable = new SqlTableParser(logicDbConfig).getSqlTable(root.getFrom());
                 new SqlTableReferParser(logicDbConfig, root, conditionalSqlTable);
-                return new PartitionBlockQueryExecutor(logicDbConfig, root, executorNodeType.getExprConditionalSqlTable(), conditionalSqlTable);
+                return new PartitionBlockQueryExecutor(logicDbConfig, root, queryNodeType.getExprConditionalSqlTable(), conditionalSqlTable);
             } else {
-                return new PartitionBlockQueryExecutor(logicDbConfig, root, executorNodeType.getExprConditionalSqlTable());
+                return new PartitionBlockQueryExecutor(logicDbConfig, root, queryNodeType.getExprConditionalSqlTable());
             }
         }
     }
@@ -125,7 +125,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
      * @param sqlSelectQueryBlockList
      * @return
      */
-    private ExecutorNodeType detectExecutorNodeType(SQLSelectQueryBlock selectQueryBlock, List<SQLSelectQueryBlock> sqlSelectQueryBlockList) {
+    private QueryNodeType detectExecutorNodeType(SQLSelectQueryBlock selectQueryBlock, List<SQLSelectQueryBlock> sqlSelectQueryBlockList) {
         int maxSubQuery = 64;
         int subQueryCount = 0;
         do {
@@ -146,7 +146,7 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
                 } else {
                     throw new SqlParseException("buildQueryExecutor result is not SQLSelectQueryBlock");
                 }
-                return new ExecutorNodeType(true, null);
+                return new QueryNodeType(true, null);
             } else if (!(selectQueryBlock.getFrom() instanceof SQLSubqueryTableSource)) {
                 //TODO
                 throw new SqlParseException(
@@ -170,14 +170,14 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
         }
     }
 
-    protected ExecutorNodeType checkExprTableSource(SQLSelectQueryBlock selectQueryBlock) {
+    protected QueryNodeType checkExprTableSource(SQLSelectQueryBlock selectQueryBlock) {
         ExprConditionalSqlTable exprConditionalSqlTable = (ExprConditionalSqlTable) new SqlTableParser(logicDbConfig).getSqlTable(selectQueryBlock.getFrom());
         if (selectQueryBlock.getWhere() != null) {
             new TableConditionParser(logicDbConfig, exprConditionalSqlTable, selectQueryBlock.getWhere());
         }
         //最底层的query,由于partitionBlockQuery不去检测，所以为了确保alias被正确设置，从底层检测
         new SqlTableReferParser(logicDbConfig, selectQueryBlock, exprConditionalSqlTable);
-        return new ExecutorNodeType(false, exprConditionalSqlTable);
+        return new QueryNodeType(false, exprConditionalSqlTable);
     }
 
     /**
@@ -187,12 +187,12 @@ public class BlockQueryExecutorFactory implements QueryExecutorFactory {
      * @param selectQueryBlock
      * @return
      */
-    protected ExecutorNodeType checkJoinTableSource(SQLSelectQueryBlock selectQueryBlock) {
+    protected QueryNodeType checkJoinTableSource(SQLSelectQueryBlock selectQueryBlock) {
         JoinedTableSourceFactory joinedTableSourceFactory =
             new JoinedTableSourceFactory(logicDbConfig, (SQLJoinTableSource) selectQueryBlock.getFrom(), selectQueryBlock.getWhere());
         SQLExpr newWhere = joinedTableSourceFactory.getNewWhereCondition(); //tableSource特有的条件过滤掉之后剩余的条件
         selectQueryBlock.setFrom(joinedTableSourceFactory.getExecutableJoinedTableSource());
         selectQueryBlock.setWhere(newWhere);
-        return new ExecutorNodeType(true, null);
+        return new QueryNodeType(true, null);
     }
 }

@@ -2,11 +2,11 @@ package org.the.force.jdbc.partition.engine.router;
 
 import org.the.force.jdbc.partition.engine.evaluator.SqlExprEvaluator;
 import org.the.force.jdbc.partition.engine.evaluator.factory.SqlExprEvaluatorFactory;
-import org.the.force.jdbc.partition.engine.executor.SqlExecutionContext;
-import org.the.force.jdbc.partition.engine.sql.SqlColumnValue;
-import org.the.force.jdbc.partition.engine.sql.SqlRefer;
-import org.the.force.jdbc.partition.engine.sql.SqlTablePartition;
-import org.the.force.jdbc.partition.engine.sql.table.InsertSqlTable;
+import org.the.force.jdbc.partition.engine.stmt.SqlColumnValue;
+import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
+import org.the.force.jdbc.partition.engine.stmt.SqlRefer;
+import org.the.force.jdbc.partition.engine.stmt.SqlTablePartition;
+import org.the.force.jdbc.partition.engine.stmt.table.InsertSqlTable;
 import org.the.force.jdbc.partition.engine.value.SqlValue;
 import org.the.force.jdbc.partition.exception.PartitionConfigException;
 import org.the.force.jdbc.partition.exception.SqlParseException;
@@ -59,7 +59,7 @@ public class InsertTableRouter implements TableRouter {
         Map<Partition, SqlTablePartition> subsMap = new ConcurrentSkipListMap<>(routeEvent.getLogicTableConfig().getPartitionSortType().getComparator());
 
         int count = 0;
-        SqlExecutionContext sqlExecutionContext = new SqlExecutionContext(routeEvent.getLogicSqlParameterHolder());
+        SqlLineExecRequest sqlLineExecRequest = routeEvent.getSqlLineExecRequest();
         for (SQLInsertStatement.ValuesClause valuesClause : valuesClauseList) {
             List<SQLExpr> sqlExprList = valuesClause.getValues();
             int size = sqlExprList.size();
@@ -78,7 +78,7 @@ public class InsertTableRouter implements TableRouter {
                     sqlExprEvaluator = sqlExprEvaluatorFactory.matchSqlExprEvaluator(sqlExprList.get(i));
                 }
 
-                SqlValue value = (SqlValue) sqlExprEvaluator.eval(sqlExecutionContext, null);
+                SqlValue value = (SqlValue) sqlExprEvaluator.eval(sqlLineExecRequest, null);
                 if (value == null) {
                     throw new SqlParseException("partition value == null");
                 }
