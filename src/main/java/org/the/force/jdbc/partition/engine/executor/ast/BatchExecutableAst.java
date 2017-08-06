@@ -17,8 +17,8 @@ public interface BatchExecutableAst extends SqlExecutor {
      * 累积sql行
      * sql存储的维度
      *    1，按照物理库分组存储 SqlExecDbNode
-     *    2，如果是参数化的sql,那么维度是  SqlExecParametricNode --> SqlExecParamLineNode
-     *       如果是静态的sql，那么就是sql累积 SqlExecStaticSqlNode
+     *    2，如果是参数化的sql,那么维度是  SqlExecPStmtNode --> SqlExecParamLineNode
+     *       如果是静态的sql，那么就是sql累积 SqlExecStmtNode
      * @param sqlExecDbNode
      * @param sqlLineExecRequest
      * @throws Exception

@@ -10,18 +10,18 @@ import java.util.List;
 /**
  * Created by xuji on 2017/5/28.
  */
-public class SqlExecStaticSqlNode implements SqlExecPhysicNode {
+public class SqlExecStmtNode implements SqlExecPhysicNode {
 
     private final String physicDbName;
 
     private final LinkedList<LinedSql> linedSqls = new LinkedList<>();
 
-    public SqlExecStaticSqlNode(String physicDbName) {
+    public SqlExecStmtNode(String physicDbName) {
         this.physicDbName = physicDbName;
     }
 
 
-    public SqlExecStaticSqlNode(String physicDbName, LinedSql linedSql) {
+    public SqlExecStmtNode(String physicDbName, LinedSql linedSql) {
         this.physicDbName = physicDbName;
         addSql(linedSql);
     }
@@ -71,7 +71,11 @@ public class SqlExecStaticSqlNode implements SqlExecPhysicNode {
     }
 
     public void print(int preTabNumber, StringBuilder sb) {
+        //sb.append("\n");
         for (LinedSql linedSql : linedSqls) {
+            for (int i = 0; i < preTabNumber; i++) {
+                sb.append("\t");
+            }
             linedSql.print(preTabNumber + 1, sb);
         }
     }

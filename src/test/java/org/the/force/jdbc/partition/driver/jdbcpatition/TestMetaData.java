@@ -73,7 +73,7 @@ public class TestMetaData  {
         connection.close();
     }
 
-//    public void test6() throws Exception {
+//    public void testParamSet2() throws Exception {
 //        Connection connection = getConnection();
 //        Statement statement = connection.createStatement();
 //        ResultSet resultSet = statement.executeQuery("DESC t_user");

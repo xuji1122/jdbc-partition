@@ -13,11 +13,11 @@ import java.util.concurrent.Future;
 /**
  * Created by xuji on 2017/8/5.
  */
-public class SqlExecDbNode implements SqlExecPhysicNode{
+public class SqlExecDbNode implements SqlExecPhysicNode {
     //physicDbName为key
     private TreeMap<String, SqlExecPhysicNode> dbExecuteRouterMap = new TreeMap<>(NameComparator.getSingleton());
 
-    public void put(String sqlKey,SqlExecPhysicNode sqlExecPhysicNode) {
+    public void put(String sqlKey, SqlExecPhysicNode sqlExecPhysicNode) {
         if (sqlExecPhysicNode == null) {
             return;
         }
@@ -85,12 +85,13 @@ public class SqlExecDbNode implements SqlExecPhysicNode{
     }
 
     public void print(int preTabNumber, StringBuilder sb) {
-        sb.append("\n");
-        for (int i = 0; i < preTabNumber; i++) {
-            sb.append("\t");
-        }
+
         for (Map.Entry<String, SqlExecPhysicNode> entry : dbExecuteRouterMap.entrySet()) {
-            sb.append(entry.getKey()).append(":\n");
+            sb.append("\n");
+            for (int i = 0; i < preTabNumber; i++) {
+                sb.append("\t");
+            }
+            sb.append(entry.getKey());
             entry.getValue().print(preTabNumber + 1, sb);
         }
     }

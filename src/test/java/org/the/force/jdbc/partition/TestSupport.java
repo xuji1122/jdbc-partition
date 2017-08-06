@@ -39,7 +39,7 @@ public final class TestSupport {
         sqlDialectName = System.getProperty("db.dialect", "mysql");
         sqlDialect = SqlDialect.getByName(sqlDialectName);
         projectBasePath = System.getProperty("project.base.path", System.getProperty("user.dir"));
-        test_cases_basic_path = System.getProperty("test.cases.basic.path", "test_cases_basic");
+        test_cases_basic_path = projectBasePath + "/test_cases_basic";
         logger.info("sqlDialectName=" + sqlDialectName);
         logger.info("projectBasePath=" + projectBasePath);
         singleDb = new TestJdbcSupport();

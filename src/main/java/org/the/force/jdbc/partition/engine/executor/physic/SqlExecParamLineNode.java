@@ -114,10 +114,6 @@ public class SqlExecParamLineNode implements SqlExecPhysicNode {
     }
 
     public void print(int preTabNumber, StringBuilder sb) {
-        sb.append("\n");
-        for (int i = 0; i < preTabNumber; i++) {
-            sb.append("\t");
-        }
         for (LinedParameters linedParameters : sqlParametersBatch) {
             linedParameters.print(preTabNumber + 1, sb);
         }

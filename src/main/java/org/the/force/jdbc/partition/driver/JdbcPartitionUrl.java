@@ -116,7 +116,7 @@ public class JdbcPartitionUrl {
                 throw new SQLException("无法识别数据库配置协议");
             }
         }
-        String logicDbKey = protocolUrl.substring(url.lastIndexOf('/') + 1).toLowerCase();
+        String logicDbKey = protocolUrl.substring(protocolUrl.lastIndexOf('/') + 1).toLowerCase();
         return new JdbcPartitionUrl(sqlDialectEnum, logicDbKey, paramStr, configUrl);
     }
 

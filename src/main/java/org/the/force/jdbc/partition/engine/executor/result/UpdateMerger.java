@@ -27,7 +27,7 @@ public class UpdateMerger {
             //TODO
             return 0;
         }
-        if (affectRows > 0) {
+        if (affectRows >= 0) {
             return r.addAndGet(affectRows);
         }
         return r.get();

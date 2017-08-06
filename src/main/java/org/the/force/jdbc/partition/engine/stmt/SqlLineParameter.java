@@ -31,17 +31,15 @@ public class SqlLineParameter {
      * @param parameter
      */
     public void setParameter(int parameterIndex, SqlParameter parameter) {
-        int expectSize = sqlParameters.size() + 1;
-        if (parameterIndex == expectSize) {
-            sqlParameters.add(parameter);
-        } else if (parameterIndex < expectSize) {
-            sqlParameters.set(parameterIndex - 1, parameter);
-        } else {
+        int actualSize = sqlParameters.size();
+        if (parameterIndex > actualSize) {
             int limit = parameterIndex - 1;
-            for (int i = expectSize - 1; i < limit; i++) {
+            for (int i = actualSize; i < limit; i++) {
                 sqlParameters.add(null);
             }
             sqlParameters.add(parameter);
+        } else {
+            sqlParameters.set(parameterIndex - 1, parameter);
         }
     }
 

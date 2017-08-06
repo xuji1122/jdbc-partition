@@ -64,7 +64,7 @@ public final class TestJdbcPartitionSupport {
         logger.info("zkRootPath=" + zkRootPath);
         //TODO 可能变化的点
         actualDriverClassName = "com.mysql.jdbc.Driver";
-        dbConnectionUrl = "jdbc:partition:" + TestSupport.sqlDialectName + "@" + zkConnectStr + "/" + zkRootPath + "/" + logicDbName
+        dbConnectionUrl = "jdbc:partition:" + TestSupport.sqlDialectName + "@zookeeper://" + zkConnectStr + "/" + zkRootPath + "/" + logicDbName
             + "?characterEncoding=utf-8&allowMultiQueries=true&cachePrepStmts=true&useServerPrepStmts=false";
         try {
             Class<?> clazz = JdbcPartitionDriver.class;
@@ -99,6 +99,10 @@ public final class TestJdbcPartitionSupport {
     }
 
     public Connection getConnection() throws SQLException {
+        return getConnection(dbConnectionUrl);
+    }
+
+    public Connection getConnection(String dbConnectionUrl) throws SQLException {
         return DriverManager.getConnection(dbConnectionUrl, user, password);
     }
 

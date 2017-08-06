@@ -5,12 +5,15 @@ import org.the.force.jdbc.partition.driver.statement.PStatement;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmt;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmtConfig;
 import org.the.force.jdbc.partition.engine.stmt.impl.MultiSqlFactory;
+import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.SqlExecResource;
 import org.the.force.jdbc.partition.resource.connection.AbstractConnection;
 import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
+import org.the.force.jdbc.partition.resource.db.mysql.MySqlDdMetaDataImpl;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -60,6 +63,7 @@ public class JdbcPartitionConnection extends AbstractConnection {
 
     /**
      * sql执行总入口
+     *
      * @param logicStmt
      * @param logicStmtConfig
      * @return
@@ -205,5 +209,9 @@ public class JdbcPartitionConnection extends AbstractConnection {
         stmt.setResultSetType(resultSetType);
         stmt.setResultSetConcurrency(resultSetConcurrency);
         return stmt;
+    }
+
+    public DatabaseMetaData getMetaData() throws SQLException {
+        return new MySqlDdMetaDataImpl(getLogicDbConfig(), getConnectionAdapter());
     }
 }

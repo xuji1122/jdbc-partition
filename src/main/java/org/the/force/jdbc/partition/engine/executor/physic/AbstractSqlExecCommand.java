@@ -3,6 +3,7 @@ package org.the.force.jdbc.partition.engine.executor.physic;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmtConfig;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
 import org.the.force.jdbc.partition.resource.SqlExecResource;
+import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -42,5 +43,9 @@ public abstract class AbstractSqlExecCommand implements SqlExecCommand {
 
     public LogicStmtConfig getLogicStmtConfig() {
         return logicStmtConfig;
+    }
+
+    public LogicDbConfig getLogicDbConfig() {
+        return sqlExecResource.getLogicDbConfig();
     }
 }

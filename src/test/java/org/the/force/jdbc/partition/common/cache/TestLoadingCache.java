@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import org.the.force.jdbc.partition.TestSupport;
 import org.the.force.jdbc.partition.resource.db.LogicDbConfig;
 import org.the.force.jdbc.partition.resource.executor.SqlExecutorManager;
+import org.the.force.jdbc.partition.resource.executor.SqlKey;
 import org.the.force.thirdparty.druid.support.logging.Log;
 import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
@@ -42,12 +43,12 @@ public class TestLoadingCache {
         LogicDbConfig logicDbConfig = TestSupport.partitionDb.ymlLogicDbConfig;
         SqlExecutorManager sqlExecutorManager = new SqlExecutorManager(logicDbConfig);
         String sql = "update  t_order set status=? where order_id=?";
-        sqlExecutorManager.getSqlExecutor(sql);
+        sqlExecutorManager.getSqlExecutor(new SqlKey(sql));
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=?";
-        sqlExecutorManager.getSqlExecutor(sql);
+        sqlExecutorManager.getSqlExecutor(new SqlKey(sql));
 
         sql = "UPDATE T_ORDER SET STATUS=? WHERE ORDER_ID=? and status=? ";
-        sqlExecutorManager.getSqlExecutor(sql);
+        sqlExecutorManager.getSqlExecutor(new SqlKey(sql));
     }
 
 

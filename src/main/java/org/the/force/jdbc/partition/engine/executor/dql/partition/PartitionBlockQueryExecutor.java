@@ -12,7 +12,7 @@ import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedSql;
 import org.the.force.jdbc.partition.engine.executor.physic.SqlExecParamLineNode;
 import org.the.force.jdbc.partition.engine.executor.physic.SqlExecPhysicNode;
-import org.the.force.jdbc.partition.engine.executor.physic.SqlExecStaticSqlNode;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlExecStmtNode;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.parser.select.SelectItemParser;
 import org.the.force.jdbc.partition.engine.rewrite.MySqlPartitionSqlOutput;
@@ -142,7 +142,7 @@ public class PartitionBlockQueryExecutor extends SQLSelectQueryBlock implements 
                     new SqlExecParamLineNode(sqlSb.toString(), entry.getKey().getPhysicDbName(), new LinedParameters(1, mySqlPartitionSqlOutput.getSqlParameterList()));
 
             } else {
-                sqlExecPhysicNode = new SqlExecStaticSqlNode(entry.getKey().getPhysicDbName(), new LinedSql(1, sqlSb.toString()));
+                sqlExecPhysicNode = new SqlExecStmtNode(entry.getKey().getPhysicDbName(), new LinedSql(1, sqlSb.toString()));
             }
             return null;
         } else {

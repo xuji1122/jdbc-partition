@@ -20,7 +20,7 @@ import java.util.List;
  */
 public interface SqlExecCommand {
 
-    void execute();
+    void execute() throws SQLException;
 
     PResult getPResult();
 

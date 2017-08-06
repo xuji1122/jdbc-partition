@@ -19,4 +19,11 @@ public interface LogicStmt {
      */
     PResult execute(SqlExecResource sqlExecResource, LogicStmtConfig logicStmtConfig) throws SQLException;
 
+
+    /**
+     * 打印 debug日志使用
+     * @param preTabNumber
+     * @param sb
+     */
+    void print(int preTabNumber, StringBuilder sb);
 }

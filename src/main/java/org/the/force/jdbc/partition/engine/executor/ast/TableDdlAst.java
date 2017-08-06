@@ -4,10 +4,10 @@ import org.the.force.jdbc.partition.common.PartitionJdbcConstants;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedParameters;
 import org.the.force.jdbc.partition.engine.executor.physic.LinedSql;
 import org.the.force.jdbc.partition.engine.executor.physic.SqlExecDbNode;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlExecPStmtNode;
 import org.the.force.jdbc.partition.engine.executor.physic.SqlExecParamLineNode;
-import org.the.force.jdbc.partition.engine.executor.physic.SqlExecParametricNode;
 import org.the.force.jdbc.partition.engine.executor.physic.SqlExecPhysicNode;
-import org.the.force.jdbc.partition.engine.executor.physic.SqlExecStaticSqlNode;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlExecStmtNode;
 import org.the.force.jdbc.partition.engine.parser.copy.SqlObjCopier;
 import org.the.force.jdbc.partition.engine.rewrite.MySqlPartitionSqlOutput;
 import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
@@ -73,7 +73,7 @@ public class TableDdlAst implements BatchExecutableAst {
             SqlExecPhysicNode sqlExecuteRouter = sqlExecDbNode.get(partition.getPhysicDbName());
             if (output.isParametric()) {//假定所有的分库分表结果只有两种模式，有参数的和无参数的
                 if (sqlExecuteRouter == null) {
-                    sqlExecuteRouter = new SqlExecParametricNode();
+                    sqlExecuteRouter = new SqlExecPStmtNode();
                     sqlExecDbNode.put(partition.getPhysicDbName(), sqlExecuteRouter);
                 }
                 SqlExecParamLineNode sqlExecParamLineNode = (SqlExecParamLineNode) sqlExecuteRouter.get(sql);
@@ -85,11 +85,11 @@ public class TableDdlAst implements BatchExecutableAst {
                 sqlExecParamLineNode.addParamLine(new LinedParameters(lineNumber, sqlParameterList));
             } else {
                 if (sqlExecuteRouter == null) {
-                    sqlExecuteRouter = new SqlExecStaticSqlNode(partition.getPhysicDbName());
+                    sqlExecuteRouter = new SqlExecStmtNode(partition.getPhysicDbName());
                     sqlExecDbNode.put(partition.getPhysicDbName(), sqlExecuteRouter);
                 }
-                SqlExecStaticSqlNode sqlExecStaticSqlNode = (SqlExecStaticSqlNode) sqlExecuteRouter;
-                sqlExecStaticSqlNode.addSql(new LinedSql(lineNumber,sql));
+                SqlExecStmtNode sqlExecStmtNode = (SqlExecStmtNode) sqlExecuteRouter;
+                sqlExecStmtNode.addSql(new LinedSql(lineNumber,sql));
             }
         }
     }

@@ -6,13 +6,19 @@ package org.the.force.jdbc.partition.resource.executor;
 public class SqlKey {
 
     private final String sql;
+    private final String sqlKey;
 
     public SqlKey(String sql) {
+        this(sql, sql.toLowerCase());
+    }
+
+    public SqlKey(String sql, String sqlKey) {
         this.sql = sql;
+        this.sqlKey = sqlKey;
     }
 
     public String getKey() {
-        return sql.toLowerCase();
+        return sqlKey;
     }
 
     public String getSql() {

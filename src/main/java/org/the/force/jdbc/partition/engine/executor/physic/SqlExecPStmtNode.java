@@ -7,11 +7,11 @@ import java.util.Map;
 /**
  * Created by xuji on 2017/5/28.
  */
-public class SqlExecParametricNode implements SqlExecPhysicNode {
+public class SqlExecPStmtNode implements SqlExecPhysicNode {
 
     protected final Map<String, SqlExecPhysicNode> map = new LinkedHashMap<>();
 
-    public SqlExecParametricNode() {
+    public SqlExecPStmtNode() {
 
     }
 
@@ -56,13 +56,14 @@ public class SqlExecParametricNode implements SqlExecPhysicNode {
     }
 
     public void print(int preTabNumber, StringBuilder sb) {
-        sb.append("\n");
-        for (int i = 0; i < preTabNumber; i++) {
-            sb.append("\t");
-        }
         for (Map.Entry<String, SqlExecPhysicNode> entry : map.entrySet()) {
+            sb.append("\n");
+            for (int i = 0; i < preTabNumber; i++) {
+                sb.append("\t");
+            }
             sb.append(entry.getKey());
             entry.getValue().print(preTabNumber, sb);
+
         }
     }
 

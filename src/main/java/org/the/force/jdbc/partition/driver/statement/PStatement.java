@@ -3,10 +3,11 @@ package org.the.force.jdbc.partition.driver.statement;
 import org.the.force.jdbc.partition.driver.JdbcPartitionConnection;
 import org.the.force.jdbc.partition.driver.PResult;
 import org.the.force.jdbc.partition.driver.result.BatchResult;
+import org.the.force.jdbc.partition.driver.result.UpdateResult;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmt;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmtConfig;
 import org.the.force.jdbc.partition.engine.stmt.impl.MultiSqlFactory;
-import org.the.force.jdbc.partition.engine.stmt.impl.MultiSqlLineStmt;
+import org.the.force.jdbc.partition.engine.stmt.impl.BatchSqlLineStmt;
 import org.the.force.jdbc.partition.engine.stmt.impl.ParametricStmt;
 import org.the.force.jdbc.partition.resource.statement.AbstractStatement;
 import org.the.force.thirdparty.druid.support.logging.Log;
@@ -36,7 +37,7 @@ public class PStatement extends AbstractStatement {
      */
     protected boolean closed;
 
-    private MultiSqlLineStmt multiSqlLineSql = new MultiSqlLineStmt();
+    private BatchSqlLineStmt multiSqlLineSql = new BatchSqlLineStmt();
 
     public PStatement(JdbcPartitionConnection connection) {
         this(connection, new LogicStmtConfig());
@@ -141,8 +142,10 @@ public class PStatement extends AbstractStatement {
         checkClosed();
         ensureResultSetIsEmpty();
         currentResult = connection.executeLogicSql(logicStmt, logicStmtConfig);
-        if (currentResult instanceof BatchResult) {
-            return ((BatchResult) currentResult).getUpdateMerger().toArray();
+        if (currentResult instanceof UpdateResult) {
+            return ((UpdateResult) currentResult).getUpdateMerger().toArray();
+        } else if (currentResult instanceof BatchResult) {
+            return ((BatchResult) currentResult).getUpdateCountArray();
         } else {
             return new int[] {currentResult.getUpdateCount()};
         }

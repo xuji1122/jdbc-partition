@@ -6,12 +6,16 @@ import org.the.force.jdbc.partition.engine.executor.QueryExecutor;
 import org.the.force.jdbc.partition.engine.executor.SqlExecutor;
 import org.the.force.jdbc.partition.engine.executor.ast.BatchExecutableAst;
 import org.the.force.jdbc.partition.engine.executor.physic.SqlExecDbNode;
+import org.the.force.jdbc.partition.engine.executor.physic.SqlUpdateCommand;
+import org.the.force.jdbc.partition.engine.executor.result.UpdateMerger;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmtConfig;
 import org.the.force.jdbc.partition.engine.stmt.SqlLineExecRequest;
 import org.the.force.jdbc.partition.engine.stmt.SqlLineParameter;
 import org.the.force.jdbc.partition.engine.value.SqlParameter;
 import org.the.force.jdbc.partition.resource.SqlExecResource;
 import org.the.force.jdbc.partition.resource.executor.SqlKey;
+import org.the.force.thirdparty.druid.support.logging.Log;
+import org.the.force.thirdparty.druid.support.logging.LogFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +28,8 @@ import java.util.List;
  * 单独的一条sql语句 且无无分号分割
  */
 public class ParamLineStmt implements ParametricStmt, SqlLine {
+
+    private static Log log = LogFactory.getLog(ParamLineStmt.class);
 
     private final SqlKey sqlKey;
 
@@ -116,29 +122,58 @@ public class ParamLineStmt implements ParametricStmt, SqlLine {
     }
 
     public PResult execute(SqlExecResource sqlExecResource, LogicStmtConfig logicStmtConfig) throws SQLException {
-        SqlExecutor sqlExecutor = sqlExecResource.getSqlExecutorManager().getSqlExecutor(sqlKey);
-        if (sqlExecutor instanceof QueryExecutor) {
-            QueryExecutor queryExecutor = (QueryExecutor) sqlExecutor;
-            SqlLineExecRequest sqlLineExecRequest = new SqlLineExecRequest(sqlExecResource, logicStmtConfig, currentSqlLineParameter);
-            ResultSet rs = queryExecutor.execute(sqlLineExecRequest);
-            return new QueryResult(rs);
-        } else {
-            BatchExecutableAst batchExecutableAst = (BatchExecutableAst) sqlExecutor;
-            SqlExecDbNode sqlExecDbNode = new SqlExecDbNode();
-            if (isBatch()) {
-                Iterator<SqlLineParameter> iterator = batchSqlLineParameters.iterator();
-                while (iterator.hasNext()) {
-                    SqlLineParameter sqlLineParameter = iterator.next();
-
-                    iterator.remove();
-
-                }
+        try {
+            SqlExecutor sqlExecutor = sqlExecResource.getSqlExecutorManager().getSqlExecutor(sqlKey);
+            if (sqlExecutor instanceof QueryExecutor) {
+                QueryExecutor queryExecutor = (QueryExecutor) sqlExecutor;
+                log.info("sql查询执行器：\n" + queryExecutor);
+                SqlLineExecRequest sqlLineExecRequest = new SqlLineExecRequest(sqlExecResource, logicStmtConfig, currentSqlLineParameter);
+                ResultSet rs = queryExecutor.execute(sqlLineExecRequest);
+                return new QueryResult(rs);
             } else {
-
+                BatchExecutableAst batchExecutableAst = (BatchExecutableAst) sqlExecutor;
+                SqlExecDbNode sqlExecDbNode = new SqlExecDbNode();
+                UpdateMerger updateMerger;
+                if (isBatch()) {
+                    Iterator<SqlLineParameter> iterator = batchSqlLineParameters.iterator();
+                    int lineTotal = 0;
+                    while (iterator.hasNext()) {
+                        SqlLineParameter sqlLineParameter = iterator.next();
+                        SqlLineExecRequest sqlLineExecRequest = new SqlLineExecRequest(sqlExecResource, logicStmtConfig, sqlLineParameter);
+                        batchExecutableAst.addExecPhysicNode(sqlExecDbNode, sqlLineExecRequest);
+                        lineTotal++;
+                        iterator.remove();
+                    }
+                    updateMerger = new UpdateMerger(lineTotal);
+                } else {
+                    SqlLineExecRequest sqlLineExecRequest = new SqlLineExecRequest(sqlExecResource, logicStmtConfig, currentSqlLineParameter);
+                    updateMerger = new UpdateMerger(1);
+                    batchExecutableAst.addExecPhysicNode(sqlExecDbNode, sqlLineExecRequest);
+                    log.debug("sql解析结果：\n" + sqlExecDbNode.toString());
+                }
+                SqlUpdateCommand sqlUpdateCommand = new SqlUpdateCommand(sqlExecResource, logicStmtConfig, sqlExecDbNode, updateMerger);
+                sqlUpdateCommand.execute();
+                return sqlUpdateCommand.getPResult();
             }
+        } finally {
+            clearBatch();
+            clearParameters();
         }
-        return null;
+
     }
 
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        print(0, sb);
+        return sb.toString();
+    }
+
+    public void print(int preTabNumber, StringBuilder sb) {
+        sb.append("\n");
+        for (int i = 0; i < preTabNumber; i++) {
+            sb.append("\t");
+        }
+        sb.append(lineNumber).append("(").append(paramSize).append("):").append(sqlKey.getSql());
+    }
 }
