@@ -21,7 +21,6 @@ public class InsertResult implements PResult {
 
     protected volatile long lastInsertId = -1;
 
-
     public int getUpdateCount() throws SQLException {
         return updateCount.get();
     }
