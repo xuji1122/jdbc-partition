@@ -3,3 +3,4 @@
 .iml
 target
 jdbc-partition.iml
+test_cases_basic/schema/db_order.yml
