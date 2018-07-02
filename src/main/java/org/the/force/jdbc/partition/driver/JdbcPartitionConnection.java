@@ -5,7 +5,6 @@ import org.the.force.jdbc.partition.driver.statement.PStatement;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmt;
 import org.the.force.jdbc.partition.engine.stmt.LogicStmtConfig;
 import org.the.force.jdbc.partition.engine.stmt.impl.MultiSqlFactory;
-import org.the.force.jdbc.partition.exception.UnsupportedSqlOperatorException;
 import org.the.force.jdbc.partition.resource.SqlExecResource;
 import org.the.force.jdbc.partition.resource.connection.AbstractConnection;
 import org.the.force.jdbc.partition.resource.connection.ConnectionAdapter;
